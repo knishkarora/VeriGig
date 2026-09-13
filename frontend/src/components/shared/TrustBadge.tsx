@@ -21,9 +21,9 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
      type === 'admin' ? 'Institutional Governance' : 'Verified');
 
   const sizeClasses = {
-    sm: 'text-[11px] px-2 py-0.5 gap-1',
-    md: 'text-xs px-2.5 py-1 gap-1.5',
-    lg: 'text-sm px-3.5 py-1.5 gap-2 font-medium',
+    sm: 'text-[11px] px-2.5 py-0.5 gap-1',
+    md: 'text-xs px-3 py-1 gap-1.5',
+    lg: 'text-sm px-4 py-1.5 gap-2 font-medium',
   };
 
   const iconSizes = {
@@ -34,22 +34,22 @@ export const TrustBadge: React.FC<TrustBadgeProps> = ({
 
   return (
     <span 
-      className={`inline-flex items-center rounded-full font-medium transition-all duration-200 border ${
+      className={`inline-flex items-center rounded-full font-bold transition-all duration-200 border ${
         type === 'student'
-          ? 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30 shadow-[0_0_12px_-3px_rgba(16,185,129,0.3)]'
+          ? 'bg-emerald-50 text-emerald-800 border-emerald-300/80 shadow-sm'
           : type === 'sme'
-          ? 'bg-indigo-950/40 text-indigo-300 border-indigo-500/30 shadow-[0_0_12px_-3px_rgba(99,102,241,0.3)]'
+          ? 'bg-purple-50 text-purple-900 border-purple-200 shadow-sm'
           : type === 'admin'
-          ? 'bg-purple-950/40 text-purple-300 border-purple-500/30'
-          : 'bg-emerald-950/40 text-emerald-300 border-emerald-500/30'
+          ? 'bg-slate-100 text-slate-900 border-slate-300'
+          : 'bg-emerald-50 text-emerald-800 border-emerald-300/80'
       } ${sizeClasses[size]} ${className}`}
     >
       {type === 'student' ? (
-        <Award size={iconSizes[size]} className="text-emerald-400 shrink-0" />
+        <Award size={iconSizes[size]} className="text-emerald-600 shrink-0" />
       ) : type === 'sme' ? (
-        <ShieldCheck size={iconSizes[size]} className="text-indigo-400 shrink-0" />
+        <ShieldCheck size={iconSizes[size]} className="text-purple-600 shrink-0" />
       ) : (
-        <CheckCircle2 size={iconSizes[size]} className="text-emerald-400 shrink-0" />
+        <CheckCircle2 size={iconSizes[size]} className="text-emerald-600 shrink-0" />
       )}
       <span className="tracking-tight">{defaultText}</span>
     </span>

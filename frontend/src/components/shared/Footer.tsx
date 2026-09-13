@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, CheckCircle2, Globe, MessageCircle, Send, Heart } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Globe, Send } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,104 +14,117 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="mt-20 border-t border-slate-800/80 bg-[#0B0F1A] text-slate-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <footer className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      
+      {/* Signature Bubblegum Pink Editorial Canvas (inspired directly by Image 2 - Shinta) */}
+      <div className="rounded-[2.5rem] bg-[#FFA8D5] text-[#121214] p-8 sm:p-14 shadow-2xl relative overflow-hidden border border-pink-300/60">
         
-        {/* Main curved showcase block */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        {/* Subtle organic purple loop doodle in background */}
+        <svg 
+          className="absolute right-0 bottom-0 w-[500px] h-[400px] opacity-20 pointer-events-none" 
+          viewBox="0 0 500 400" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            d="M 100 350 C 250 100, 450 300, 480 50 C 510 -150, 200 50, 350 380" 
+            stroke="#6366F1" 
+            strokeWidth="24" 
+            strokeLinecap="round"
+          />
+        </svg>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start relative z-10">
           
-          {/* Left brand column */}
+          {/* Left Column: Bold statement & Brand Logo */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-white text-sm">
+            <h3 className="text-3xl sm:text-4xl font-black text-[#121214] leading-[1.1] tracking-tight">
+              Campus talent that grows local enterprise.
+            </h3>
+            
+            <div className="space-y-1 text-xs text-slate-800 font-medium">
+              <div className="text-[11px] uppercase tracking-wider font-bold text-slate-700">Direct Contact</div>
+              <div>contact@campusgigs.in</div>
+              <div>+91 98765 43210 • Ludhiana, Punjab</div>
+            </div>
+
+            {/* Giant Typographic Brand */}
+            <div className="pt-4 flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#121214] text-white flex items-center justify-center font-black text-xl tracking-tighter shadow-md">
                 CG
               </div>
-              <span className="text-2xl font-black text-white tracking-tight">CampusGigs</span>
-            </div>
-            <h3 className="text-3xl font-extrabold text-white leading-tight tracking-tight">
-              Hyper-local talent that grows local enterprise.
-            </h3>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
-              Connecting colleges like PCTE, GNDEC, and Thapar with agile local businesses for milestone-backed micro-gigs. Zero agency bloat.
-            </p>
-            <div className="pt-2 text-xs text-slate-500">
-              Direct Contact: <a href="mailto:support@campusgigs.in" className="text-indigo-400 hover:underline">support@campusgigs.in</a> • Ludhiana, Punjab
+              <span className="text-4xl font-black tracking-tighter text-[#121214]">
+                CampusGigs
+              </span>
             </div>
           </div>
 
-          {/* Center Links Columns */}
-          <div className="lg:col-span-4 grid grid-cols-2 gap-8">
+          {/* Middle Columns: Pill Navigations (inspired by Shinta) */}
+          <div className="lg:col-span-4 grid grid-cols-2 gap-6">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-4">
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-800 mb-4">
                 Navigation
               </div>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 <li>
-                  <Link to="/" className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/60 hover:border-indigo-500/50 hover:text-white transition-all">
-                    (Home)
+                  <Link to="/" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-slate-900/20 bg-white/40 hover:bg-[#121214] hover:text-white transition-all">
+                    Home
                   </Link>
                 </li>
                 <li>
-                  <Link to="/app/student/explore" className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/60 hover:border-indigo-500/50 hover:text-white transition-all">
-                    (Micro-Gigs ↗)
+                  <Link to="/app/student/explore" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-slate-900/20 bg-white/40 hover:bg-[#121214] hover:text-white transition-all">
+                    Projects
                   </Link>
                 </li>
                 <li>
-                  <Link to="/app/employer/post-gig" className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/60 hover:border-indigo-500/50 hover:text-white transition-all">
-                    (Post a Task)
+                  <Link to="/app/employer/post-gig" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-slate-900/20 bg-white/40 hover:bg-[#121214] hover:text-white transition-all">
+                    Post-a-Gig
                   </Link>
                 </li>
                 <li>
-                  <Link to="/auth" className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/60 hover:border-indigo-500/50 hover:text-white transition-all">
-                    (ID Verification)
+                  <Link to="/auth" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-slate-900/20 bg-white/40 hover:bg-[#121214] hover:text-white transition-all">
+                    Verification
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-4">
-                Trust & Legal
+              <div className="text-[11px] font-extrabold uppercase tracking-wider text-slate-800 mb-4">
+                Legal
               </div>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 <li>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/40 text-slate-400 cursor-pointer hover:text-slate-200">
-                    (Escrow Guarantee)
+                  <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-slate-900/20 bg-white/40 hover:bg-[#121214] hover:text-white cursor-pointer transition-all">
+                    Privacy Policy
                   </span>
                 </li>
                 <li>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/40 text-slate-400 cursor-pointer hover:text-slate-200">
-                    (Privacy Policy)
+                  <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-slate-900/20 bg-white/40 hover:bg-[#121214] hover:text-white cursor-pointer transition-all">
+                    Terms & Condition
                   </span>
                 </li>
                 <li>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/40 text-slate-400 cursor-pointer hover:text-slate-200">
-                    (Terms of Task)
-                  </span>
-                </li>
-                <li>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border border-slate-800 bg-slate-900/40 text-slate-400 cursor-pointer hover:text-slate-200">
-                    (Dispute Protocol)
+                  <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-slate-900/20 bg-white/40 hover:bg-[#121214] hover:text-white cursor-pointer transition-all">
+                    Escrow Protocol
                   </span>
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Right Floating Newsletter card (from design reference) */}
+          {/* Right Column: Floating White Newsletter Card (from Shinta) */}
           <div className="lg:col-span-4">
-            <div className="p-6 rounded-3xl bg-gradient-to-b from-slate-900 to-[#121927] border border-slate-800 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 rounded-full blur-2xl pointer-events-none" />
-              
-              <h4 className="text-lg font-bold text-white mb-1">Campus Dispatch</h4>
-              <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                Receive weekly curated micro-gigs posted by vetted local bakeries, tech agencies, and dental clinics.
+            <div className="p-6 sm:p-7 rounded-[2rem] bg-white text-[#121214] shadow-xl border border-pink-200 space-y-4">
+              <h4 className="text-xl font-extrabold tracking-tight">Newsletter</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Sign up for our newsletter to stay up to date with the latest campus micro-gigs & SME tasks.
               </p>
 
               {subscribed ? (
-                <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
+                <div className="p-3 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
                   <CheckCircle2 size={16} />
-                  <span>You're on the list! First drop arrives Friday.</span>
+                  <span>Welcome aboard! Weekly drops arrive every Friday.</span>
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe} className="space-y-3">
@@ -120,46 +133,40 @@ export const Footer: React.FC = () => {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your student or business email..."
-                    className="w-full px-4 py-2.5 rounded-full bg-slate-950/80 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                    placeholder="Email Address"
+                    className="w-full px-4 py-3 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#121214] transition-colors"
                   />
+                  
+                  {/* Signature Pill Submit Button with Pink Arrow Circle */}
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-between px-5 py-2.5 rounded-full bg-white hover:bg-slate-200 text-slate-950 font-bold text-xs transition-colors group"
+                    className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-[#121214] hover:bg-slate-800 text-white font-bold text-xs transition-all group shadow-md"
                   >
-                    <span>Subscribe to Weekly Drops</span>
-                    <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <ArrowUpRight size={13} />
+                    <span>Submit</span>
+                    <div className="w-8 h-8 rounded-full bg-[#FFA8D5] text-[#121214] flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                      <ArrowUpRight size={15} />
                     </div>
                   </button>
                 </form>
               )}
 
-              <div className="mt-4 flex items-center justify-between text-[11px] text-slate-500 pt-3 border-t border-slate-800/60">
-                <span>Zero spam. Unsubscribe anytime.</span>
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  <span>Escrow-safe</span>
-                </div>
+              <div className="pt-2 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                <span>Verified Escrow Protection</span>
+                <span className="font-semibold text-slate-800">Zero Agency Cut</span>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* Sub-footer bottom bar */}
-        <div className="mt-16 pt-8 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-1">
-            <span>© 2026 CampusGigs (VeriGig). All institutional rights reserved.</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="hover:text-slate-300 cursor-pointer">Security Protocol</span>
-            <span className="hover:text-slate-300 cursor-pointer">Campus Ambassadors</span>
-            <span className="hover:text-slate-300 cursor-pointer">Status: 99.98% uptime</span>
-          </div>
+        {/* Sub-footer bottom row */}
+        <div className="mt-12 pt-6 border-t border-slate-900/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-semibold text-slate-800">
+          <div>© 2026 CAMPUSGIGS. ALL RIGHTS RESERVED.</div>
+          <div>POWERED BY <strong className="text-black font-extrabold">CAMPUS NETWORK</strong></div>
         </div>
 
       </div>
+
     </footer>
   );
 };

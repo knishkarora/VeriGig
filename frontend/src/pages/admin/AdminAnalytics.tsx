@@ -1,39 +1,35 @@
 import React from 'react';
 import { 
-  BarChart3, 
   TrendingUp, 
   Wallet, 
   GraduationCap, 
-  Building2, 
-  CheckCircle2, 
   Clock, 
-  ShieldCheck,
-  Layers
+  ShieldCheck, 
+  Layers 
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 
 export const AdminAnalytics: React.FC = () => {
-  const { gigs, proposals, verifications } = useMarketplace();
+  const { gigs } = useMarketplace();
 
   const totalVolume = gigs.reduce((acc, g) => acc + g.totalBudget, 0);
   const activeEscrow = gigs
     .filter(g => g.status === 'in_progress')
     .reduce((acc, g) => acc + g.totalBudget, 0);
-  const completedGigs = gigs.filter(g => g.status === 'completed').length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-left">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-white">Platform Liquidity & Campus Analytics</h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-950/60 text-purple-300 border border-purple-500/30">
-              Real-time Metrics
+            <h1 className="text-2xl sm:text-3xl font-black text-[#121214]">Platform Liquidity & Campus Analytics</h1>
+            <span className="text-xs font-black px-3 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-200">
+              Live Metrics
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 font-medium mt-1">
             Tracking hyper-local escrow volume, campus talent liquidity, and task turnaround velocity.
           </p>
         </div>
@@ -42,63 +38,63 @@ export const AdminAnalytics: React.FC = () => {
       {/* Top Liquidity Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
               Cumulative Platform Volume
             </span>
-            <span className="text-2xl font-black text-white mt-1 block">
+            <span className="text-3xl font-black text-[#121214] mt-1 block">
               ₹840,000
             </span>
-            <span className="text-[10px] text-emerald-400 mt-1 block">↑ 28% month-over-month</span>
+            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">↑ 28% month-over-month</span>
           </div>
-          <div className="p-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">
-            <TrendingUp size={22} />
+          <div className="p-3.5 rounded-2xl bg-purple-50 text-purple-700">
+            <TrendingUp size={24} />
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-              Escrow Value in Transit
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
+              Escrow in Transit
             </span>
-            <span className="text-2xl font-black text-emerald-400 mt-1 block">
+            <span className="text-3xl font-black text-emerald-800 mt-1 block">
               ₹{(activeEscrow || 45000).toLocaleString()}
             </span>
-            <span className="text-[10px] text-slate-500 mt-1 block">Locked across active student milestones</span>
+            <span className="text-[10px] text-slate-500 font-medium mt-1 block">Active milestone locks</span>
           </div>
-          <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400">
-            <Wallet size={22} />
+          <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-700">
+            <Wallet size={24} />
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
               Successful Payout Rate
             </span>
-            <span className="text-2xl font-black text-indigo-400 mt-1 block">
+            <span className="text-3xl font-black text-purple-900 mt-1 block">
               98.4%
             </span>
-            <span className="text-[10px] text-slate-400 mt-1 block">Zero dispute chargebacks</span>
+            <span className="text-[10px] text-purple-700 font-bold mt-1 block">Zero dispute chargebacks</span>
           </div>
-          <div className="p-3 rounded-xl bg-indigo-950/60 border border-indigo-500/20 text-indigo-400">
-            <ShieldCheck size={22} />
+          <div className="p-3.5 rounded-2xl bg-purple-50 text-purple-700">
+            <ShieldCheck size={24} />
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 flex items-center justify-between">
+        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
               Median Turnaround Velocity
             </span>
-            <span className="text-2xl font-black text-amber-400 mt-1 block">
+            <span className="text-3xl font-black text-amber-600 mt-1 block">
               4.2 Days
             </span>
-            <span className="text-[10px] text-slate-500 mt-1 block">From task posting to sign-off</span>
+            <span className="text-[10px] text-slate-400 font-medium mt-1 block">From task posting to payout</span>
           </div>
-          <div className="p-3 rounded-xl bg-amber-950/60 border border-amber-500/20 text-amber-400">
-            <Clock size={22} />
+          <div className="p-3.5 rounded-2xl bg-amber-50 text-amber-600">
+            <Clock size={24} />
           </div>
         </div>
 
@@ -108,13 +104,13 @@ export const AdminAnalytics: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Campus Distribution Breakdown */}
-        <div className="lg:col-span-7 p-6 rounded-3xl bg-[#111827]/80 backdrop-blur-md border border-slate-800 space-y-6">
+        <div className="lg:col-span-7 p-8 rounded-[2.5rem] bg-white border border-purple-100 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <GraduationCap size={18} className="text-indigo-400" />
-              <span>Campus Talent Engagement & Payout Distribution</span>
+            <h3 className="text-base font-black text-[#121214] flex items-center gap-2">
+              <GraduationCap size={20} className="text-purple-600" />
+              <span>Campus Engagement & Payout Distribution</span>
             </h3>
-            <span className="text-xs text-slate-400">Ludhiana & Punjab Region</span>
+            <span className="text-xs text-slate-400 font-bold">Ludhiana & Punjab</span>
           </div>
 
           <div className="space-y-4">
@@ -126,16 +122,16 @@ export const AdminAnalytics: React.FC = () => {
               { college: 'Other Regional Campuses', percentage: 5, earnings: '₹42,000', students: '45 Active' }
             ].map((campus, idx) => (
               <div key={idx} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-white">{campus.college}</span>
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-slate-900 font-bold">{campus.college}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-slate-400">{campus.students}</span>
-                    <span className="font-bold text-emerald-400">{campus.earnings}</span>
+                    <span className="text-slate-500 font-normal">{campus.students}</span>
+                    <span className="font-black text-emerald-800">{campus.earnings}</span>
                   </div>
                 </div>
-                <div className="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                <div className="w-full h-3 bg-purple-50 rounded-full overflow-hidden border border-purple-100">
                   <div 
-                    className="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 rounded-full transition-all duration-500" 
+                    className="h-full bg-[#121214] rounded-full transition-all duration-500" 
                     style={{ width: `${campus.percentage}%` }}
                   />
                 </div>
@@ -145,16 +141,16 @@ export const AdminAnalytics: React.FC = () => {
         </div>
 
         {/* Category Liquidity Breakdown */}
-        <div className="lg:col-span-5 p-6 rounded-3xl bg-[#111827]/80 backdrop-blur-md border border-slate-800 space-y-6">
+        <div className="lg:col-span-5 p-8 rounded-[2.5rem] bg-white border border-purple-100 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Layers size={18} className="text-emerald-400" />
+            <h3 className="text-base font-black text-[#121214] flex items-center gap-2">
+              <Layers size={20} className="text-purple-600" />
               <span>Category Liquidity Share</span>
             </h3>
-            <span className="text-xs text-slate-400">By Total Escrow</span>
+            <span className="text-xs text-slate-400 font-bold">By Total Escrow</span>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {[
               { name: 'Web Dev & WhatsApp Systems', share: '38%', count: '34 Tasks' },
               { name: 'UI/UX & Accessibility Dashboards', share: '24%', count: '22 Tasks' },
@@ -162,12 +158,12 @@ export const AdminAnalytics: React.FC = () => {
               { name: 'Brand Identity & Packaging', share: '12%', count: '11 Tasks' },
               { name: 'Data Normalization & Scraping', share: '8%', count: '8 Tasks' }
             ].map((cat, idx) => (
-              <div key={idx} className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+              <div key={idx} className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100 flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-semibold text-white block">{cat.name}</span>
-                  <span className="text-[10px] text-slate-500">{cat.count}</span>
+                  <span className="font-bold text-slate-900 block">{cat.name}</span>
+                  <span className="text-[10px] text-slate-500 font-medium">{cat.count}</span>
                 </div>
-                <span className="text-xs font-bold text-indigo-300 px-2.5 py-1 rounded-full bg-indigo-950/60 border border-indigo-500/20">
+                <span className="text-xs font-black text-purple-950 px-3 py-1 rounded-full bg-white border border-purple-200 shadow-sm">
                   {cat.share}
                 </span>
               </div>

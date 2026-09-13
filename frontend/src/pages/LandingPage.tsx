@@ -5,20 +5,15 @@ import {
   ShieldCheck, 
   Sparkles, 
   Clock, 
-  Zap, 
   CheckCircle2, 
   Building2, 
   GraduationCap, 
-  ChevronRight, 
-  Award,
-  Layers,
-  Search,
-  Filter,
-  Users
+  Play,
+  Check,
+  MessageCircle
 } from 'lucide-react';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { TrustBadge } from '../components/shared/TrustBadge';
-import { GigCategory } from '../types';
 
 export const LandingPage: React.FC = () => {
   const { gigs, switchRole } = useMarketplace();
@@ -38,270 +33,349 @@ export const LandingPage: React.FC = () => {
     ? gigs 
     : gigs.filter(g => g.category === selectedCategory);
 
+  // Showcase cards modeled directly after Sense reference bottom cards
+  const showcaseTracks = [
+    {
+      title: 'WEB DEV',
+      category: 'Frontend & Web',
+      image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
+      tag: '₹8,500 Avg Escrow',
+      link: '/app/student/explore'
+    },
+    {
+      title: 'UI/UX DESIGN',
+      category: 'Product & Figma',
+      image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80',
+      tag: '₹12,000 Avg Escrow',
+      link: '/app/student/explore'
+    },
+    {
+      title: 'REELS & MOTION',
+      category: 'Social Media',
+      image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=600&q=80',
+      tag: '₹6,000 Avg Escrow',
+      link: '/app/student/explore'
+    },
+    {
+      title: 'DATA AUTOMATION',
+      category: 'Python & Sheets',
+      image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=80',
+      tag: '₹4,500 Avg Escrow',
+      link: '/app/student/explore'
+    }
+  ];
+
   return (
-    <div className="relative overflow-hidden">
+    <div className="space-y-16 pb-12">
       
-      {/* Background glowing ribbons and decorative wave curves (inspired by design references) */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-[-20%] left-[10%] w-[500px] h-[500px] bg-indigo-600/15 rounded-full blur-[120px]" />
-        <div className="absolute top-[10%] right-[5%] w-[450px] h-[450px] bg-emerald-500/10 rounded-full blur-[130px]" />
+      {/* ============================================================ */}
+      {/* SECTION 1: SENSE-INSPIRED HERO CONTAINER WITH CURVED RIBBON  */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Curved decorative ribbon SVG */}
-        <svg 
-          className="absolute top-12 left-0 w-full h-[550px] opacity-25" 
-          viewBox="0 0 1200 600" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path 
-            d="M-100 200 C 300 50, 600 450, 1300 150" 
-            stroke="url(#ribbon-gradient)" 
-            strokeWidth="3.5" 
-            strokeLinecap="round" 
-            strokeDasharray="6 8"
-          />
-          <path 
-            d="M-50 250 C 350 120, 700 500, 1350 220" 
-            stroke="url(#ribbon-gradient-2)" 
-            strokeWidth="2" 
-          />
-          <defs>
-            <linearGradient id="ribbon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#6366F1" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#EC4899" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0.8" />
-            </linearGradient>
-            <linearGradient id="ribbon-gradient-2" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#6366F1" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0.4" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
-      {/* Hero Section */}
-      <section className="pt-16 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        {/* Giant Crisp White Rounded Card Container (directly from Sense sample) */}
+        <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(112,80,200,0.08)] p-6 sm:p-14 relative overflow-hidden">
           
-          {/* Left Text Block */}
-          <div className="lg:col-span-7 space-y-7 text-left">
+          {/* Flowing Organic Pastel Lilac Wave Ribbon SVG running across the hero */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+            <svg 
+              className="w-[140%] h-[120%] -translate-y-4 opacity-75" 
+              viewBox="0 0 1400 700" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Thick organic wavy ribbon shape */}
+              <path 
+                d="M -100 350 C 200 150, 450 550, 750 300 C 1050 50, 1250 480, 1550 280 L 1550 450 C 1250 650, 1050 200, 750 460 C 450 700, 200 320, -100 520 Z" 
+                fill="#F3E8FF" 
+              />
+              {/* Secondary subtle accent stroke */}
+              <path 
+                d="M -100 330 C 200 130, 450 530, 750 280 C 1050 30, 1250 460, 1550 260" 
+                stroke="#FFA8D5" 
+                strokeWidth="4" 
+                strokeLinecap="round" 
+                strokeDasharray="10 14"
+                opacity="0.6"
+              />
+            </svg>
+          </div>
+
+          {/* Floating Avatar / Task Thumbnails positioned along the wave (from Sense reference) */}
+          <div className="relative z-10">
             
-            {/* Pill Tag */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-indigo-500/30 text-xs font-semibold text-indigo-300 shadow-sm">
-              <Sparkles size={14} className="text-indigo-400 animate-pulse" />
-              <span>Zero-Bloat Micro-Gigs for College Campuses & Local SMEs</span>
+            {/* Top Row Floating Thumbnail Capsules */}
+            <div className="hidden md:flex justify-between items-center px-12 mb-6 pointer-events-none">
+              <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-white -rotate-6 transform hover:rotate-0 transition-transform">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Student" className="w-full h-full object-cover" />
+              </div>
+
+              <div className="w-24 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-white rotate-3">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=300&q=80" alt="Team" className="w-full h-full object-cover" />
+              </div>
+
+              <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-white 6 rotate-6">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80" alt="Student" className="w-full h-full object-cover" />
+              </div>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.08]">
-              Verified College Talent for Agile Local Businesses.
-            </h1>
-
-            <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl">
-              Connect directly with verified students from <strong className="text-white font-semibold">PCTE</strong>, <strong className="text-white font-semibold">GNDEC</strong>, and <strong className="text-white font-semibold">Thapar</strong> for task-based deliverables. Funded by milestone escrow. Zero 6-month unpaid internship bloat.
-            </p>
-
-            {/* Action Buttons & Fast Demo Pills */}
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link
-                to="/app/student/explore"
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-glow-indigo transition-all group"
-              >
-                <span>Explore Micro-Gigs</span>
-                <div className="w-6 h-6 rounded-full bg-indigo-900 flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
-                  <ArrowUpRight size={14} />
-                </div>
-              </Link>
-
-              <Link
-                to="/app/employer/post-gig"
-                onClick={() => switchRole('employer')}
-                className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm transition-all"
-              >
-                <Building2 size={16} className="text-emerald-400" />
-                <span>Post a Task (SMEs)</span>
-              </Link>
-            </div>
-
-            {/* Micro proof tags */}
-            <div className="pt-4 flex flex-wrap items-center gap-6 text-xs text-slate-400 border-t border-slate-800/80">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={15} className="text-emerald-400" />
-                <span>Govt/College ID Verified</span>
+            {/* Center Hero Title & Action Pills */}
+            <div className="text-center max-w-3xl mx-auto py-6 sm:py-10 space-y-6 relative">
+              
+              {/* Floating lower side thumbnails */}
+              <div className="hidden sm:block absolute -left-12 top-1/2 -translate-y-1/2 w-16 h-20 rounded-2xl overflow-hidden shadow-lg border-2 border-white -rotate-12 pointer-events-none">
+                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80" alt="Student" className="w-full h-full object-cover" />
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={15} className="text-emerald-400" />
-                <span>Milestone-Locked Escrow</span>
+              <div className="hidden sm:block absolute -right-12 top-1/2 -translate-y-1/2 w-20 h-16 rounded-2xl overflow-hidden shadow-lg border-2 border-white rotate-12 pointer-events-none">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="Employer" className="w-full h-full object-cover" />
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={15} className="text-emerald-400" />
-                <span>48hr to 2-week Deliverables</span>
+
+              {/* Bold Center Brand Name (Sense style) */}
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-[#121214] tracking-tight uppercase leading-none">
+                CampusGigs
+              </h1>
+
+              <p className="text-sm sm:text-base text-slate-600 font-semibold max-w-xl mx-auto tracking-normal">
+                Verified college talent from PCTE, GNDEC, and Thapar for agile local enterprises. Milestone-backed escrow. Zero bloat.
+              </p>
+
+              {/* Dual Pill CTA Buttons (from Sense reference) */}
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                
+                {/* Primary Acid Lime Pill Button with Arrow */}
+                <Link
+                  to="/app/student/explore"
+                  className="inline-flex items-center gap-2 pl-6 pr-3 py-3 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#121214] font-black text-xs sm:text-sm shadow-md transition-all group"
+                >
+                  <span>Explore Micro-Gigs</span>
+                  <div className="w-7 h-7 rounded-full bg-[#121214] text-white flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
+                    <ArrowUpRight size={15} />
+                  </div>
+                </Link>
+
+                {/* Secondary Contact / Post Pill Button */}
+                <Link
+                  to="/app/employer/post-gig"
+                  onClick={() => switchRole('employer')}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-slate-50 text-[#121214] border border-slate-300 font-bold text-xs sm:text-sm shadow-sm transition-all"
+                >
+                  <MessageCircle size={17} className="text-purple-600" />
+                  <span>Post a Task (SMEs)</span>
+                </Link>
+
               </div>
+
             </div>
 
           </div>
 
-          {/* Right Visual Floating Showcase Cards (inspired by design sample 1 & 2) */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none space-y-4">
-              
-              {/* Primary Card - Active Workspace Snapshot */}
-              <div className="p-6 rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-800/90 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-                
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    Live Milestone Payout
+          {/* Section Divider & Heading (from Sense reference) */}
+          <div className="mt-14 pt-12 border-t border-purple-100/80 text-center space-y-3 relative z-10">
+            
+            {/* Lilac Accent Pill Tag */}
+            <div className="inline-block px-5 py-1.5 rounded-full bg-[#F3E8FF] border border-purple-200 text-purple-900 text-xs font-black uppercase tracking-widest">
+              DISCOVER NEW HORIZONS — VERIFIED CAMPUS TALENT
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-black text-[#121214] uppercase tracking-tight">
+              Explore Task Tracks in Our Regional Network
+            </h2>
+
+          </div>
+
+          {/* 4-Card Media Showcase Grid (Directly from Sense reference bottom cards) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8 relative z-10">
+            {showcaseTracks.map((track, idx) => (
+              <div 
+                key={idx}
+                className="group relative rounded-[2rem] overflow-hidden aspect-[4/5] shadow-md border border-slate-200/80 flex flex-col justify-between p-4 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1.5"
+              >
+                {/* Background Image */}
+                <img 
+                  src={track.image} 
+                  alt={track.title} 
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
+
+                {/* Subtle dark gradient overlay so pill pops */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+
+                {/* Top tag */}
+                <div className="relative z-10 flex justify-end">
+                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-white/90 text-slate-900 shadow-sm backdrop-blur-md">
+                    {track.tag}
                   </span>
-                  <span className="text-xs text-slate-400">Escrow Protected</span>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h4 className="text-sm font-bold text-white">Digital Ordering Menu & WhatsApp Checkout</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">Bakeology Artisan Bakery • Sarabha Nagar</p>
-                    </div>
-                    <span className="text-sm font-extrabold text-emerald-400 shrink-0">₹8,500</span>
-                  </div>
-
-                  {/* Milestone Progress Bar */}
-                  <div className="space-y-1.5 pt-2">
-                    <div className="flex justify-between text-[11px] text-slate-300">
-                      <span>Milestone 1: Catalog UI & Cart</span>
-                      <span className="text-emerald-400 font-semibold">Approved & Paid (₹3,500)</span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 w-[60%] rounded-full"></div>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 flex items-center justify-between border-t border-slate-800 text-xs">
-                    <div className="flex items-center gap-2">
-                      <img 
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" 
-                        alt="Aarav" 
-                        className="w-6 h-6 rounded-full object-cover border border-emerald-500/50"
-                      />
-                      <span className="text-slate-200 font-medium">Aarav Sharma</span>
-                      <TrustBadge type="student" text="PCTE CSE" size="sm" />
-                    </div>
-                    <span className="text-[11px] text-slate-400">Under 48 hrs delivery</span>
+                {/* Center glowing Play / Preview Circle (Sense motif) */}
+                <div className="relative z-10 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform text-[#121214]">
+                    <Play size={18} className="fill-[#121214] ml-0.5" />
                   </div>
                 </div>
+
+                {/* Bottom Floating White Pill Bar with Acid Lime Arrow Circle (Sense motif) */}
+                <Link
+                  to={track.link}
+                  className="relative z-10 flex items-center justify-between pl-4 pr-1.5 py-1.5 rounded-full bg-white text-[#121214] shadow-lg transition-all"
+                >
+                  <span className="font-black text-xs tracking-wider uppercase">{track.title}</span>
+                  <div className="w-7 h-7 rounded-full bg-[#D4F851] text-[#121214] flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ArrowUpRight size={15} />
+                  </div>
+                </Link>
+
+              </div>
+            ))}
+          </div>
+
+        </div>
+
+      </section>
+
+      {/* ============================================================ */}
+      {/* SECTION 2: SHINTA-INSPIRED HIGH-CONTRAST SPLIT HERO SECTION */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(112,80,200,0.08)] p-6 sm:p-10">
+          
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            
+            {/* Left High-Contrast Jet Black Card with Pink Ribbon Doodle (Shinta motif) */}
+            <div className="lg:col-span-5 rounded-[2rem] sm:rounded-[2.5rem] bg-[#121214] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden shadow-xl">
+              
+              {/* Playful Pink Ribbon Loop Doodle SVG (Shinta signature) */}
+              <svg 
+                className="w-28 h-20 mb-4" 
+                viewBox="0 0 140 100" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  d="M 20 80 C 10 30, 60 10, 80 40 C 95 65, 40 85, 30 50 C 20 20, 70 25, 120 30" 
+                  stroke="#FFA8D5" 
+                  strokeWidth="5" 
+                  strokeLinecap="round" 
+                  fill="none"
+                />
+              </svg>
+
+              <div className="space-y-4 my-auto">
+                <h3 className="text-3xl sm:text-4xl font-black tracking-tight leading-[1.15]">
+                  Let's grow through verified student talent!
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  CampusGigs helps regional clinics, bakeries, and retail brands create digital products that earn customer attention, drive engagement, and eliminate agency overhead.
+                </p>
               </div>
 
-              {/* Floating Second Card - Verification Showcase */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-[#111827] to-[#1a2333] border border-indigo-500/30 shadow-xl flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                    <GraduationCap size={20} />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <span>Institutional Talent Pool</span>
-                      <ShieldCheck size={13} className="text-emerald-400" />
-                    </div>
-                    <p className="text-[11px] text-slate-400">1,400+ Verified Students across Ludhiana & Punjab</p>
-                  </div>
-                </div>
-                <Link 
+              {/* Shinta Style Pill Button */}
+              <div className="pt-8">
+                <Link
                   to="/auth"
-                  className="px-3 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold flex items-center gap-1 shrink-0"
+                  className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-white text-[#121214] font-black text-xs sm:text-sm transition-transform hover:scale-[1.02]"
                 >
-                  Verify ID <ChevronRight size={12} />
+                  <span>Post a Micro-Task</span>
+                  <div className="w-8 h-8 rounded-full bg-[#FFA8D5] text-[#121214] flex items-center justify-center font-bold">
+                    <ArrowUpRight size={16} />
+                  </div>
                 </Link>
               </div>
 
             </div>
+
+            {/* Right Lifestyle Photography Card (Shinta motif) */}
+            <div className="lg:col-span-7 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-xl min-h-[350px] relative">
+              <img 
+                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=80" 
+                alt="Students collaborating" 
+                className="w-full h-full object-cover" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex items-end p-8">
+                <div className="text-white space-y-1">
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#D4F851] bg-black/60 px-3 py-1 rounded-full backdrop-blur-md">
+                    Campus Network
+                  </span>
+                  <p className="text-lg font-bold">Ludhiana & Punjab Academic Talent Pool</p>
+                  <p className="text-xs text-slate-200">1,400+ Verified Students actively bidding on 48hr - 2wk tasks.</p>
+                </div>
+              </div>
+            </div>
+
           </div>
 
         </div>
       </section>
 
-      {/* Three-Pillar Comparison Matrix Section */}
-      <section id="comparison" className="py-20 bg-[#0B0F1A]/90 border-y border-slate-800/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ============================================================ */}
+      {/* SECTION 3: THREE-PILLAR BENCHMARK COMPARISON MATRIX          */}
+      {/* ============================================================ */}
+      <section id="comparison" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(112,80,200,0.08)] p-6 sm:p-12 space-y-10">
           
-          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-950/50 border border-indigo-500/30 text-xs font-semibold text-indigo-300">
-              Direct Benchmark Matrix
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Why CampusGigs Beats Generic Freelance & Internship Portals
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="inline-block px-4 py-1 rounded-full bg-[#F3E8FF] text-purple-900 font-extrabold text-xs uppercase tracking-wider">
+              Three-Pillar Benchmark
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#121214] tracking-tight">
+              Why CampusGigs Outperforms Generic Platforms
             </h2>
-            <p className="text-sm sm:text-base text-slate-400">
-              Built specifically for the unit economics and fast turnaround needed by local SMEs and agile college builders.
+            <p className="text-xs sm:text-sm text-slate-600">
+              Contrasting our hyper-local, milestone-backed trust model against legacy freelance sites and long-term internship portals.
             </p>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[700px]">
+            <table className="w-full text-left border-collapse min-w-[650px]">
               <thead>
-                <tr className="border-b border-slate-800 text-xs font-bold uppercase tracking-wider text-slate-400">
-                  <th className="py-4 px-6">Comparison Vector</th>
-                  <th className="py-4 px-6 text-white bg-indigo-950/30 rounded-t-2xl border-x border-t border-indigo-500/30">
+                <tr className="border-b border-purple-100 text-xs font-black uppercase tracking-wider text-slate-400">
+                  <th className="py-4 px-6">Comparison Matrix</th>
+                  <th className="py-4 px-6 text-[#121214] bg-purple-50 rounded-t-3xl border-x border-t border-purple-200">
                     <div className="flex items-center gap-2">
-                      <span className="text-indigo-400 font-extrabold text-sm">CampusGigs (VeriGig)</span>
-                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">Purpose-Built</span>
+                      <span className="font-black text-sm">CampusGigs (VeriGig)</span>
+                      <span className="text-[10px] bg-[#D4F851] text-[#121214] font-extrabold px-2 py-0.5 rounded-full">Zero Bloat</span>
                     </div>
                   </th>
-                  <th className="py-4 px-6">Generic Platforms (Upwork, Fiverr)</th>
-                  <th className="py-4 px-6">Internship Portals (Internshala)</th>
+                  <th className="py-4 px-6">Generic Upwork / Fiverr</th>
+                  <th className="py-4 px-6">Internship Portals</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
+              <tbody className="divide-y divide-purple-50 text-xs font-medium text-slate-700">
                 
-                <tr className="hover:bg-slate-800/30 transition-colors">
-                  <td className="py-4 px-6 font-semibold text-white">Project Granularity & Speed</td>
-                  <td className="py-4 px-6 bg-indigo-950/20 border-x border-indigo-500/20 font-medium text-emerald-300">
+                <tr className="hover:bg-purple-50/40 transition-colors">
+                  <td className="py-4 px-6 font-bold text-slate-900">Task Scope & Velocity</td>
+                  <td className="py-4 px-6 bg-purple-50/70 border-x border-purple-200 font-bold text-purple-900">
                     48-hr to 2-week micro-gigs with discrete deliverables.
                   </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    Broad scope, hours of bid wars, high overseas noise.
-                  </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    Long 3-6 month full-time commitment requirement.
-                  </td>
+                  <td className="py-4 px-6 text-slate-500">Unbounded scope, endless bid wars, high bot friction.</td>
+                  <td className="py-4 px-6 text-slate-500">3-6 month mandatory corporate commitments.</td>
                 </tr>
 
-                <tr className="hover:bg-slate-800/30 transition-colors">
-                  <td className="py-4 px-6 font-semibold text-white">Identity & Trust Verification</td>
-                  <td className="py-4 px-6 bg-indigo-950/20 border-x border-indigo-500/20 font-medium text-emerald-300">
-                    Verified physical college IDs (PCTE, GNDEC) & SME business documents.
+                <tr className="hover:bg-purple-50/40 transition-colors">
+                  <td className="py-4 px-6 font-bold text-slate-900">Identity & Campus Trust</td>
+                  <td className="py-4 px-6 bg-purple-50/70 border-x border-purple-200 font-bold text-purple-900">
+                    Verified physical student IDs (PCTE, GNDEC) & SME business documents.
                   </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    Unverified accounts, bot bidders, fake agency fronts.
-                  </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    Basic resume upload without real skill/ID validation.
-                  </td>
+                  <td className="py-4 px-6 text-slate-500">Anonymous accounts, fake agencies, unvetted bids.</td>
+                  <td className="py-4 px-6 text-slate-500">Self-reported resumes without institutional check.</td>
                 </tr>
 
-                <tr className="hover:bg-slate-800/30 transition-colors">
-                  <td className="py-4 px-6 font-semibold text-white">Financial & Milestone Safety</td>
-                  <td className="py-4 px-6 bg-indigo-950/20 border-x border-indigo-500/20 font-medium text-emerald-300">
-                    Milestone-backed escrow payout released upon inspection sign-off.
+                <tr className="hover:bg-purple-50/40 transition-colors">
+                  <td className="py-4 px-6 font-bold text-slate-900">Escrow Security</td>
+                  <td className="py-4 px-6 bg-purple-50/70 border-x border-purple-200 font-bold text-purple-900">
+                    Milestone-backed escrow released upon employer sign-off.
                   </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    High 20%+ platform cut, confusing dispute arbitration.
-                  </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    Delayed monthly stipends; frequent unpaid internship abuse.
-                  </td>
+                  <td className="py-4 px-6 text-slate-500">Hefty 20%+ fee take, complex dispute arbitration.</td>
+                  <td className="py-4 px-6 text-slate-500">Frequent unpaid internship complaints and delayed stipends.</td>
                 </tr>
 
-                <tr className="hover:bg-slate-800/30 transition-colors">
-                  <td className="py-4 px-6 font-semibold text-white">Local Context & Proximity</td>
-                  <td className="py-4 px-6 bg-indigo-950/20 border-x border-indigo-500/20 font-medium text-emerald-300 rounded-b-2xl border-b border-indigo-500/30">
-                    Hyper-local. Students can visit the clinic, bakery, or store in person.
+                <tr className="hover:bg-purple-50/40 transition-colors">
+                  <td className="py-4 px-6 font-bold text-slate-900">Local Proximity</td>
+                  <td className="py-4 px-6 bg-purple-50/70 border-x border-b border-purple-200 font-bold text-purple-900 rounded-b-3xl">
+                    Hyper-local. Students can visit the clinic, bakery, or retail site in person.
                   </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    Remote-only, time zone friction, cultural disconnects.
-                  </td>
-                  <td className="py-4 px-6 text-slate-400">
-                    Often requires relocation or remote corporate grind.
-                  </td>
+                  <td className="py-4 px-6 text-slate-500">Remote only, time zone friction.</td>
+                  <td className="py-4 px-6 text-slate-500">Requires city relocation or corporate desk work.</td>
                 </tr>
 
               </tbody>
@@ -311,146 +385,141 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Live Micro-Gig Preview Feed Section */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/50 border border-emerald-500/30 text-xs font-semibold text-emerald-300 mb-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              Live Opportunities
+      {/* ============================================================ */}
+      {/* SECTION 4: LIVE MICRO-GIG EXPLORER FEED                     */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(112,80,200,0.08)] p-6 sm:p-12 space-y-8">
+          
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+                Active Contracts
+              </span>
+              <h2 className="text-3xl font-black text-[#121214] tracking-tight mt-2">
+                Live Micro-Gigs on Campus
+              </h2>
             </div>
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">
-              Featured Micro-Gigs on Campus
-            </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              Real projects waiting for immediate student proposals.
-            </p>
+
+            <Link
+              to="/app/student/explore"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 hover:text-purple-950"
+            >
+              <span>View all {gigs.length} micro-gigs</span>
+              <ArrowUpRight size={14} />
+            </Link>
           </div>
 
-          <Link
-            to="/app/student/explore"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-          >
-            <span>View all {gigs.length} open micro-gigs</span>
-            <ArrowUpRight size={14} />
-          </Link>
-        </div>
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                  selectedCategory === cat
+                    ? 'bg-[#121214] text-white shadow-md'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                {cat === 'All' ? '(All Categories)' : `(${cat})`}
+              </button>
+            ))}
+          </div>
 
-        {/* Category Pills (from reference images style) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat
-                  ? 'bg-indigo-600 text-white shadow-glow-indigo'
-                  : 'bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700'
-              }`}
-            >
-              {cat === 'All' ? '(All Categories)' : `(${cat})`}
-            </button>
-          ))}
-        </div>
-
-        {/* Gigs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGigs.slice(0, 6).map((gig) => (
-            <div 
-              key={gig.id}
-              className="p-6 rounded-3xl bg-[#111827]/70 backdrop-blur-md border border-slate-800 hover:border-indigo-500/40 hover:bg-[#151e33] transition-all flex flex-col justify-between group shadow-lg"
-            >
-              <div>
-                
-                {/* Header row */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-950/60 border border-indigo-500/30 text-indigo-300">
-                    {gig.category}
-                  </span>
-                  <div className="text-right">
-                    <span className="text-base font-extrabold text-white">₹{gig.totalBudget.toLocaleString()}</span>
-                    <span className="block text-[10px] text-slate-400 capitalize">{gig.paymentType} Escrow</span>
+          {/* Gigs Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredGigs.slice(0, 6).map((gig) => (
+              <div 
+                key={gig.id}
+                className="p-6 rounded-3xl bg-[#F8F6FE] border border-purple-100 hover:border-purple-300 transition-all flex flex-col justify-between group shadow-sm hover:shadow-md"
+              >
+                <div>
+                  {/* Category & Budget */}
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white text-purple-900 border border-purple-200">
+                      {gig.category}
+                    </span>
+                    <div className="text-right">
+                      <span className="text-base font-black text-[#121214]">₹{gig.totalBudget.toLocaleString()}</span>
+                      <span className="block text-[10px] text-slate-500 capitalize">{gig.paymentType} Escrow</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Title */}
-                <Link to={`/app/student/gig/${gig.id}`}>
-                  <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-2 mb-2 leading-snug">
-                    {gig.title}
-                  </h3>
-                </Link>
+                  {/* Title */}
+                  <Link to={`/app/student/gig/${gig.id}`}>
+                    <h3 className="text-base font-black text-[#121214] group-hover:text-purple-700 transition-colors line-clamp-2 mb-2 leading-snug">
+                      {gig.title}
+                    </h3>
+                  </Link>
 
-                <p className="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed">
-                  {gig.description}
-                </p>
+                  <p className="text-xs text-slate-600 line-clamp-2 mb-4 leading-relaxed font-normal">
+                    {gig.description}
+                  </p>
 
-                {/* Company & Proximity */}
-                <div className="space-y-1 mb-4 pb-4 border-b border-slate-800/80">
-                  <div className="flex items-center gap-1.5 text-xs font-medium text-slate-200">
-                    <Building2 size={13} className="text-slate-400" />
-                    <span>{gig.employerCompany}</span>
-                    {gig.employerVerified && (
-                      <TrustBadge type="sme" size="sm" text="Verified SME" />
+                  {/* Company */}
+                  <div className="space-y-1 mb-4 pb-4 border-b border-purple-200/60">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                      <Building2 size={13} className="text-slate-400" />
+                      <span>{gig.employerCompany}</span>
+                      {gig.employerVerified && (
+                        <TrustBadge type="sme" size="sm" text="Verified SME" />
+                      )}
+                    </div>
+                    {gig.campusProximity && (
+                      <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>{gig.campusProximity}</span>
+                      </div>
                     )}
                   </div>
-                  {gig.campusProximity && (
-                    <div className="text-[11px] text-emerald-400 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                      <span>{gig.campusProximity}</span>
+
+                  {/* Skills */}
+                  <div className="flex flex-wrap gap-1.5 mb-6">
+                    {gig.requiredSkills.slice(0, 3).map((skill, idx) => (
+                      <span key={idx} className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-white text-slate-700 border border-slate-200">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bottom Pill CTA */}
+                <div className="flex items-center justify-between pt-2">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                    <span className="flex items-center gap-1"><Clock size={12} /> {gig.targetDuration}</span>
+                    <span>•</span>
+                    <span>{gig.milestones.length} Milestones</span>
+                  </div>
+
+                  <Link
+                    to={`/app/student/gig/${gig.id}`}
+                    className="inline-flex items-center gap-1 pl-3.5 pr-1.5 py-1.5 rounded-full bg-[#121214] text-white text-xs font-bold hover:bg-slate-800 transition-all group/btn"
+                  >
+                    <span>Details</span>
+                    <div className="w-5 h-5 rounded-full bg-[#D4F851] text-[#121214] flex items-center justify-center font-bold">
+                      <ArrowUpRight size={12} />
                     </div>
-                  )}
-                </div>
-
-                {/* Skills tags */}
-                <div className="flex flex-wrap gap-1.5 mb-6">
-                  {gig.requiredSkills.slice(0, 3).map((skill, idx) => (
-                    <span key={idx} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700/60">
-                      {skill}
-                    </span>
-                  ))}
-                  {gig.requiredSkills.length > 3 && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-400">
-                      +{gig.requiredSkills.length - 3}
-                    </span>
-                  )}
+                  </Link>
                 </div>
 
               </div>
+            ))}
+          </div>
 
-              {/* Bottom Card Action (Directional Arrow Pill from design sample) */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex items-center gap-3 text-[11px] text-slate-400">
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} /> {gig.targetDuration}
-                  </span>
-                  <span>•</span>
-                  <span>{gig.milestones.length} Milestones</span>
-                </div>
-
-                <Link
-                  to={`/app/student/gig/${gig.id}`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white text-white hover:text-slate-950 text-xs font-semibold transition-all group/btn"
-                >
-                  <span>Details</span>
-                  <ArrowUpRight size={13} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                </Link>
-              </div>
-
-            </div>
-          ))}
         </div>
-
       </section>
 
-      {/* College Network Section */}
-      <section id="colleges" className="py-16 border-t border-slate-800/80 bg-[#090D16]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-6">
+      {/* ============================================================ */}
+      {/* SECTION 5: CAMPUS ECOSYSTEM NETWORK BADGES                   */}
+      {/* ============================================================ */}
+      <section id="colleges" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm space-y-5">
+          <div className="text-[11px] font-black uppercase tracking-widest text-slate-400">
             Connected Regional Academic Campuses
           </div>
           
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             {[
               'PCTE Group of Institutes (Ludhiana)',
               'GNDEC Engineering College',
@@ -461,46 +530,12 @@ export const LandingPage: React.FC = () => {
             ].map((campus, idx) => (
               <div 
                 key={idx}
-                className="px-4 py-2 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs font-medium text-slate-300 flex items-center gap-2 hover:border-slate-700 transition-colors"
+                className="px-4 py-2 rounded-full bg-purple-50 border border-purple-200 text-xs font-bold text-slate-800 flex items-center gap-2"
               >
-                <GraduationCap size={14} className="text-indigo-400" />
+                <GraduationCap size={15} className="text-purple-600" />
                 <span>{campus}</span>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Bottom Banner */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-[#102422] border border-indigo-500/30 relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-3 max-w-xl text-left">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 bg-indigo-950/80 px-3 py-1 rounded-full border border-indigo-500/30">
-              Ready to collaborate?
-            </span>
-            <h3 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Post a 48-hour micro-task or earn your first college escrow payout.
-            </h3>
-            <p className="text-sm text-slate-300">
-              Zero registration fees. Instant verification using student college ID card or business GSTIN.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-            <Link
-              to="/auth"
-              className="w-full sm:w-auto px-6 py-3 rounded-full bg-white hover:bg-slate-200 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-2"
-            >
-              <span>Student / SME Sign Up</span>
-              <ArrowUpRight size={14} />
-            </Link>
-            <Link
-              to="/app/employer/post-gig"
-              onClick={() => switchRole('employer')}
-              className="w-full sm:w-auto px-6 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-slate-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <span>Post a Micro-Gig ↗</span>
-            </Link>
           </div>
         </div>
       </section>

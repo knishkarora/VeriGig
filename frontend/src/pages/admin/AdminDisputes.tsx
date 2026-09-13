@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
 import { 
-  AlertTriangle, 
   ShieldAlert, 
   CheckCircle2, 
-  Clock, 
-  ArrowRight, 
   History, 
   RotateCcw, 
   Split, 
-  Check, 
   User, 
-  Building2,
-  FileText
+  Building2
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
-import { Dispute } from '../../types';
 
 export const AdminDisputes: React.FC = () => {
   const { disputes, resolveDispute } = useMarketplace();
@@ -41,30 +35,29 @@ export const AdminDisputes: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 text-left">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black text-white">Dispute & Escalation Desk</h1>
-            <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-950/60 text-amber-300 border border-amber-500/30">
-              Dispute Resolution Protocol
+            <h1 className="text-2xl sm:text-3xl font-black text-[#121214]">Dispute & Escalation Desk</h1>
+            <span className="text-xs font-black px-3 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+              Arbitration Protocol
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Independent arbitration for scope creep, non-responsive SME sign-offs, and requirement mismatches.
+          <p className="text-xs text-slate-500 font-medium mt-1">
+            Independent governance for scope mismatches and deliverable arbitration.
           </p>
         </div>
 
-        <div className="text-xs text-slate-400">
-          <span className="font-bold text-white text-base">{disputes.filter(d => d.status === 'open').length}</span> Active Disputes
+        <div className="text-xs font-bold text-slate-700 bg-amber-50 px-4 py-2 rounded-full border border-amber-200">
+          <span className="font-black text-[#121214] text-sm">{disputes.filter(d => d.status === 'open').length}</span> Active Cases
         </div>
       </div>
 
-      {/* Success Notification */}
       {successMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
+        <div className="p-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
           <CheckCircle2 size={16} />
           <span>{successMessage}</span>
         </div>
@@ -75,7 +68,7 @@ export const AdminDisputes: React.FC = () => {
         
         {/* Left: Flagged Disputes List */}
         <div className="lg:col-span-5 space-y-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">
+          <span className="text-xs font-black uppercase tracking-wider text-slate-400 block mb-2">
             Flagged Cases ({disputes.length})
           </span>
 
@@ -85,31 +78,31 @@ export const AdminDisputes: React.FC = () => {
               <div
                 key={disp.id}
                 onClick={() => setSelectedDisputeId(disp.id)}
-                className={`p-5 rounded-2xl border cursor-pointer transition-all ${
+                className={`p-5 rounded-[2rem] border cursor-pointer transition-all ${
                   isSelected
-                    ? 'bg-slate-800/90 border-amber-500/80 shadow-glow-indigo'
-                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
+                    ? 'bg-white border-amber-400 shadow-md ring-2 ring-amber-200'
+                    : 'bg-white/80 border-purple-100 hover:border-purple-200 hover:bg-white'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-950/60 text-rose-300 border border-rose-500/30">
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
                     Case {disp.id}
                   </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
+                  <span className={`text-[10px] font-black px-3 py-0.5 rounded-full capitalize ${
                     disp.status === 'resolved'
-                      ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-amber-950/60 text-amber-300 border border-amber-500/30'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      : 'bg-amber-100 text-amber-900 border border-amber-300'
                   }`}>
                     {disp.status}
                   </span>
                 </div>
 
-                <h4 className="text-xs font-bold text-white leading-snug">{disp.gigTitle}</h4>
-                <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{disp.reason}</p>
+                <h4 className="text-xs font-black text-[#121214] leading-snug">{disp.gigTitle}</h4>
+                <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 font-normal">{disp.reason}</p>
 
-                <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-400">Escrow in Dispute:</span>
-                  <span className="font-extrabold text-amber-400">₹{disp.amountInEscrow.toLocaleString()}</span>
+                <div className="mt-3 pt-2 border-t border-purple-100 flex items-center justify-between text-[11px] font-medium">
+                  <span className="text-slate-400">Escrow Value:</span>
+                  <span className="font-black text-amber-600">₹{disp.amountInEscrow.toLocaleString()}</span>
                 </div>
               </div>
             );
@@ -119,50 +112,48 @@ export const AdminDisputes: React.FC = () => {
         {/* Right: Chronological Audit Trail & Resolution Center */}
         <div className="lg:col-span-7">
           {selectedDispute && (
-            <div className="p-6 rounded-3xl bg-[#111827]/90 backdrop-blur-xl border border-slate-800 space-y-6">
+            <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-md space-y-6">
               
-              {/* Header */}
-              <div className="pb-4 border-b border-slate-800 space-y-2">
+              <div className="pb-4 border-b border-purple-100 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
                     <ShieldAlert size={14} /> Arbitration Dossier
                   </span>
-                  <span className="font-mono text-xs text-slate-400">Escrow Value: ₹{selectedDispute.amountInEscrow.toLocaleString()}</span>
+                  <span className="font-bold text-xs text-slate-700">Escrow Value: ₹{selectedDispute.amountInEscrow.toLocaleString()}</span>
                 </div>
-                <h3 className="text-base font-bold text-white">{selectedDispute.gigTitle}</h3>
-                <div className="grid grid-cols-2 gap-3 text-xs text-slate-400 pt-1">
+                <h3 className="text-lg font-black text-[#121214]">{selectedDispute.gigTitle}</h3>
+                <div className="grid grid-cols-2 gap-3 text-xs text-slate-500 pt-1 font-medium">
                   <div className="flex items-center gap-1.5">
-                    <User size={13} className="text-emerald-400" />
-                    <span>Student: <strong className="text-white">{selectedDispute.studentName}</strong></span>
+                    <User size={14} className="text-emerald-600" />
+                    <span>Student: <strong className="text-slate-900">{selectedDispute.studentName}</strong></span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Building2 size={13} className="text-indigo-400" />
-                    <span>Employer: <strong className="text-white">{selectedDispute.employerName}</strong></span>
+                    <Building2 size={14} className="text-purple-600" />
+                    <span>Employer: <strong className="text-slate-900">{selectedDispute.employerName}</strong></span>
                   </div>
                 </div>
               </div>
 
-              {/* Dispute Core Reason */}
-              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1 text-xs">
-                <span className="font-bold text-amber-300 block">Flagged Issue Summary:</span>
-                <p className="text-slate-300 leading-relaxed">{selectedDispute.reason}</p>
+              <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-1 text-xs">
+                <span className="font-black text-amber-950 block">Flagged Issue Summary:</span>
+                <p className="text-slate-700 leading-relaxed font-normal">{selectedDispute.reason}</p>
               </div>
 
               {/* Chronological Audit Log */}
               <div className="space-y-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <History size={14} /> Chronological Action Audit Trail
+                <span className="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <History size={14} /> Chronological Audit Trail
                 </span>
 
-                <div className="space-y-2.5 pl-2 border-l-2 border-slate-800">
+                <div className="space-y-3 pl-2 border-l-2 border-purple-200">
                   {selectedDispute.auditLog.map((log, idx) => (
                     <div key={idx} className="relative pl-4 text-xs space-y-0.5">
-                      <div className="absolute -left-[9px] top-1 w-2 h-2 rounded-full bg-indigo-500" />
-                      <div className="flex items-center justify-between text-slate-400 text-[10px]">
-                        <span className="font-bold text-slate-300">{log.actor} • {log.action}</span>
+                      <div className="absolute -left-[9px] top-1.5 w-2.5 h-2.5 rounded-full bg-purple-600 ring-2 ring-white" />
+                      <div className="flex items-center justify-between text-slate-500 text-[10px]">
+                        <span className="font-black text-slate-900">{log.actor} • {log.action}</span>
                         <span>{log.timestamp}</span>
                       </div>
-                      <p className="text-slate-300">{log.detail}</p>
+                      <p className="text-slate-600 font-normal">{log.detail}</p>
                     </div>
                   ))}
                 </div>
@@ -170,13 +161,13 @@ export const AdminDisputes: React.FC = () => {
 
               {/* Resolution Actions */}
               {selectedDispute.status === 'open' ? (
-                <div className="space-y-4 pt-4 border-t border-slate-800">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                <div className="space-y-4 pt-4 border-t border-purple-100">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-400 block">
                     Arbitration Verdict
                   </span>
 
                   <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
                       Arbitrator Official Findings / Settlement Note
                     </label>
                     <input
@@ -184,7 +175,7 @@ export const AdminDisputes: React.FC = () => {
                       value={resolutionNote}
                       onChange={(e) => setResolutionNote(e.target.value)}
                       placeholder="e.g. Scope analysis confirms deliverables met 100% of agreed criteria..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214] font-medium"
                     />
                   </div>
 
@@ -192,37 +183,37 @@ export const AdminDisputes: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleResolve('release_student')}
-                      className="py-2.5 px-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-glow-emerald transition-all flex items-center justify-center gap-1.5"
+                      className="py-3 px-3 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-sm transition-all flex items-center justify-center gap-1.5"
                     >
-                      <CheckCircle2 size={13} />
-                      <span>Release to Student</span>
+                      <CheckCircle2 size={14} className="text-[#D4F851]" />
+                      <span>Release Student</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleResolve('split_payout')}
-                      className="py-2.5 px-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-glow-indigo transition-all flex items-center justify-center gap-1.5"
+                      className="py-3 px-3 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-900 text-xs font-black transition-all flex items-center justify-center gap-1.5"
                     >
-                      <Split size={13} />
-                      <span>Split Payout (50/50)</span>
+                      <Split size={14} />
+                      <span>Split (50/50)</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleResolve('refund_employer')}
-                      className="py-2.5 px-3 rounded-full bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-semibold transition-all flex items-center justify-center gap-1.5"
+                      className="py-3 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-black transition-all flex items-center justify-center gap-1.5"
                     >
-                      <RotateCcw size={13} />
-                      <span>Refund to SME</span>
+                      <RotateCcw size={14} />
+                      <span>Refund SME</span>
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-xs space-y-1">
-                  <span className="font-bold text-emerald-300 flex items-center gap-1.5">
-                    <CheckCircle2 size={14} /> Case Settled
+                <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-300 text-xs space-y-1">
+                  <span className="font-black text-emerald-900 flex items-center gap-1.5">
+                    <CheckCircle2 size={15} /> Case Settled
                   </span>
-                  <p className="text-slate-300">{selectedDispute.resolutionSummary}</p>
+                  <p className="text-slate-700 font-medium">{selectedDispute.resolutionSummary}</p>
                   <span className="text-[10px] text-slate-500 block">Settled At: {selectedDispute.resolvedAt}</span>
                 </div>
               )}
