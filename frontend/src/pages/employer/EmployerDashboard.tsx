@@ -53,69 +53,71 @@ export const EmployerDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Active Task Listings
-            </span>
-            <span className="text-3xl font-black text-[#121214] mt-1 block">
+      {/* SME Operational Telemetry Deck */}
+      <div className="p-6 sm:p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+          
+          <div className="sm:px-4 first:pl-0">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Active Listings
+              </span>
+              <div className="p-2 rounded-xl bg-slate-100 text-slate-800">
+                <Layers size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               {myGigs.length}
-            </span>
-            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">Live on campus feeds</span>
+            </div>
+            <div className="text-[11px] text-emerald-700 font-bold mt-1">Live on campus feeds</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-slate-100 text-slate-700">
-            <Layers size={24} />
-          </div>
-        </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Student Applicants
-            </span>
-            <span className="text-3xl font-black text-purple-900 mt-1 block">
+          <div className="pt-4 sm:pt-0 sm:px-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Student Applicants
+              </span>
+              <div className="p-2 rounded-xl bg-slate-100 text-slate-800">
+                <Users size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               {totalApplicants}
-            </span>
-            <span className="text-[10px] text-slate-500 font-medium mt-1 block">From PCTE & GNDEC</span>
+            </div>
+            <div className="text-[11px] text-slate-500 font-semibold mt-1">From PCTE & GNDEC</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-purple-50 text-purple-700">
-            <Users size={24} />
-          </div>
-        </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Pending Review
-            </span>
-            <span className="text-3xl font-black text-amber-600 mt-1 block">
+          <div className="pt-4 sm:pt-0 sm:px-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Pending Review
+              </span>
+              <div className="p-2 rounded-xl bg-amber-50 text-amber-700">
+                <Clock size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               {pendingDeliverables.length}
-            </span>
-            <span className="text-[10px] text-amber-700 font-bold mt-1 block">Deliverable inspection ready</span>
+            </div>
+            <div className="text-[11px] text-amber-700 font-bold mt-1">Deliverables ready for inspection</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-amber-50 text-amber-600">
-            <Clock size={24} />
-          </div>
-        </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              SME Escrow Vault
-            </span>
-            <span className="text-3xl font-black text-emerald-800 mt-1 block">
+          <div className="pt-4 sm:pt-0 sm:pl-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                SME Escrow Vault
+              </span>
+              <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
+                <Wallet size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               ₹{currentUser.balance.toLocaleString()}
-            </span>
-            <span className="text-[10px] text-slate-500 font-medium mt-1 block">Funded for milestones</span>
+            </div>
+            <div className="text-[11px] text-emerald-700 font-bold mt-1">Funded & secured</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-700">
-            <Wallet size={24} />
-          </div>
-        </div>
 
+        </div>
       </div>
 
       {/* Pending Deliverables Urgent Callout */}
@@ -126,7 +128,7 @@ export const EmployerDashboard: React.FC = () => {
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
               <h3 className="text-base font-black text-amber-950">Student Deliverables Awaiting Sign-Off</h3>
             </div>
-            <span className="text-xs text-amber-900 font-extrabold bg-white px-3 py-1 rounded-full shadow-sm">
+            <span className="text-xs text-amber-900 font-extrabold bg-white px-3 py-1 rounded-full shadow-sm tabular-nums">
               {pendingDeliverables.length} Ready for Inspection
             </span>
           </div>
@@ -135,13 +137,13 @@ export const EmployerDashboard: React.FC = () => {
             {pendingDeliverables.map(({ gig, milestone }) => (
               <div key={milestone.id} className="p-5 rounded-2xl bg-white border border-amber-200 shadow-sm flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-xs font-black text-[#121214]">{milestone.title}</h4>
+                  <h4 className="text-xs font-black text-[#101014]">{milestone.title}</h4>
                   <p className="text-[11px] text-slate-500">{gig.title} • Assignee: {gig.hiredStudentName}</p>
-                  <span className="text-xs font-black text-emerald-800 mt-1 block">₹{milestone.amount.toLocaleString()} Escrow Release</span>
+                  <span className="text-xs font-black text-emerald-800 mt-1 block font-mono tabular-nums">₹{milestone.amount.toLocaleString()} Escrow Release</span>
                 </div>
                 <Link
                   to={`/app/employer/workspace/${gig.id}`}
-                  className="px-5 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#121214] text-xs font-black shadow-sm transition-all shrink-0"
+                  className="px-5 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] text-xs font-black shadow-sm transition-all shrink-0"
                 >
                   Inspect & Sign-Off
                 </Link>
@@ -154,28 +156,28 @@ export const EmployerDashboard: React.FC = () => {
       {/* Active Listings Grid */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black text-[#121214]">Your Posted Micro-Gigs</h2>
-          <span className="text-xs text-slate-400 font-bold">{myGigs.length} Active Listings</span>
+          <h2 className="text-xl font-black text-[#101014]">Your Posted Micro-Gigs</h2>
+          <span className="text-xs text-slate-500 font-bold tabular-nums">{myGigs.length} Active Listings</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {myGigs.map((gig) => (
-            <div key={gig.id} className="p-8 rounded-[2.5rem] bg-white border border-purple-100 shadow-sm hover:shadow-md transition-all space-y-5">
+            <div key={gig.id} className="p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm hover:shadow-md transition-all space-y-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-purple-900 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-800 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
                     {gig.category}
                   </span>
-                  <h3 className="text-lg font-black text-[#121214] mt-2">{gig.title}</h3>
+                  <h3 className="text-lg font-black text-[#101014] mt-2">{gig.title}</h3>
                   <p className="text-xs text-slate-500 font-medium">{gig.locationScope} • {gig.targetDuration}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-black text-[#121214]">₹{gig.totalBudget.toLocaleString()}</span>
+                  <span className="text-lg font-black text-[#101014] font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
                   <span className="text-[11px] text-slate-400 block">{gig.milestones.length} Milestones</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100 text-xs space-y-2">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-2">
                 <div className="flex items-center justify-between text-slate-700">
                   <span className="font-bold">Contract State:</span>
                   <span className="font-black text-emerald-800 capitalize">{gig.status.replace('_', ' ')}</span>
@@ -183,15 +185,15 @@ export const EmployerDashboard: React.FC = () => {
                 {gig.hiredStudentName && (
                   <div className="flex items-center justify-between text-slate-700">
                     <span className="font-bold">Assigned Student:</span>
-                    <span className="text-[#121214] font-black">{gig.hiredStudentName}</span>
+                    <span className="text-[#101014] font-black">{gig.hiredStudentName}</span>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                 <Link
                   to={`/app/employer/gig/${gig.id}/applicants`}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors tabular-nums"
                 >
                   <Users size={13} />
                   <span>Applicants ({gig.applicantsCount})</span>
@@ -199,7 +201,7 @@ export const EmployerDashboard: React.FC = () => {
 
                 <Link
                   to={`/app/employer/workspace/${gig.id}`}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-sm transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black shadow-sm transition-all"
                 >
                   <span>Workspace</span>
                   <ChevronRight size={14} />

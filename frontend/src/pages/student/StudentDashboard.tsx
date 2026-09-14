@@ -24,10 +24,10 @@ export const StudentDashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
       
       {/* Top Banner */}
-      <div className="p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(100,65,180,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-3xl font-black text-[#121214]">Welcome back, {currentUser.name}</h1>
+            <h1 className="text-3xl font-black text-[#101014]">Welcome back, {currentUser.name}</h1>
             <TrustBadge type="student" text="Verified PCTE Student" size="sm" />
           </div>
           <p className="text-xs text-slate-500 font-medium">
@@ -38,10 +38,10 @@ export const StudentDashboard: React.FC = () => {
         <div className="flex items-center gap-3">
           <Link
             to="/app/student/explore"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
           >
             <span>Browse Micro-Gigs</span>
-            <div className="w-5 h-5 rounded-full bg-[#D4F851] text-[#121214] flex items-center justify-center font-bold">
+            <div className="w-5 h-5 rounded-full bg-[#D4F851] text-[#101014] flex items-center justify-center font-bold">
               <ArrowUpRight size={13} />
             </div>
           </Link>
@@ -54,73 +54,75 @@ export const StudentDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
-        {/* Total Earned */}
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Wallet Balance
-            </span>
-            <span className="text-3xl font-black text-[#121214] mt-1 block">
+      {/* Financial & Performance Telemetry Deck (Replacing repetitive 4-card row) */}
+      <div className="p-6 sm:p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+          
+          {/* Wallet Balance */}
+          <div className="sm:px-4 first:pl-0">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Available Wallet
+              </span>
+              <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
+                <Wallet size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               ₹{currentUser.balance.toLocaleString()}
-            </span>
-            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">Instant UPI payout ready</span>
+            </div>
+            <div className="text-[11px] text-emerald-700 font-bold mt-1">Instant UPI Payout Ready</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-700">
-            <Wallet size={24} />
-          </div>
-        </div>
 
-        {/* Escrow Active */}
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Active Milestone Escrow
-            </span>
-            <span className="text-3xl font-black text-purple-900 mt-1 block">
+          {/* Active Escrow */}
+          <div className="pt-4 sm:pt-0 sm:px-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Protected Escrow
+              </span>
+              <div className="p-2 rounded-xl bg-slate-100 text-slate-800">
+                <Sparkles size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               ₹5,000
-            </span>
-            <span className="text-[10px] text-purple-600 font-bold mt-1 block">Locked & protected</span>
+            </div>
+            <div className="text-[11px] text-slate-500 font-semibold mt-1">Locked in active milestone</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-purple-50 text-purple-700">
-            <Sparkles size={24} />
-          </div>
-        </div>
 
-        {/* Completed */}
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Completed Gigs
-            </span>
-            <span className="text-3xl font-black text-[#121214] mt-1 block">
+          {/* Completed Gigs */}
+          <div className="pt-4 sm:pt-0 sm:px-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Completed Deliverables
+              </span>
+              <div className="p-2 rounded-xl bg-slate-100 text-slate-800">
+                <CheckCircle2 size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               {currentUser.completedGigs}
-            </span>
-            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">100% On-time track record</span>
+            </div>
+            <div className="text-[11px] text-emerald-700 font-bold mt-1">100% On-time completion</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-slate-100 text-slate-700">
-            <CheckCircle2 size={24} />
-          </div>
-        </div>
 
-        {/* Trust score */}
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              SME Trust Score
-            </span>
-            <span className="text-3xl font-black text-amber-600 mt-1 block">
-              ⭐ {currentUser.rating}
-            </span>
-            <span className="text-[10px] text-slate-400 font-medium mt-1 block">9 verified reviews</span>
+          {/* Trust Score */}
+          <div className="pt-4 sm:pt-0 sm:pl-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                SME Trust Score
+              </span>
+              <div className="p-2 rounded-xl bg-amber-50 text-amber-700">
+                <TrendingUp size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
+              {currentUser.rating} <span className="text-base font-normal text-slate-400">/ 5.0</span>
+            </div>
+            <div className="text-[11px] text-slate-500 font-semibold mt-1">9 verified client endorsements</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-amber-50 text-amber-600">
-            <TrendingUp size={24} />
-          </div>
-        </div>
 
+        </div>
       </div>
 
       {/* Main Two-Column Layout */}
@@ -129,11 +131,11 @@ export const StudentDashboard: React.FC = () => {
         {/* Left Column: Active Gigs Workspace */}
         <div className="lg:col-span-8 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-[#121214] flex items-center gap-2">
-              <Layers size={20} className="text-purple-600" />
+            <h2 className="text-xl font-black text-[#101014] flex items-center gap-2">
+              <Layers size={20} className="text-slate-700" />
               <span>Active Contracts in Progress</span>
             </h2>
-            <span className="text-xs text-slate-400 font-bold">{activeGigs.length} Ongoing</span>
+            <span className="text-xs text-slate-500 font-bold">{activeGigs.length} Ongoing</span>
           </div>
 
           {activeGigs.map((gig) => {
@@ -141,42 +143,42 @@ export const StudentDashboard: React.FC = () => {
             return (
               <div 
                 key={gig.id}
-                className="p-8 rounded-[2.5rem] bg-white border border-purple-100 shadow-sm hover:shadow-md transition-all space-y-5"
+                className="p-8 rounded-[2.5rem] bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all space-y-5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                       In Progress
                     </span>
-                    <h3 className="text-xl font-black text-[#121214] mt-2">{gig.title}</h3>
+                    <h3 className="text-xl font-black text-[#101014] mt-2">{gig.title}</h3>
                     <p className="text-xs text-slate-500 font-medium">{gig.employerCompany} • {gig.locationScope}</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <span className="text-xl font-black text-[#121214]">₹{gig.totalBudget.toLocaleString()}</span>
+                    <span className="text-xl font-black text-[#101014] font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
                     <span className="text-[11px] text-slate-400 block">{gig.milestones.length} Milestones</span>
                   </div>
                 </div>
 
                 {/* Current Active Milestone Card */}
-                <div className="p-5 rounded-2xl bg-purple-50/60 border border-purple-200/80 space-y-2">
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-extrabold text-purple-950">
+                    <span className="font-extrabold text-[#101014]">
                       Active Stage: {activeMs.title}
                     </span>
                     <span className={`text-[11px] font-black px-3 py-0.5 rounded-full ${
                       activeMs.status === 'under_review'
                         ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                        : 'bg-white text-purple-900 border border-purple-200 shadow-sm'
+                        : 'bg-white text-slate-900 border border-slate-200 shadow-sm'
                     }`}>
                       {activeMs.status === 'under_review' ? 'Pending SME Sign-Off' : 'In Progress'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed">{activeMs.description}</p>
-                  <div className="flex items-center justify-between pt-2 border-t border-purple-200/60 text-[11px]">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[11px]">
                     <span className="flex items-center gap-1 text-slate-600 font-medium">
                       <Clock size={12} /> Target: {activeMs.deadline}
                     </span>
-                    <span className="font-black text-emerald-800">Escrow Release: ₹{activeMs.amount.toLocaleString()}</span>
+                    <span className="font-black text-emerald-800 font-mono tabular-nums">Escrow Release: ₹{activeMs.amount.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -186,7 +188,7 @@ export const StudentDashboard: React.FC = () => {
                   </span>
                   <Link
                     to={`/app/student/workspace/${gig.id}`}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black transition-all shadow-sm"
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black transition-all shadow-sm"
                   >
                     <span>Open Workspace</span>
                     <ChevronRight size={14} />
@@ -198,17 +200,19 @@ export const StudentDashboard: React.FC = () => {
 
           {/* Submitted Proposals Tracker */}
           <div className="pt-4 space-y-4">
-            <h2 className="text-base font-black text-[#121214] flex items-center gap-2">
-              <FileText size={18} className="text-purple-600" />
+            <h2 className="text-base font-black text-[#101014] flex items-center gap-2">
+              <FileText size={18} className="text-slate-700" />
               <span>My Submitted Proposals</span>
             </h2>
 
             <div className="space-y-3">
               {myProposals.map((prop) => (
-                <div key={prop.id} className="p-5 rounded-2xl bg-white border border-purple-100 shadow-sm flex items-center justify-between gap-4">
+                <div key={prop.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-black text-slate-900 block">Bid: ₹{prop.bidAmount.toLocaleString()} in {prop.deliveryTimeDays} days</span>
-                    <span className="text-xs text-slate-500 line-clamp-1">{prop.coverNote}</span>
+                    <span className="text-xs font-black text-slate-900 block font-mono tabular-nums">
+                      Bid: ₹{prop.bidAmount.toLocaleString()} in {prop.deliveryTimeDays} days
+                    </span>
+                    <span className="text-xs text-slate-500 line-clamp-1 mt-0.5">{prop.coverNote}</span>
                   </div>
                   <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shrink-0 ${
                     prop.status === 'hired'
@@ -229,9 +233,9 @@ export const StudentDashboard: React.FC = () => {
         {/* Right Column: Recommendations & Local Campus Feed */}
         <div className="lg:col-span-4 space-y-6">
           
-          <div className="p-7 rounded-[2.5rem] bg-white border border-purple-100 shadow-sm space-y-4">
-            <h3 className="text-sm font-black text-[#121214] flex items-center gap-2">
-              <Sparkles size={16} className="text-purple-600" />
+          <div className="p-7 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm space-y-4">
+            <h3 className="text-sm font-black text-[#101014] flex items-center gap-2">
+              <Sparkles size={16} className="text-slate-700" />
               <span>Recommended for You</span>
             </h3>
 
@@ -240,13 +244,13 @@ export const StudentDashboard: React.FC = () => {
                 <Link
                   key={recGig.id}
                   to={`/app/student/gig/${recGig.id}`}
-                  className="block p-4 rounded-2xl bg-slate-50 hover:bg-purple-50/70 border border-slate-200/80 transition-all group"
+                  className="block p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 transition-all group"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-black text-purple-700 uppercase">{recGig.category}</span>
-                    <span className="text-xs font-black text-[#121214]">₹{recGig.totalBudget.toLocaleString()}</span>
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">{recGig.category}</span>
+                    <span className="text-xs font-black text-[#101014] font-mono tabular-nums">₹{recGig.totalBudget.toLocaleString()}</span>
                   </div>
-                  <h4 className="text-xs font-bold text-slate-900 group-hover:text-purple-900 transition-colors line-clamp-1">
+                  <h4 className="text-xs font-bold text-slate-900 group-hover:underline transition-colors line-clamp-1">
                     {recGig.title}
                   </h4>
                   <p className="text-[11px] text-slate-500 mt-1 font-medium">{recGig.employerCompany} • {recGig.targetDuration}</p>
@@ -263,18 +267,18 @@ export const StudentDashboard: React.FC = () => {
           </div>
 
           {/* Verification Badge Status Card */}
-          <div className="p-7 rounded-[2.5rem] bg-gradient-to-br from-emerald-50 to-purple-50 border border-emerald-200 space-y-3">
+          <div className="p-7 rounded-[2.5rem] bg-white border border-emerald-200/80 shadow-sm space-y-3">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold">
                 <CheckCircle2 size={18} />
               </div>
               <div>
-                <h4 className="text-xs font-black text-[#121214]">College ID Verified</h4>
+                <h4 className="text-xs font-black text-[#101014]">College ID Verified</h4>
                 <p className="text-[11px] text-emerald-800 font-bold">PCTE Group of Institutes</p>
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Your verified student credential gives you priority ranking on local SME proposal queues.
+              Your verified student credential gives you priority ranking on local SME proposal queues and instant milestone escrow release.
             </p>
           </div>
 

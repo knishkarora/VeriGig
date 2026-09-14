@@ -53,15 +53,15 @@ export const GigExplore: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
       
       {/* Header */}
-      <div className="p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(100,65,180,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-[#121214] tracking-tight">Explore Campus Micro-Gigs</h1>
+          <h1 className="text-3xl font-black text-[#101014] tracking-tight">Explore Campus Micro-Gigs</h1>
           <p className="text-xs text-slate-500 font-medium mt-1">
             Browse task-based deliverables from verified local SMEs, clinics, and studios.
           </p>
         </div>
-        <div className="text-xs font-bold text-slate-600 bg-purple-50 px-4 py-2 rounded-full border border-purple-200">
-          Showing <strong className="text-[#121214]">{filteredGigs.length}</strong> available micro-gigs
+        <div className="text-xs font-bold text-slate-800 bg-slate-100 px-4 py-2 rounded-full border border-slate-200 tabular-nums">
+          Showing <strong className="text-[#101014]">{filteredGigs.length}</strong> available micro-gigs
         </div>
       </div>
 
@@ -76,7 +76,7 @@ export const GigExplore: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search micro-gigs by title, skill (React, Figma, Reels), or business name..."
-            className="w-full pl-12 pr-4 py-3 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#121214] font-medium transition-colors"
+            className="w-full pl-12 pr-4 py-3 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#101014] font-medium transition-colors"
           />
         </div>
 
@@ -88,17 +88,17 @@ export const GigExplore: React.FC = () => {
               onClick={() => setCategoryFilter(cat)}
               className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 categoryFilter === cat
-                  ? 'bg-[#121214] text-white shadow-md'
+                  ? 'bg-[#101014] text-white shadow-md'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              {cat === 'All' ? '(All Categories)' : `(${cat})`}
+              {cat === 'All' ? 'All Categories' : cat}
             </button>
           ))}
         </div>
 
         {/* Dropdown Filters Row */}
-        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-purple-100 text-xs">
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100 text-xs">
           
           <div className="flex items-center gap-1.5 text-slate-600 font-bold">
             <SlidersHorizontal size={14} />
@@ -108,7 +108,7 @@ export const GigExplore: React.FC = () => {
           <select
             value={durationFilter}
             onChange={(e) => setDurationFilter(e.target.value)}
-            className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold focus:outline-none focus:border-[#121214]"
+            className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold focus:outline-none focus:border-[#101014]"
           >
             <option value="All">All Durations</option>
             <option value="Under 48 hrs">Under 48 hrs</option>
@@ -119,7 +119,7 @@ export const GigExplore: React.FC = () => {
           <select
             value={locationFilter}
             onChange={(e) => setLocationFilter(e.target.value)}
-            className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold focus:outline-none focus:border-[#121214]"
+            className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold focus:outline-none focus:border-[#101014]"
           >
             <option value="All">All Locations</option>
             <option value="Hyper-local (On-Campus)">Hyper-local (Campus proximity)</option>
@@ -130,7 +130,7 @@ export const GigExplore: React.FC = () => {
           <select
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value)}
-            className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold focus:outline-none focus:border-[#121214]"
+            className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-slate-800 text-xs font-semibold focus:outline-none focus:border-[#101014]"
           >
             <option value="All">All Escrow Types</option>
             <option value="milestone">Milestone Escrow</option>
@@ -140,9 +140,10 @@ export const GigExplore: React.FC = () => {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 text-slate-600 hover:text-black font-bold text-xs px-3 py-1.5 rounded-full bg-slate-100 transition-colors ml-auto"
+              className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors ml-auto"
             >
-              <X size={13} /> Clear filters
+              <X size={12} />
+              <span>Clear Filters</span>
             </button>
           )}
 
@@ -152,15 +153,15 @@ export const GigExplore: React.FC = () => {
 
       {/* Gigs Feed Grid */}
       {filteredGigs.length === 0 ? (
-        <div className="py-20 text-center rounded-[2.5rem] bg-white border border-purple-100 shadow-sm space-y-3">
-          <Layers size={36} className="mx-auto text-purple-300" />
-          <h3 className="text-base font-black text-[#121214]">No micro-gigs matched your criteria</h3>
+        <div className="py-20 text-center rounded-[2.5rem] bg-white border border-slate-200 shadow-sm space-y-3">
+          <Layers size={36} className="mx-auto text-slate-300" />
+          <h3 className="text-base font-black text-[#101014]">No micro-gigs matched your criteria</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
             Try loosening your filters or clearing the search keyword.
           </p>
           <button
             onClick={clearFilters}
-            className="px-5 py-2.5 rounded-full bg-[#121214] text-white text-xs font-bold shadow-sm"
+            className="px-5 py-2.5 rounded-full bg-[#101014] text-white text-xs font-bold shadow-sm"
           >
             Reset All Filters
           </button>
@@ -170,24 +171,24 @@ export const GigExplore: React.FC = () => {
           {filteredGigs.map((gig) => (
             <div 
               key={gig.id}
-              className="p-6 rounded-[2rem] bg-white border border-purple-100 hover:border-purple-300 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+              className="p-6 rounded-[2rem] bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-xl shadow-sm transition-all flex flex-col justify-between group"
             >
               <div>
                 
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <span className="px-3 py-1 rounded-full text-[11px] font-black bg-purple-50 text-purple-900 border border-purple-200">
+                  <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
                     {gig.category}
                   </span>
                   <div className="text-right">
-                    <span className="text-base font-black text-[#121214]">₹{gig.totalBudget.toLocaleString()}</span>
+                    <span className="text-base font-black text-[#101014] font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
                     <span className="block text-[10px] text-slate-500 capitalize">{gig.paymentType} Escrow</span>
                   </div>
                 </div>
 
                 {/* Title */}
                 <Link to={`/app/student/gig/${gig.id}`}>
-                  <h3 className="text-base font-black text-[#121214] group-hover:text-purple-700 transition-colors line-clamp-2 mb-2 leading-snug">
+                  <h3 className="text-base font-bold text-[#101014] group-hover:underline transition-colors line-clamp-2 mb-2 leading-snug">
                     {gig.title}
                   </h3>
                 </Link>
@@ -197,7 +198,7 @@ export const GigExplore: React.FC = () => {
                 </p>
 
                 {/* Company & Proximity */}
-                <div className="space-y-1 mb-4 pb-4 border-b border-purple-100">
+                <div className="space-y-1 mb-4 pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                     <Building2 size={13} className="text-slate-400" />
                     <span>{gig.employerCompany}</span>
@@ -216,7 +217,7 @@ export const GigExplore: React.FC = () => {
                 {/* Skills tags */}
                 <div className="flex flex-wrap gap-1.5 mb-6">
                   {gig.requiredSkills.map((skill, idx) => (
-                    <span key={idx} className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700">
+                    <span key={idx} className="text-[10px] font-semibold px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
                       {skill}
                     </span>
                   ))}
@@ -225,7 +226,7 @@ export const GigExplore: React.FC = () => {
               </div>
 
               {/* Bottom Card Action */}
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                 <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
                   <span className="flex items-center gap-1">
                     <Clock size={12} /> {gig.targetDuration}
@@ -236,10 +237,10 @@ export const GigExplore: React.FC = () => {
 
                 <Link
                   to={`/app/student/gig/${gig.id}`}
-                  className="inline-flex items-center gap-1.5 pl-4 pr-1.5 py-1.5 rounded-full bg-[#121214] text-white text-xs font-bold hover:bg-slate-800 transition-all group/btn shadow-sm"
+                  className="inline-flex items-center gap-1.5 pl-4 pr-1.5 py-1.5 rounded-full bg-[#101014] text-white text-xs font-bold hover:bg-slate-800 transition-all group/btn shadow-sm"
                 >
                   <span>Apply</span>
-                  <div className="w-5 h-5 rounded-full bg-[#D4F851] text-[#121214] flex items-center justify-center font-bold">
+                  <div className="w-5 h-5 rounded-full bg-[#D4F851] text-[#101014] flex items-center justify-center font-bold">
                     <ArrowUpRight size={12} />
                   </div>
                 </Link>

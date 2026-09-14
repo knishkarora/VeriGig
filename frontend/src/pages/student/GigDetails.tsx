@@ -104,7 +104,7 @@ export const GigDetails: React.FC = () => {
 
         <div className="text-left md:text-right shrink-0">
           <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider">Total Escrow Budget</span>
-          <span className="text-3xl sm:text-4xl font-black text-[#121214] block">₹{gig.totalBudget.toLocaleString()}</span>
+          <span className="text-3xl sm:text-4xl font-black text-[#101014] block font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
           <span className="text-[11px] text-slate-500 font-medium block">{gig.paymentType === 'milestone' ? 'Split into Milestones' : 'Single Payout'}</span>
           
           <div className="mt-4">
@@ -115,7 +115,7 @@ export const GigDetails: React.FC = () => {
             ) : gig.status === 'in_progress' ? (
               <Link 
                 to={`/app/student/workspace/${gig.id}`}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#121214] text-white text-xs font-black shadow-md transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#101014] text-white text-xs font-black shadow-md transition-all"
               >
                 <span>Open Active Workspace</span>
                 <ChevronRight size={14} />
@@ -123,10 +123,10 @@ export const GigDetails: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsDrawerOpen(true)}
-                className="inline-flex items-center gap-2 pl-6 pr-2 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#121214] text-xs font-black shadow-md transition-all group"
+                className="inline-flex items-center gap-2 pl-6 pr-2 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] text-xs font-black shadow-md transition-all group"
               >
                 <span>Submit Proposal</span>
-                <div className="w-7 h-7 rounded-full bg-[#121214] text-white flex items-center justify-center font-bold">
+                <div className="w-7 h-7 rounded-full bg-[#101014] text-white flex items-center justify-center font-bold">
                   <ArrowUpRight size={14} />
                 </div>
               </button>
@@ -141,16 +141,16 @@ export const GigDetails: React.FC = () => {
         {/* Left Column: Scope & Deliverables */}
         <div className="lg:col-span-7 space-y-6">
           
-          <div className="p-8 rounded-[2rem] bg-white border border-purple-100 shadow-sm space-y-4">
-            <h2 className="text-lg font-black text-[#121214]">Project Scope & SME Requirements</h2>
+          <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-4">
+            <h2 className="text-lg font-black text-[#101014]">Project Scope & SME Requirements</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
               {gig.description}
             </p>
           </div>
 
-          <div className="p-8 rounded-[2rem] bg-white border border-purple-100 shadow-sm space-y-4">
-            <h2 className="text-lg font-black text-[#121214] flex items-center gap-2">
-              <FileCheck size={20} className="text-purple-600" />
+          <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-4">
+            <h2 className="text-lg font-black text-[#101014] flex items-center gap-2">
+              <FileCheck size={20} className="text-slate-700" />
               <span>Concrete Deliverables Expected</span>
             </h2>
             <ul className="space-y-3">
@@ -163,8 +163,8 @@ export const GigDetails: React.FC = () => {
             </ul>
           </div>
 
-          <div className="p-8 rounded-[2rem] bg-white border border-purple-100 shadow-sm space-y-4">
-            <h2 className="text-lg font-black text-[#121214]">Skill Prerequisites & Preferred Campuses</h2>
+          <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-4">
+            <h2 className="text-lg font-black text-[#101014]">Skill Prerequisites & Preferred Campuses</h2>
             
             <div className="space-y-4">
               <div>
@@ -186,7 +186,7 @@ export const GigDetails: React.FC = () => {
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {gig.preferredColleges.map((col, idx) => (
-                    <span key={idx} className="px-3.5 py-1.5 rounded-full bg-purple-50 text-purple-900 border border-purple-200 text-xs font-bold">
+                    <span key={idx} className="px-3.5 py-1.5 rounded-full bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold">
                       {col}
                     </span>
                   ))}
@@ -200,10 +200,10 @@ export const GigDetails: React.FC = () => {
         {/* Right Column: Milestone Breakdown & Client Trust */}
         <div className="lg:col-span-5 space-y-6">
           
-          <div className="p-8 rounded-[2rem] bg-white border border-purple-100 shadow-sm space-y-5">
+          <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-5">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-black text-[#121214]">Escrow Milestones</h2>
-              <span className="text-xs text-purple-700 font-bold">{gig.milestones.length} Defined</span>
+              <h2 className="text-lg font-black text-[#101014]">Escrow Milestones</h2>
+              <span className="text-xs text-slate-600 font-bold">{gig.milestones.length} Defined</span>
             </div>
 
             <div className="space-y-4">
@@ -214,8 +214,8 @@ export const GigDetails: React.FC = () => {
                     ms.status === 'completed'
                       ? 'bg-emerald-50 border-emerald-300'
                       : ms.status === 'active' || ms.status === 'under_review'
-                      ? 'bg-purple-50/70 border-purple-300 shadow-sm'
-                      : 'bg-slate-50 border-slate-200'
+                      ? 'bg-slate-50 border-slate-300 shadow-sm'
+                      : 'bg-slate-50/50 border-slate-200'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -223,20 +223,20 @@ export const GigDetails: React.FC = () => {
                       <span className="w-6 h-6 rounded-full bg-white text-slate-900 font-black text-xs flex items-center justify-center shadow-sm">
                         {index + 1}
                       </span>
-                      <h4 className="text-xs font-black text-[#121214]">{ms.title}</h4>
+                      <h4 className="text-xs font-black text-[#101014]">{ms.title}</h4>
                     </div>
-                    <span className="text-xs font-black text-[#121214] shrink-0">₹{ms.amount.toLocaleString()}</span>
+                    <span className="text-xs font-black text-[#101014] font-mono tabular-nums shrink-0">₹{ms.amount.toLocaleString()}</span>
                   </div>
                   
                   <p className="text-xs text-slate-600 mt-2 pl-8 leading-relaxed font-normal">
                     {ms.description}
                   </p>
 
-                  <div className="flex items-center justify-between mt-3 pl-8 pt-2 border-t border-purple-100 text-[10px] font-bold">
+                  <div className="flex items-center justify-between mt-3 pl-8 pt-2 border-t border-slate-200 text-[10px] font-bold">
                     <span className="text-slate-500 flex items-center gap-1">
                       <Clock size={11} /> Due: {ms.deadline}
                     </span>
-                    <span className="capitalize text-purple-900">
+                    <span className="capitalize text-[#101014]">
                       {ms.status.replace('_', ' ')}
                     </span>
                   </div>
@@ -252,14 +252,14 @@ export const GigDetails: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-8 rounded-[2rem] bg-white border border-purple-100 shadow-sm space-y-3">
+          <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-3">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">About the Business</h3>
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center font-black text-sm">
+              <div className="w-11 h-11 rounded-2xl bg-slate-100 text-slate-900 flex items-center justify-center font-black text-sm">
                 {gig.employerCompany.slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <h4 className="text-sm font-black text-[#121214]">{gig.employerCompany}</h4>
+                <h4 className="text-sm font-black text-[#101014]">{gig.employerCompany}</h4>
                 <p className="text-xs text-slate-500 font-medium">Founder: {gig.employerName}</p>
               </div>
             </div>

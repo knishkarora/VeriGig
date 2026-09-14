@@ -49,26 +49,23 @@ export const GigApplicants: React.FC = () => {
       </div>
 
       {/* Header */}
-      <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(100,65,180,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">
-            Applicant Tracking Pipeline
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#121214]">{gig.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#101014]">{gig.title}</h1>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Budget: <strong className="text-emerald-800 font-black">₹{gig.totalBudget.toLocaleString()}</strong> • {gig.milestones.length} Milestones Defined
+            Budget: <strong className="text-emerald-800 font-black font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</strong> • {gig.milestones.length} Milestones Defined
           </p>
         </div>
-        <div className="text-xs font-bold text-slate-700 bg-purple-50 px-4 py-2 rounded-full border border-purple-200">
-          <span className="font-black text-[#121214] text-sm">{gigProposals.length}</span> Proposals Received
+        <div className="text-xs font-bold text-slate-800 bg-slate-100 px-4 py-2 rounded-full border border-slate-200 tabular-nums">
+          <span className="font-black text-[#101014] text-sm">{gigProposals.length}</span> Proposals Received
         </div>
       </div>
 
       {/* Split-Pane Layout */}
       {gigProposals.length === 0 ? (
-        <div className="py-20 text-center rounded-[2.5rem] bg-white border border-purple-100 shadow-sm space-y-3">
-          <Layers size={36} className="mx-auto text-purple-300" />
-          <h3 className="text-base font-black text-[#121214]">No applicants yet for this micro-gig</h3>
+        <div className="py-20 text-center rounded-[2.5rem] bg-white border border-slate-200 shadow-sm space-y-3">
+          <Layers size={36} className="mx-auto text-slate-300" />
+          <h3 className="text-base font-black text-[#101014]">No applicants yet for this micro-gig</h3>
           <p className="text-xs text-slate-500">
             Student freelancers from PCTE and GNDEC will submit proposals shortly.
           </p>
@@ -90,8 +87,8 @@ export const GigApplicants: React.FC = () => {
                   onClick={() => setSelectedProposalId(prop.id)}
                   className={`p-5 rounded-[2rem] border cursor-pointer transition-all ${
                     isSelected
-                      ? 'bg-white border-purple-400 shadow-md ring-2 ring-purple-200'
-                      : 'bg-white/80 border-purple-100 hover:border-purple-200 hover:bg-white'
+                      ? 'bg-white border-[#101014] shadow-md ring-2 ring-[#101014]'
+                      : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -102,7 +99,7 @@ export const GigApplicants: React.FC = () => {
                         className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-sm"
                       />
                       <div>
-                        <h4 className="text-xs font-black text-[#121214] flex items-center gap-1.5">
+                        <h4 className="text-xs font-black text-[#101014] flex items-center gap-1.5">
                           <span>{prop.studentName}</span>
                           {prop.status === 'hired' && (
                             <span className="text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full font-extrabold">
@@ -115,13 +112,13 @@ export const GigApplicants: React.FC = () => {
                     </div>
 
                     <div className="text-right">
-                      <span className="text-xs font-black text-[#121214]">₹{prop.bidAmount.toLocaleString()}</span>
+                      <span className="text-xs font-black text-[#101014] font-mono tabular-nums">₹{prop.bidAmount.toLocaleString()}</span>
                       <span className="text-[10px] text-slate-400 font-semibold block">{prop.deliveryTimeDays} days</span>
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-purple-100 flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-purple-700 flex items-center gap-1">
+                  <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold">
+                    <span className="text-emerald-700 flex items-center gap-1">
                       <Sparkles size={11} /> {prop.matchScore}% Match Score
                     </span>
                     <span className="text-slate-500">{prop.studentGpa}</span>
@@ -137,7 +134,7 @@ export const GigApplicants: React.FC = () => {
               <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-md space-y-6">
                 
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-purple-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-4">
                     <img 
                       src={selectedProposal.studentAvatar} 
@@ -145,7 +142,7 @@ export const GigApplicants: React.FC = () => {
                       className="w-14 h-14 rounded-3xl object-cover border-2 border-emerald-400 shadow-sm"
                     />
                     <div>
-                      <h3 className="text-lg font-black text-[#121214] flex items-center gap-2">
+                      <h3 className="text-lg font-black text-[#101014] flex items-center gap-2">
                         <span>{selectedProposal.studentName}</span>
                         <TrustBadge type="student" size="sm" text="Verified Student" />
                       </h3>
@@ -156,8 +153,8 @@ export const GigApplicants: React.FC = () => {
                   </div>
 
                   <div className="text-left sm:text-right">
-                    <span className="text-xs text-slate-400 font-bold block">Proposed Total</span>
-                    <span className="text-2xl font-black text-[#121214]">₹{selectedProposal.bidAmount.toLocaleString()}</span>
+                    <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider">Proposed Total</span>
+                    <span className="text-2xl font-black text-[#101014] font-mono tabular-nums">₹{selectedProposal.bidAmount.toLocaleString()}</span>
                     <span className="text-[11px] text-slate-500 font-semibold block">Turnaround: {selectedProposal.deliveryTimeDays} Days</span>
                   </div>
                 </div>
@@ -167,7 +164,7 @@ export const GigApplicants: React.FC = () => {
                   <span className="text-xs font-black uppercase tracking-wider text-slate-400">
                     Candidate's Proposed Execution Plan
                   </span>
-                  <div className="p-5 rounded-2xl bg-purple-50/50 border border-purple-100 text-xs text-slate-700 leading-relaxed font-normal">
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed font-normal">
                     {selectedProposal.coverNote}
                   </div>
                 </div>
@@ -184,7 +181,7 @@ export const GigApplicants: React.FC = () => {
                         href={link.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="p-3.5 rounded-2xl bg-slate-50 hover:bg-purple-50 border border-slate-200 text-xs text-purple-900 font-bold hover:underline flex items-center justify-between transition-colors"
+                        className="p-3.5 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs text-[#101014] font-bold hover:underline flex items-center justify-between transition-colors"
                       >
                         <span>{link.label}</span>
                         <div className="flex items-center gap-1 text-[11px] text-slate-500 font-normal">
@@ -197,7 +194,7 @@ export const GigApplicants: React.FC = () => {
                 </div>
 
                 {/* Milestone 1 Escrow Note */}
-                <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-xs text-purple-950 flex items-center justify-between">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-[#101014] flex items-center justify-between">
                   <div>
                     <span className="font-black block">Milestone 1 Escrow Funding Required</span>
                     <span className="text-[11px] text-slate-600 font-medium">Upon hiring, Milestone 1 (₹{(gig.milestones[0]?.amount || 3000).toLocaleString()}) will be funded in escrow.</span>
@@ -216,7 +213,7 @@ export const GigApplicants: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleHire(selectedProposal.id)}
-                        className="flex-1 py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-3.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2"
                       >
                         <UserCheck size={15} className="text-[#D4F851]" />
                         <span>Hire & Fund Milestone 1 (₹{(gig.milestones[0]?.amount || 3000).toLocaleString()})</span>

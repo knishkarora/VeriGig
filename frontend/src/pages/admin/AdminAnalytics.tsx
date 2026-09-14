@@ -21,11 +21,11 @@ export const AdminAnalytics: React.FC = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
       
       {/* Header */}
-      <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(100,65,180,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-[#121214]">Platform Liquidity & Campus Analytics</h1>
-            <span className="text-xs font-black px-3 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-200">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#101014]">Platform Liquidity & Campus Analytics</h1>
+            <span className="text-xs font-black px-3 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
               Live Metrics
             </span>
           </div>
@@ -35,79 +35,81 @@ export const AdminAnalytics: React.FC = () => {
         </div>
       </div>
 
-      {/* Top Liquidity Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Cumulative Platform Volume
-            </span>
-            <span className="text-3xl font-black text-[#121214] mt-1 block">
+      {/* Admin Performance Telemetry Strip */}
+      <div className="p-6 sm:p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+          
+          <div className="sm:px-4 first:pl-0">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Total Volume
+              </span>
+              <div className="p-2 rounded-xl bg-slate-100 text-slate-800">
+                <TrendingUp size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               ₹840,000
-            </span>
-            <span className="text-[10px] text-emerald-700 font-bold mt-1 block">↑ 28% month-over-month</span>
+            </div>
+            <div className="text-[11px] text-emerald-700 font-bold mt-1">+24% month-over-month</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-purple-50 text-purple-700">
-            <TrendingUp size={24} />
-          </div>
-        </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Escrow in Transit
-            </span>
-            <span className="text-3xl font-black text-emerald-800 mt-1 block">
+          <div className="pt-4 sm:pt-0 sm:px-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Escrow in Transit
+              </span>
+              <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
+                <Wallet size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               ₹{(activeEscrow || 45000).toLocaleString()}
-            </span>
-            <span className="text-[10px] text-slate-500 font-medium mt-1 block">Active milestone locks</span>
+            </div>
+            <div className="text-[11px] text-slate-500 font-semibold mt-1">Active milestone locks</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-emerald-50 text-emerald-700">
-            <Wallet size={24} />
-          </div>
-        </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Successful Payout Rate
-            </span>
-            <span className="text-3xl font-black text-purple-900 mt-1 block">
+          <div className="pt-4 sm:pt-0 sm:px-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Successful Payout Rate
+              </span>
+              <div className="p-2 rounded-xl bg-slate-100 text-slate-800">
+                <ShieldCheck size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               98.4%
-            </span>
-            <span className="text-[10px] text-purple-700 font-bold mt-1 block">Zero dispute chargebacks</span>
+            </div>
+            <div className="text-[11px] text-emerald-700 font-bold mt-1">Zero dispute chargebacks</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-purple-50 text-purple-700">
-            <ShieldCheck size={24} />
-          </div>
-        </div>
 
-        <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-              Median Turnaround Velocity
-            </span>
-            <span className="text-3xl font-black text-amber-600 mt-1 block">
+          <div className="pt-4 sm:pt-0 sm:pl-6">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Median Turnaround
+              </span>
+              <div className="p-2 rounded-xl bg-amber-50 text-amber-700">
+                <Clock size={18} />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               4.2 Days
-            </span>
-            <span className="text-[10px] text-slate-400 font-medium mt-1 block">From task posting to payout</span>
+            </div>
+            <div className="text-[11px] text-slate-500 font-semibold mt-1">From task posting to payout</div>
           </div>
-          <div className="p-3.5 rounded-2xl bg-amber-50 text-amber-600">
-            <Clock size={24} />
-          </div>
-        </div>
 
+        </div>
       </div>
 
       {/* Visual Analytics Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Campus Distribution Breakdown */}
-        <div className="lg:col-span-7 p-8 rounded-[2.5rem] bg-white border border-purple-100 shadow-sm space-y-6">
+        <div className="lg:col-span-7 p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-black text-[#121214] flex items-center gap-2">
-              <GraduationCap size={20} className="text-purple-600" />
+            <h3 className="text-base font-black text-[#101014] flex items-center gap-2">
+              <GraduationCap size={20} className="text-slate-700" />
               <span>Campus Engagement & Payout Distribution</span>
             </h3>
             <span className="text-xs text-slate-400 font-bold">Ludhiana & Punjab</span>
@@ -126,12 +128,12 @@ export const AdminAnalytics: React.FC = () => {
                   <span className="text-slate-900 font-bold">{campus.college}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-slate-500 font-normal">{campus.students}</span>
-                    <span className="font-black text-emerald-800">{campus.earnings}</span>
+                    <span className="font-black text-emerald-800 font-mono tabular-nums">{campus.earnings}</span>
                   </div>
                 </div>
-                <div className="w-full h-3 bg-purple-50 rounded-full overflow-hidden border border-purple-100">
+                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                   <div 
-                    className="h-full bg-[#121214] rounded-full transition-all duration-500" 
+                    className="h-full bg-[#101014] rounded-full transition-all duration-500" 
                     style={{ width: `${campus.percentage}%` }}
                   />
                 </div>

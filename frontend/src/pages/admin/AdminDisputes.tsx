@@ -51,8 +51,8 @@ export const AdminDisputes: React.FC = () => {
           </p>
         </div>
 
-        <div className="text-xs font-bold text-slate-700 bg-amber-50 px-4 py-2 rounded-full border border-amber-200">
-          <span className="font-black text-[#121214] text-sm">{disputes.filter(d => d.status === 'open').length}</span> Active Cases
+        <div className="text-xs font-bold text-amber-950 bg-amber-50 px-4 py-2 rounded-full border border-amber-200 tabular-nums">
+          <span className="font-black text-[#101014] text-sm">{disputes.filter(d => d.status === 'open').length}</span> Active Cases
         </div>
       </div>
 
@@ -81,7 +81,7 @@ export const AdminDisputes: React.FC = () => {
                 className={`p-5 rounded-[2rem] border cursor-pointer transition-all ${
                   isSelected
                     ? 'bg-white border-amber-400 shadow-md ring-2 ring-amber-200'
-                    : 'bg-white/80 border-purple-100 hover:border-purple-200 hover:bg-white'
+                    : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
@@ -97,12 +97,12 @@ export const AdminDisputes: React.FC = () => {
                   </span>
                 </div>
 
-                <h4 className="text-xs font-black text-[#121214] leading-snug">{disp.gigTitle}</h4>
+                <h4 className="text-xs font-black text-[#101014] leading-snug">{disp.gigTitle}</h4>
                 <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 font-normal">{disp.reason}</p>
 
-                <div className="mt-3 pt-2 border-t border-purple-100 flex items-center justify-between text-[11px] font-medium">
+                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-medium">
                   <span className="text-slate-400">Escrow Value:</span>
-                  <span className="font-black text-amber-600">₹{disp.amountInEscrow.toLocaleString()}</span>
+                  <span className="font-black text-amber-600 font-mono tabular-nums">₹{disp.amountInEscrow.toLocaleString()}</span>
                 </div>
               </div>
             );
@@ -114,14 +114,14 @@ export const AdminDisputes: React.FC = () => {
           {selectedDispute && (
             <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-md space-y-6">
               
-              <div className="pb-4 border-b border-purple-100 space-y-2">
+              <div className="pb-4 border-b border-slate-100 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
                     <ShieldAlert size={14} /> Arbitration Dossier
                   </span>
-                  <span className="font-bold text-xs text-slate-700">Escrow Value: ₹{selectedDispute.amountInEscrow.toLocaleString()}</span>
+                  <span className="font-bold text-xs text-slate-700 font-mono tabular-nums">Escrow Value: ₹{selectedDispute.amountInEscrow.toLocaleString()}</span>
                 </div>
-                <h3 className="text-lg font-black text-[#121214]">{selectedDispute.gigTitle}</h3>
+                <h3 className="text-lg font-black text-[#101014]">{selectedDispute.gigTitle}</h3>
                 <div className="grid grid-cols-2 gap-3 text-xs text-slate-500 pt-1 font-medium">
                   <div className="flex items-center gap-1.5">
                     <User size={14} className="text-emerald-600" />
@@ -136,7 +136,7 @@ export const AdminDisputes: React.FC = () => {
 
               <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-1 text-xs">
                 <span className="font-black text-amber-950 block">Flagged Issue Summary:</span>
-                <p className="text-slate-700 leading-relaxed font-normal">{selectedDispute.reason}</p>
+                <p className="text-amber-950 leading-relaxed font-normal">{selectedDispute.reason}</p>
               </div>
 
               {/* Chronological Audit Log */}
@@ -145,10 +145,10 @@ export const AdminDisputes: React.FC = () => {
                   <History size={14} /> Chronological Audit Trail
                 </span>
 
-                <div className="space-y-3 pl-2 border-l-2 border-purple-200">
+                <div className="space-y-3 pl-2 border-l-2 border-slate-200">
                   {selectedDispute.auditLog.map((log, idx) => (
                     <div key={idx} className="relative pl-4 text-xs space-y-0.5">
-                      <div className="absolute -left-[9px] top-1.5 w-2.5 h-2.5 rounded-full bg-purple-600 ring-2 ring-white" />
+                      <div className="absolute -left-[9px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#101014] ring-2 ring-white" />
                       <div className="flex items-center justify-between text-slate-500 text-[10px]">
                         <span className="font-black text-slate-900">{log.actor} • {log.action}</span>
                         <span>{log.timestamp}</span>
@@ -161,7 +161,7 @@ export const AdminDisputes: React.FC = () => {
 
               {/* Resolution Actions */}
               {selectedDispute.status === 'open' ? (
-                <div className="space-y-4 pt-4 border-t border-purple-100">
+                <div className="space-y-4 pt-4 border-t border-slate-100">
                   <span className="text-xs font-black uppercase tracking-wider text-slate-400 block">
                     Arbitration Verdict
                   </span>
@@ -175,7 +175,7 @@ export const AdminDisputes: React.FC = () => {
                       value={resolutionNote}
                       onChange={(e) => setResolutionNote(e.target.value)}
                       placeholder="e.g. Scope analysis confirms deliverables met 100% of agreed criteria..."
-                      className="w-full px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214] font-medium"
+                      className="w-full px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#101014] font-medium"
                     />
                   </div>
 
@@ -183,7 +183,7 @@ export const AdminDisputes: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleResolve('release_student')}
-                      className="py-3 px-3 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-sm transition-all flex items-center justify-center gap-1.5"
+                      className="py-3 px-3 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black shadow-sm transition-all flex items-center justify-center gap-1.5"
                     >
                       <CheckCircle2 size={14} className="text-[#D4F851]" />
                       <span>Release Student</span>
@@ -192,7 +192,7 @@ export const AdminDisputes: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleResolve('split_payout')}
-                      className="py-3 px-3 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-900 text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                      className="py-3 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-black transition-all flex items-center justify-center gap-1.5"
                     >
                       <Split size={14} />
                       <span>Split (50/50)</span>
