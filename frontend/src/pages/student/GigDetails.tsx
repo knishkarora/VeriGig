@@ -264,7 +264,7 @@ export const GigDetails: React.FC = () => {
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Verified local enterprise partner. 100% dispute-free payout track record across Ludhiana campus talent.
+              Verified local enterprise partner. Documented milestone completion history across Ludhiana regional campus talent.
             </p>
           </div>
 

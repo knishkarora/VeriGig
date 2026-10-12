@@ -33,34 +33,34 @@ export const LandingPage: React.FC = () => {
     ? gigs 
     : gigs.filter(g => g.category === selectedCategory);
 
-  // Showcase cards modeled directly after Sense reference bottom cards
+  // Showcase tracks modeled after practical student project capabilities
   const showcaseTracks = [
     {
       title: 'WEB DEV',
       category: 'Frontend & Web',
       image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=600&q=80',
-      tag: '₹8,500 Avg Escrow',
+      tag: '₹8,500 Target Budget',
       link: '/app/student/explore'
     },
     {
       title: 'UI/UX DESIGN',
       category: 'Product & Figma',
       image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80',
-      tag: '₹12,000 Avg Escrow',
+      tag: '₹12,000 Target Budget',
       link: '/app/student/explore'
     },
     {
       title: 'REELS & MOTION',
       category: 'Social Media',
       image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=600&q=80',
-      tag: '₹6,000 Avg Escrow',
+      tag: '₹6,000 Target Budget',
       link: '/app/student/explore'
     },
     {
       title: 'DATA AUTOMATION',
       category: 'Python & Sheets',
       image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=600&q=80',
-      tag: '₹4,500 Avg Escrow',
+      tag: '₹4,500 Target Budget',
       link: '/app/student/explore'
     }
   ];
@@ -111,7 +111,7 @@ export const LandingPage: React.FC = () => {
                 />
                 <div>
                   <div className="text-xs font-bold text-[#101014]">Aanya S. • PCTE</div>
-                  <div className="text-[10px] text-emerald-700 font-semibold">₹18,500 Earned Escrow</div>
+                  <div className="text-[10px] text-emerald-700 font-semibold">Verified Student Profile</div>
                 </div>
               </div>
 
@@ -142,13 +142,16 @@ export const LandingPage: React.FC = () => {
 
             {/* Center Hero Title & Action Pills */}
             <div className="text-center max-w-3xl mx-auto py-4 sm:py-8 space-y-6 relative">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-900 text-xs font-black tracking-wide">
+                <span>Pilot Prototype • Punjab Campus & SME Network</span>
+              </div>
               
               <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-[#101014] tracking-tight uppercase leading-none">
                 CampusGigs
               </h1>
 
               <p className="text-sm sm:text-base text-slate-600 font-medium max-w-xl mx-auto leading-relaxed">
-                Verified college talent from PCTE, GNDEC, and Thapar for agile local enterprises. Milestone-backed escrow. Zero agency bloat.
+                A verified micro-gig trust workflow connecting students with local SMEs. Two-party scope agreements, milestone commitments, and portable portfolio records.
               </p>
 
               {/* Dual Pill CTA Buttons */}
@@ -293,7 +296,7 @@ export const LandingPage: React.FC = () => {
                     Campus Network
                   </span>
                   <p className="text-lg font-bold">Ludhiana & Punjab Academic Talent Pool</p>
-                  <p className="text-xs text-slate-200">1,400+ Verified Students actively completing 48hr to 2-week milestones.</p>
+                  <p className="text-xs text-slate-200">Targeted student cohort from PCTE, GNDEC, and Thapar completing 48hr to 2-week structured milestones.</p>
                 </div>
               </div>
             </div>
@@ -354,20 +357,20 @@ export const LandingPage: React.FC = () => {
                 </tr>
 
                 <tr className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 px-6 font-bold text-slate-900">Escrow Security</td>
+                  <td className="py-4 px-6 font-bold text-slate-900">Payment Commitment & Fees</td>
                   <td className="py-4 px-6 bg-[#101014]/5 font-bold text-[#101014]">
-                    Milestone-backed escrow released upon employer sign-off.
+                    Pre-funded milestone commitments via authorized payment aggregators. Free basic posting during pilot.
                   </td>
-                  <td className="py-4 px-6 text-slate-500">Hefty 20%+ fee take, complex dispute friction.</td>
+                  <td className="py-4 px-6 text-slate-500">Hefty 10–20% platform cut on students, high dispute overhead.</td>
                   <td className="py-4 px-6 text-slate-500">Frequent unpaid internship complaints and delayed stipends.</td>
                 </tr>
 
                 <tr className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 px-6 font-bold text-slate-900">Local Proximity</td>
+                  <td className="py-4 px-6 font-bold text-slate-900">Local Proximity & Remote Options</td>
                   <td className="py-4 px-6 bg-[#101014]/5 font-bold text-[#101014] rounded-b-3xl">
-                    Hyper-local. Students can visit the clinic, bakery, or retail site in person.
+                    Hyper-local trust wedge for regional site visits, with remote options open to verified students.
                   </td>
-                  <td className="py-4 px-6 text-slate-500">Remote only, international time zone friction.</td>
+                  <td className="py-4 px-6 text-slate-500">Global bidding pool, time zone disconnect, impersonal.</td>
                   <td className="py-4 px-6 text-slate-500">Requires city relocation or physical corporate desk work.</td>
                 </tr>
 
@@ -379,18 +382,86 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ============================================================ */}
-      {/* SECTION 4: LIVE MICRO-GIG EXPLORER FEED                     */}
+      {/* SECTION 4: THE VERIFIED MILESTONE TRUST WORKFLOW              */}
+      {/* ============================================================ */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(100,65,180,0.08)] p-6 sm:p-12 space-y-8">
+          
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-[11px] font-black uppercase tracking-widest text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+              The Accountability Guarantee
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-[#101014] tracking-tight">
+              How the Trust Workflow Protects Both Parties
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600">
+              A transparent, 4-stage lifecycle ensuring fair student pay and quality deliverables for businesses.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4">
+            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#101014] text-white flex items-center justify-center font-black text-sm">
+                1
+              </div>
+              <h3 className="text-sm font-black text-[#101014]">Two-Party Scope Agreement</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                SME defines measurable deliverables, timeline, and budget. Student accepts the exact scope and IP terms before work commences.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center font-black text-sm">
+                2
+              </div>
+              <h3 className="text-sm font-black text-[#101014]">Payment Commitment</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Total contract budget is committed before student begins. Neither party is exposed to ghosting or unpaid completed labor.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-900 flex items-center justify-center font-black text-sm">
+                3
+              </div>
+              <h3 className="text-sm font-black text-[#101014]">Evidence & Limited Revisions</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Student uploads timestamped deliverables. SME approves or requests structured feedback within agreed revision limits.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#D4F851] text-[#101014] flex items-center justify-center font-black text-sm">
+                4
+              </div>
+              <h3 className="text-sm font-black text-[#101014]">Portable Proof of Work</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Approved milestones trigger payout and bilateral ratings, generating an immutable, shareable completion credential.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* SECTION 5: LIVE MICRO-GIG EXPLORER FEED                     */}
       {/* ============================================================ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(100,65,180,0.08)] p-6 sm:p-12 space-y-8">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-black text-[#101014] tracking-tight">
-                Live Micro-Gigs on Campus
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-3xl font-black text-[#101014] tracking-tight">
+                  Live Micro-Gigs on Campus
+                </h2>
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                  Pilot Feed
+                </span>
+              </div>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Active tasks ready for student proposals with guaranteed milestone escrow.
+                Active tasks ready for student proposals with guaranteed milestone commitments.
               </p>
             </div>
 

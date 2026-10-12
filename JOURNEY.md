@@ -1,5 +1,19 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-12] Milestone 5: Demo Integrity & Frontend Truthfulness Audit (Phase 0 Complete)
+* Executed complete audit and rectification across the frontend to align with the Judge Defense Matrix:
+  - **Landing Page (`LandingPage.tsx`):** Labeled prototype metrics as pilot demonstrations; replaced inflated student counts with targeted regional cohort descriptions; added a 4-stage visual breakdown of the Verified Milestone Trust Workflow.
+  - **Fit Scoring & Disclaimers (`GigDetails.tsx`, `GigApplicants.tsx`):** Clarified candidate scores as explainable "Fit Score (Skills & Location Match)" rather than black-box AI; replaced "100% dispute-free" claim with documented regional track record.
+  - **Escrow & Funding Transparency (`PostGigWizard.tsx`, `EmployerWorkspace.tsx`):** Clarified full pre-authorized contract commitment in sandbox escrow; added sandbox tags to payout triggers.
+  - **Admin Analytics (`AdminAnalytics.tsx`):** Calibrated header with "Seeded Pilot Demonstration Data" badge.
+* Validated build: Vite + TypeScript compiled 100% clean with zero errors.
+
+## [2026-10-12] Milestone 4: Judge-Readiness Implementation Blueprint
+* Reviewed the submitted project synopsis, market-research survey, existing product documentation, and frontend implementation.
+* Created [[Judge-Readiness-Implementation-Blueprint]] with an evidence-based response map for fifteen likely judge questions, frontend gap inventory, proposed backend architecture, payment/dispute lifecycle, security baseline, and phased acceptance checkpoints.
+* Established the master sequential execution roadmap in [[Implementation-Checklist]] with 10 phased checkpoints (Phase 0 to Phase 10) enabling atomic progress tracking.
+* Recorded the proposed production-path backend decision in [[decision.md]]. No application code, dependencies, user data, payments, or external integrations were changed.
+
 ## [2026-09-13] Milestone 1: Frontend Architecture & Foundation Setup
 * Initialized Vite + React 18 + TypeScript in `frontend/`.
 * Mapped execution flows and established foundational types and mock data.

@@ -201,7 +201,7 @@ export const EmployerWorkspace: React.FC = () => {
                           className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all group"
                         >
                           <ThumbsUp size={14} className="text-[#D4F851]" />
-                          <span>Approve Deliverable & Release ₹{ms.amount.toLocaleString()} Payout</span>
+                          <span>Approve Deliverable & Release ₹{ms.amount.toLocaleString()} (Sandbox Payout)</span>
                         </button>
 
                         <button
@@ -220,7 +220,7 @@ export const EmployerWorkspace: React.FC = () => {
                 {isCompleted && (
                   <div className="mt-3 pl-9 text-xs text-emerald-800 font-bold flex items-center gap-1.5">
                     <CheckCircle2 size={16} />
-                    <span>Deliverable Approved & Escrow Funds Transferred to Student Wallet</span>
+                    <span>Deliverable Approved & Sandbox Escrow Funds Released to Student</span>
                   </div>
                 )}
               </div>

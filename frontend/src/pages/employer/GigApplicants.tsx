@@ -119,9 +119,9 @@ export const GigApplicants: React.FC = () => {
 
                   <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold">
                     <span className="text-emerald-700 flex items-center gap-1">
-                      <Sparkles size={11} /> {prop.matchScore}% Match Score
+                      <Sparkles size={11} /> {prop.matchScore}% Fit Score
                     </span>
-                    <span className="text-slate-500">{prop.studentGpa}</span>
+                    <span className="text-slate-500">{prop.studentGpa} • Skills & Location Match</span>
                   </div>
                 </div>
               );
@@ -193,11 +193,13 @@ export const GigApplicants: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Milestone 1 Escrow Note */}
+                {/* Escrow Commitment Note */}
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-[#101014] flex items-center justify-between">
                   <div>
-                    <span className="font-black block">Milestone 1 Escrow Funding Required</span>
-                    <span className="text-[11px] text-slate-600 font-medium">Upon hiring, Milestone 1 (₹{(gig.milestones[0]?.amount || 3000).toLocaleString()}) will be funded in escrow.</span>
+                    <span className="font-black block">Contract Payment Commitment (Sandbox Escrow)</span>
+                    <span className="text-[11px] text-slate-600 font-medium">
+                      Upon hiring, contract funds (₹{selectedProposal.bidAmount.toLocaleString()}) are pre-authorized in sandbox escrow and disbursed milestone-by-milestone upon your sign-off.
+                    </span>
                   </div>
                 </div>
 

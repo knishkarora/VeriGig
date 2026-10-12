@@ -32,3 +32,12 @@
 - [x] Color system & contrast rectification: eliminated low-contrast gray-on-tint patterns on bubblegum pink (`#FFA8D5`) and amber alert banners; implemented deep plum ink (`#180816` / `#380E29`) exceeding WCAG AAA.
 - [x] Verified zero automated craft violations (`impeccable detect --json` returned 0 warnings across all 16 views and components).
 - [x] Production build re-verification with Vite and TypeScript (0 errors, bundle compiled in ~15s).
+
+## Milestone 3: Backend Readiness and Judge Validation Plan
+- [x] Evidence-based implementation blueprint created: [[Judge-Readiness-Implementation-Blueprint]].
+- [x] Master sequential implementation checklist established: [[Implementation-Checklist]].
+- [x] Existing frontend flows inventoried as Connect, Extend, Add, or Correct before backend work.
+- [x] Proposed API/database/payment-provider architecture recorded in [[decision]].
+- [ ] Phase 0: Demo integrity & frontend truthfulness audit.
+- [ ] Phase 1-9: Fastify + PostgreSQL backend, verification, contracts, and payment implementation.
+- [ ] Phase 10: Frontend API connection & end-to-end judge demonstration.

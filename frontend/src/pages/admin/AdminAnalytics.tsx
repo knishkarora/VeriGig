@@ -25,12 +25,12 @@ export const AdminAnalytics: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-black text-[#101014]">Platform Liquidity & Campus Analytics</h1>
-            <span className="text-xs font-black px-3 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200">
-              Live Metrics
+            <span className="text-xs font-black px-3 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-300">
+              Seeded Pilot Demonstration Data
             </span>
           </div>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Tracking hyper-local escrow volume, campus talent liquidity, and task turnaround velocity.
+            Simulated demonstration telemetry tracking regional milestone commitments, campus engagement, and turnaround velocity.
           </p>
         </div>
       </div>

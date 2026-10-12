@@ -416,18 +416,24 @@ export const PostGigWizard: React.FC = () => {
 
               <div className="pt-4 border-t border-purple-200/80 space-y-2 text-xs font-medium">
                 <div className="flex justify-between text-slate-600">
-                  <span>Milestone 1 Escrow Deposit:</span>
-                  <span className="text-slate-900 font-black">₹{(milestones[0]?.amount || 0).toLocaleString()}</span>
+                  <span>Total Contract Commitment:</span>
+                  <span className="text-slate-900 font-black">₹{totalBudget.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Remaining Milestones (Paid on unlock):</span>
-                  <span className="text-slate-900 font-black">
+                  <span>Milestone 1 Release on Approval:</span>
+                  <span className="text-slate-900 font-bold">
+                    ₹{(milestones[0]?.amount || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Remaining Milestones (Released sequentially):</span>
+                  <span className="text-slate-900 font-bold">
                     ₹{(totalBudget - (milestones[0]?.amount || 0)).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-600">
-                  <span>Platform Fee:</span>
-                  <span className="text-emerald-800 font-black">₹0 (Zero Bloat Initiative)</span>
+                  <span>Pilot Platform Fee:</span>
+                  <span className="text-emerald-800 font-black">₹0 (Free Basic Posting During Pilot)</span>
                 </div>
               </div>
             </div>
@@ -435,7 +441,7 @@ export const PostGigWizard: React.FC = () => {
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 flex items-center gap-3 text-xs text-emerald-900 font-semibold">
               <ShieldCheck size={20} className="text-emerald-600 shrink-0" />
               <span>
-                Your listing will immediately appear in the CampusGigs student feed. Verified PCTE and GNDEC students will be alerted.
+                Funds are committed into sandbox escrow only when you formally accept a candidate's proposal. Work never begins without funding commitment.
               </span>
             </div>
           </div>
