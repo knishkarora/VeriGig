@@ -1,5 +1,14 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-12] Milestone 6: Backend Server Scaffolding (Phase 1.1 Complete)
+* Initialized Fastify + TypeScript backend workspace in `/backend`:
+  - Configured strict `tsconfig.json` with NodeNext resolution.
+  - Implemented runtime environment variable validation using Zod in `src/config/env.ts`.
+  - Configured core middleware plugins: Helmet security headers, CORS origin checking, Cookie parser, JWT session management, and Multipart file upload limits (5MB).
+  - Built centralized error handling mapping Zod schema validation errors directly to structured HTTP 400 responses.
+  - Added root `/health` and `/api/v1/info` service endpoints.
+  - Verified clean TypeScript compilation (`tsc`) and updated [[flow.md]].
+
 ## [2026-10-12] Milestone 5: Demo Integrity & Frontend Truthfulness Audit (Phase 0 Complete)
 * Executed complete audit and rectification across the frontend to align with the Judge Defense Matrix:
   - **Landing Page (`LandingPage.tsx`):** Labeled prototype metrics as pilot demonstrations; replaced inflated student counts with targeted regional cohort descriptions; added a 4-stage visual breakdown of the Verified Milestone Trust Workflow.

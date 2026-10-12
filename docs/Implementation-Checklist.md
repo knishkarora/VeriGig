@@ -51,10 +51,10 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 1: Backend Scaffolding & Core Architecture
 *Objective: Set up the production-grade TypeScript Fastify REST API, PostgreSQL database schemas, and migration runner.*
 
-- [ ] **1.1 Server Workspace Setup (`/backend`)**
-  - [ ] Initialize Fastify TypeScript project with strict `tsconfig.json`, `pnpm`/`npm`, and dev scripts (`tsx` / `fastify-cli`).
-  - [ ] Configure environment variables validation with Zod / `@fastify/env` (`PORT`, `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `STORAGE_PATH`).
-  - [ ] Configure Fastify plugins: CORS, `@fastify/helmet`, `@fastify/cookie`, `@fastify/jwt`, and JSON schema error handler.
+- [x] **1.1 Server Workspace Setup (`/backend`)**
+  - [x] Initialize Fastify TypeScript project with strict `tsconfig.json`, `pnpm`/`npm`, and dev scripts (`tsx` / `fastify-cli`).
+  - [x] Configure environment variables validation with Zod / `@fastify/env` (`PORT`, `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `STORAGE_PATH`).
+  - [x] Configure Fastify plugins: CORS, `@fastify/helmet`, `@fastify/cookie`, `@fastify/jwt`, and JSON schema error handler.
 - [ ] **1.2 Database & Migration Engine**
   - [ ] Configure PostgreSQL client (Drizzle ORM or Prisma with PostgreSQL).
   - [ ] Set up migrations directory and automated migration scripts.

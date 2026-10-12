@@ -1,0 +1,54 @@
+# Dependencies (Node / Package managers)
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
+# Build Outputs & Compiled Code
+dist/
+**/dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# Environment & Private Secrets (NEVER COMMIT CREDENTIALS)
+.env
+.env.*
+!.env.example
+*.local
+
+# Private Uploads & Storage (Local documents, ID cards, deliverables)
+uploads/
+**/uploads/
+storage/
+**/storage/
+
+# Logs & Diagnostic Dumps
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing & Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# IDE, Editor & OS metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Temporary Cache & Agent Scratch
+.impeccable/
+.eslintcache
+.turbo/
