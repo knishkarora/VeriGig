@@ -1,5 +1,18 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-13] Milestone 7: Database & Migration Engine (Phase 1.2 Complete)
+* Configured PostgreSQL database connection pool and Drizzle ORM in `/backend/src/db/index.ts`.
+* Designed core database schemas:
+  - `users`: UUID primary keys, role enum (`student`, `employer`, `admin`), account status, email verification.
+  - `sessions`: refresh token hashes with expiration timestamps for secure HTTP-only cookie sessions.
+  - `consents`: DPDPA 2023 compliance recording consent types, policy versions, and timestamps.
+  - `campuses`: Punjab and regional campus partner network records.
+  - `student_profiles`: competencies, portfolio links, availability status, encrypted roll numbers, ratings, and completed gig metrics.
+  - `business_profiles`: company information, encrypted GSTIN/MSME registration, verified badges.
+  - `audit_events`: immutable audit logging for all critical platform actions.
+* Configured `drizzle.config.ts`, generated migration (`0000_outgoing_william_stryker.sql`), and created migration runner (`src/db/migrate.ts`).
+* Verified clean TypeScript compilation (`tsc`).
+
 ## [2026-10-12] Milestone 6: Backend Server Scaffolding (Phase 1.1 Complete)
 * Initialized Fastify + TypeScript backend workspace in `/backend`:
   - Configured strict `tsconfig.json` with NodeNext resolution.

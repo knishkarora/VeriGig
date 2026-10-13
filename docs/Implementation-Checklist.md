@@ -55,17 +55,17 @@ Every task in this checklist is directly tied to answering a specific, hard judg
   - [x] Initialize Fastify TypeScript project with strict `tsconfig.json`, `pnpm`/`npm`, and dev scripts (`tsx` / `fastify-cli`).
   - [x] Configure environment variables validation with Zod / `@fastify/env` (`PORT`, `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `STORAGE_PATH`).
   - [x] Configure Fastify plugins: CORS, `@fastify/helmet`, `@fastify/cookie`, `@fastify/jwt`, and JSON schema error handler.
-- [ ] **1.2 Database & Migration Engine**
-  - [ ] Configure PostgreSQL client (Drizzle ORM or Prisma with PostgreSQL).
-  - [ ] Set up migrations directory and automated migration scripts.
-  - [ ] Create core tables:
-    - [ ] `users` (id, email, password_hash, role, status, email_verified, created_at, updated_at)
-    - [ ] `sessions` (id, user_id, refresh_token_hash, expires_at, created_at)
-    - [ ] `consents` (id, user_id, consent_type, version, granted_at, ip_address)
-    - [ ] `student_profiles` (id, user_id, full_name, college_name, degree, graduation_year, bio, skills, location, work_mode_preference, portfolio_links, availability_status, rating_avg, completed_gigs_count)
-    - [ ] `business_profiles` (id, user_id, company_name, business_type, registration_number, website, description, city, state, contact_phone, verified_badge)
-    - [ ] `campuses` (id, name, city, state, domain, partner_status)
-    - [ ] `audit_events` (id, actor_id, event_type, entity_type, entity_id, payload, created_at)
+- [x] **1.2 Database & Migration Engine**
+  - [x] Configure PostgreSQL client (Drizzle ORM and node-postgres pool).
+  - [x] Set up migrations directory and automated migration scripts (`drizzle.config.ts`, `drizzle-kit generate`, `src/db/migrate.ts`).
+  - [x] Create core tables:
+    - [x] `users` (id, email, password_hash, role, status, email_verified, created_at, updated_at)
+    - [x] `sessions` (id, user_id, refresh_token_hash, expires_at, created_at)
+    - [x] `consents` (id, user_id, consent_type, version, granted_at, ip_address)
+    - [x] `student_profiles` (id, user_id, full_name, college_name, degree, graduation_year, bio, skills, location, work_mode_preference, portfolio_links, availability_status, rating_avg, completed_gigs_count)
+    - [x] `business_profiles` (id, user_id, company_name, business_type, registration_number, website, description, city, state, contact_phone, verified_badge)
+    - [x] `campuses` (id, name, city, state, domain, partner_status)
+    - [x] `audit_events` (id, actor_id, event_type, entity_type, entity_id, payload, created_at)
 
 ---
 
