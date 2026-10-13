@@ -80,10 +80,10 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 - [x] **2.2 Route Guards & RBAC Middleware**
   - [x] Fastify preHandler hook for authenticated sessions (`authenticate` in `src/middleware/auth.guard.ts`).
   - [x] Role verification hooks: `requireRole(['student'])`, `requireRole(['employer'])`, `requireRole(['admin'])`.
-- [ ] **2.3 Profile Management Endpoints**
-  - [ ] Student profile CRUD (`GET /api/students/me`, `PUT /api/students/me`, `GET /api/students/:id` public view).
-  - [ ] Business profile CRUD (`GET /api/employers/me`, `PUT /api/employers/me`, `GET /api/employers/:id` public view).
-  - [ ] Data minimization: public profiles omit raw college ID, registration docs, and private phone numbers.
+- [x] **2.3 Profile Management Endpoints**
+  - [x] Student profile CRUD (`GET /api/v1/profiles/students/me`, `PUT /api/v1/profiles/students/me`, `GET /api/v1/profiles/students/:id` public view).
+  - [x] Business profile CRUD (`GET /api/v1/profiles/employers/me`, `PUT /api/v1/profiles/employers/me`, `GET /api/v1/profiles/employers/:id` public view).
+  - [x] Data minimization: public profiles strictly omit raw college ID, registration docs, and private phone numbers.
 
 ---
 

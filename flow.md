@@ -31,11 +31,17 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 2.2 Route Guards & RBAC Middleware)
-* Implemented `src/middleware/auth.guard.ts`:
-  - `authenticate`: Fastify preHandler extracting and validating JWT tokens, populating `req.currentUser`.
-  - `requireRole(['student' | 'employer' | 'admin'])`: Configurable preHandler hook verifying user authorization and rejecting unauthorized requests with standard HTTP 403 Forbidden responses.
-  - Attached `authenticate` to `/api/v1/auth/me`.
+## 3. Modified Scope (Phase 2.3 Profile Management & Data Minimization)
+* Implemented `src/modules/profiles/`:
+  - `profiles.schema.ts`: Zod validation schemas for student and employer profile updates.
+  - `profiles.service.ts`: Handlers for private profile viewing/editing and **public profiles with strict data minimization** (sanitizing raw encrypted college IDs, roll numbers, GST/MSME numbers, and private contact phones).
+  - `profiles.routes.ts`: Registered endpoints under `/api/v1/profiles`:
+    - `GET /students/me`: Authenticated student private profile.
+    - `PUT /students/me`: Authenticated student profile updates (competencies, portfolio links, availability).
+    - `GET /students/:id`: Public student view (sanitized, consented data only).
+    - `GET /employers/me`: Authenticated business private profile.
+    - `PUT /employers/me`: Authenticated business profile updates.
+    - `GET /employers/:id`: Public business view (sanitized, company info & verified badge only).
 
 ## 4. Backend Execution Sequence
 ```

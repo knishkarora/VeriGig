@@ -1,5 +1,16 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 10: Profile Management & Data Minimization (Phase 2.3 Complete)
+* Built profile management module in `/backend/src/modules/profiles`:
+  - `profiles.schema.ts`: Validation schemas for student competencies, portfolio links, availability statuses, and employer details.
+  - `profiles.service.ts`: Implemented private CRUD and public view methods enforcing strict **data minimization** (stripping encrypted roll numbers, official registration docs, and private phone numbers from public responses per DPDPA 2023).
+  - `profiles.routes.ts`: Registered endpoints under `/api/v1/profiles`:
+    - `GET /students/me` & `PUT /students/me`: Authenticated student management protected with `requireRole(['student'])`.
+    - `GET /students/:id`: Public sanitized student view.
+    - `GET /employers/me` & `PUT /employers/me`: Authenticated employer management protected with `requireRole(['employer'])`.
+    - `GET /employers/:id`: Public sanitized company view.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified clean compilation (`tsc`).
+
 ## [2026-10-13] Milestone 9: Route Guards & RBAC Middleware (Phase 2.2 Complete)
 * Implemented authentication and role-based access control middleware in `/backend/src/middleware/auth.guard.ts`:
   - `authenticate`: Fastify preHandler verifying JWT from headers/cookies and hydrating `req.currentUser` (`AuthenticatedUser`).
