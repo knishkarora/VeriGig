@@ -1,5 +1,17 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-13] Milestone 8: Authentication Endpoints & Business Logic (Phase 2.1 Complete)
+* Built full authentication module in `/backend/src/modules/auth`:
+  - `auth.schema.ts`: Zod validation schemas enforcing strict email, password complexity, role selection (`student` / `employer`), and mandatory DPDPA consent acceptance.
+  - `auth.service.ts`: Secure bcrypt hashing (cost 12), user account creation with transaction safety, automatic role profile provisioning (`student_profiles`, `business_profiles`), cryptographic session token rotation, and immutable audit event logging.
+  - `auth.routes.ts`: Registered endpoints under `/api/v1/auth`:
+    - `POST /register`: Registers user, creates profile, issues access JWT.
+    - `POST /login`: Validates credentials, checks suspension state, sets secure HTTP-only refresh cookie (`refreshToken`), and returns access token.
+    - `POST /refresh`: Rotates refresh token in `sessions` table and reissues fresh JWT.
+    - `POST /logout`: Invalidates session in database and clears cookie.
+    - `GET /me`: Authenticates via JWT and returns current user details with attached student/business profile.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified 100% clean compilation via `npm run build`.
+
 ## [2026-10-13] Milestone 7: Database & Migration Engine (Phase 1.2 Complete)
 * Configured PostgreSQL database connection pool and Drizzle ORM in `/backend/src/db/index.ts`.
 * Designed core database schemas:

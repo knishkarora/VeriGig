@@ -72,11 +72,11 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 2: Authentication, Authorization & Role-Based Access
 *Objective: Build secure, compliant authentication and private profile management.*
 
-- [ ] **2.1 Auth Endpoints & Business Logic**
-  - [ ] `POST /api/auth/register` (student & business paths, role assignment, consent recording).
-  - [ ] `POST /api/auth/login` (rate-limited, password verify with argon2/bcrypt, issue HTTP-only secure cookie / JWT).
-  - [ ] `POST /api/auth/refresh` & `POST /api/auth/logout`.
-  - [ ] `GET /api/auth/me` (returns session identity, active role, profile completeness).
+- [x] **2.1 Auth Endpoints & Business Logic**
+  - [x] `POST /api/v1/auth/register` (student & business paths, role assignment, DPDPA consent recording, profile creation).
+  - [x] `POST /api/v1/auth/login` (password verification with bcrypt, suspension check, issue HTTP-only secure cookie / JWT).
+  - [x] `POST /api/v1/auth/refresh` & `POST /api/v1/auth/logout` (cryptographic refresh token rotation in sessions table).
+  - [x] `GET /api/v1/auth/me` (returns session identity, active role, and associated profile).
 - [ ] **2.2 Route Guards & RBAC Middleware**
   - [ ] Fastify preHandler hook for authenticated sessions.
   - [ ] Role verification hooks: `requireRole(['student'])`, `requireRole(['employer'])`, `requireRole(['admin'])`.

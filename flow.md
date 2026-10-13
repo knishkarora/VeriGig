@@ -31,10 +31,16 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 1.1 Backend Scaffolding)
-* Scaffolding entire `/backend` module with Fastify + TypeScript + Zod environment validation.
-* Registered Fastify core middleware: CORS, Helmet security headers, Cookie parser, JWT token verification, and Multipart file limits.
-* Implemented centralized Zod error handler and healthcheck routing.
+## 3. Modified Scope (Phase 2.1 Authentication & RBAC Engine)
+* Implemented `src/modules/auth/`:
+  - `auth.schema.ts`: Zod validation schemas for registration, login, and mandatory DPDPA consent.
+  - `auth.service.ts`: Secure bcrypt hashing (cost 12), user creation, role profile provisioning (`student_profiles`, `business_profiles`), session token rotation, and immutable audit event emission.
+  - `auth.routes.ts`: Fastify route handlers registered under `/api/v1/auth`:
+    - `POST /register`: Registers user, creates profile, issues access JWT.
+    - `POST /login`: Validates password, checks suspension, sets HTTP-only refresh cookie, issues access JWT.
+    - `POST /refresh`: Rotates refresh token in database session, reissues access JWT.
+    - `POST /logout`: Invalidates session in database, clears cookie.
+    - `GET /me`: Validates JWT, returns user details and associated profile.
 
 ## 4. Backend Execution Sequence
 ```
@@ -49,10 +55,12 @@ Fastify Server (src/index.ts -> src/app.ts)
   ├─> Multipart Limit Handler (File uploads restricted to 5MB, 3 files max)
   │
   ▼
-Route Resolver (e.g. /health, /api/v1/*)
+Route Resolver (/api/v1/auth/*)
   │
   ├─> Zod Schema Validation (Request body, params, query)
-  ├─> Controller / Service execution
+  ├─> AuthService Execution (bcrypt password verify, DB transactions)
+  ├─> Session / JWT Issuance & HTTP-only Cookie setting
+  ├─> Audit Log Recording (audit_events table)
   │
   ▼
 Centralized Error Handler (ZodError -> 400 with field errors, Error -> 500)

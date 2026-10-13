@@ -93,6 +93,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     };
   });
 
+  // API Routes
+  const { authRoutes } = await import('./modules/auth/auth.routes.js');
+  await app.register(authRoutes, { prefix: '/api/v1/auth' });
+
   app.get('/api/v1/info', async () => {
     return {
       name: 'VeriGig REST API',
