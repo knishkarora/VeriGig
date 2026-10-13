@@ -31,17 +31,16 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 2.3 Profile Management & Data Minimization)
-* Implemented `src/modules/profiles/`:
-  - `profiles.schema.ts`: Zod validation schemas for student and employer profile updates.
-  - `profiles.service.ts`: Handlers for private profile viewing/editing and **public profiles with strict data minimization** (sanitizing raw encrypted college IDs, roll numbers, GST/MSME numbers, and private contact phones).
-  - `profiles.routes.ts`: Registered endpoints under `/api/v1/profiles`:
-    - `GET /students/me`: Authenticated student private profile.
-    - `PUT /students/me`: Authenticated student profile updates (competencies, portfolio links, availability).
-    - `GET /students/:id`: Public student view (sanitized, consented data only).
-    - `GET /employers/me`: Authenticated business private profile.
-    - `PUT /employers/me`: Authenticated business profile updates.
-    - `GET /employers/:id`: Public business view (sanitized, company info & verified badge only).
+## 3. Modified Scope (Phase 3 Identity Verification & Governance Desk)
+* Implemented `src/modules/verification/`:
+  - `verification.schema.ts`: Zod schemas for credential submission and admin review with validity parameters.
+  - `verification.service.ts`: End-to-end credential intake, status tracking, admin review queue enrichment, and private document streaming with access audit logs.
+  - `verification.routes.ts`: Registered endpoints under `/api/v1/verifications`:
+    - `POST /submit`: Multipart upload of student ID / business registration to private storage.
+    - `GET /status`: User's verification status, reviewer reason, and expiry.
+    - `GET /admin/queue`: Admin governance desk list with student/employer filters.
+    - `GET /admin/requests/:requestId/documents/:docId`: Admin private document stream with audit logging.
+    - `POST /admin/requests/:id/review`: Approve/reject decision granting verified trust badges and logging immutable audit events.
 
 ## 4. Backend Execution Sequence
 ```

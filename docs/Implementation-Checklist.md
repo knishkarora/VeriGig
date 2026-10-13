@@ -94,13 +94,13 @@ Every task in this checklist is directly tied to answering a specific, hard judg
   - [x] Create `verification_requests` and `verification_documents` tables with enums and relationships.
   - [x] Configure private object storage (`PrivateStorageService` in `src/services/storage.service.ts`).
   - [x] File validation: MIME-type checking (JPEG, PNG, WEBP, PDF), max file size (5MB), collision-resistant sanitized filenames.
-- [ ] **3.2 Verification API**
-  - [ ] `POST /api/verifications/submit` (student college ID card / official email; business registration / GST / MSME).
-  - [ ] `GET /api/verifications/status` (current verification state and reviewer notes).
-- [ ] **3.3 Admin Verification Desk API**
-  - [ ] `GET /api/admin/verifications` (filter by pending, student, business).
-  - [ ] `GET /api/admin/verifications/:id/document` (generate short-lived signed URL or piped stream; access logged in `audit_events`).
-  - [ ] `POST /api/admin/verifications/:id/review` (approve / reject with formal reason code; updates user trust badge).
+- [x] **3.2 Verification API**
+  - [x] `POST /api/v1/verifications/submit` (student college ID card / business registration with private storage streaming).
+  - [x] `GET /api/v1/verifications/status` (current verification state, reviewer notes, and expiration date).
+- [x] **3.3 Admin Verification Desk API**
+  - [x] `GET /api/v1/verifications/admin/queue` (filter by pending, student, business with applicant profile enrichment).
+  - [x] `GET /api/v1/verifications/admin/requests/:requestId/documents/:docId` (secure document streaming with audit logging).
+  - [x] `POST /api/v1/verifications/admin/requests/:id/review` (approve / reject with reason code; grants trust badges and logs audit events).
 
 ---
 

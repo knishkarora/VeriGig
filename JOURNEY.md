@@ -1,5 +1,17 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 12: Verification APIs & Admin Governance Desk (Phase 3 Complete)
+* Implemented complete Identity Verification lifecycle in `/backend/src/modules/verification`:
+  - `verification.schema.ts`: Zod validation for multipart submissions and administrative approval/rejection decisions with validity limits.
+  - `verification.service.ts`: Handlers for role-specific submission (`student_college_id` / `business_registration`), status tracking, enriched admin queue retrieval, private document streaming with access auditing, and trust badge propagation.
+  - `verification.routes.ts`: Registered endpoints under `/api/v1/verifications`:
+    - `POST /submit`: Protected multipart endpoint streaming credential files to private disk and updating account status to `pending_verification`.
+    - `GET /status`: Retrieves current student/employer verification progress and reason codes.
+    - `GET /admin/queue`: Admin governance endpoint filtering submissions by status and role.
+    - `GET /admin/requests/:requestId/documents/:docId`: Admin document inspection endpoint streaming private files with audit logging.
+    - `POST /admin/requests/:id/review`: Admin decision endpoint approving/rejecting requests, granting `verifiedBadge`, and emitting immutable audit events.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified 100% clean compilation (`tsc`).
+
 ## [2026-10-14] Milestone 11: Identity Verification Storage & Schema (Phase 3.1 Complete)
 * Designed identity verification database schemas in `/backend/src/db/schema/verification.ts`:
   - `verification_requests`: Tracks submission type (`student_college_id`, `business_registration`), review status (`pending`, `under_review`, `approved`, `rejected`, `expired`), encrypted document identifiers, reviewer ID, reason codes, and expiry dates.
