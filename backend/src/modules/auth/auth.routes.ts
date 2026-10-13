@@ -100,19 +100,10 @@ export async function authRoutes(app: FastifyInstance, _opts: FastifyPluginOptio
   });
 
   // GET /api/v1/auth/me
-  app.get('/me', async (req: FastifyRequest, reply: FastifyReply) => {
-    try {
-      await req.jwtVerify();
-    } catch (err) {
-      return reply.status(401).send({
-        statusCode: 401,
-        error: 'Unauthorized',
-        message: 'Valid JWT session token required',
-      });
-    }
-
-    const decoded = req.user as { id: string };
-    const user = await authService.getCurrentUser(decoded.id);
+  const { authenticate } = await import('../../middleware/auth.guard.js');
+  app.get('/me', { preHandler: [authenticate] }, async (req: FastifyRequest, reply: FastifyReply) => {
+    const currentUser = req.currentUser!;
+    const user = await authService.getCurrentUser(currentUser.id);
 
     return reply.send({ user });
   });

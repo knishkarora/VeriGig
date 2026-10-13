@@ -77,9 +77,9 @@ Every task in this checklist is directly tied to answering a specific, hard judg
   - [x] `POST /api/v1/auth/login` (password verification with bcrypt, suspension check, issue HTTP-only secure cookie / JWT).
   - [x] `POST /api/v1/auth/refresh` & `POST /api/v1/auth/logout` (cryptographic refresh token rotation in sessions table).
   - [x] `GET /api/v1/auth/me` (returns session identity, active role, and associated profile).
-- [ ] **2.2 Route Guards & RBAC Middleware**
-  - [ ] Fastify preHandler hook for authenticated sessions.
-  - [ ] Role verification hooks: `requireRole(['student'])`, `requireRole(['employer'])`, `requireRole(['admin'])`.
+- [x] **2.2 Route Guards & RBAC Middleware**
+  - [x] Fastify preHandler hook for authenticated sessions (`authenticate` in `src/middleware/auth.guard.ts`).
+  - [x] Role verification hooks: `requireRole(['student'])`, `requireRole(['employer'])`, `requireRole(['admin'])`.
 - [ ] **2.3 Profile Management Endpoints**
   - [ ] Student profile CRUD (`GET /api/students/me`, `PUT /api/students/me`, `GET /api/students/:id` public view).
   - [ ] Business profile CRUD (`GET /api/employers/me`, `PUT /api/employers/me`, `GET /api/employers/:id` public view).

@@ -1,5 +1,12 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-13] Milestone 9: Route Guards & RBAC Middleware (Phase 2.2 Complete)
+* Implemented authentication and role-based access control middleware in `/backend/src/middleware/auth.guard.ts`:
+  - `authenticate`: Fastify preHandler verifying JWT from headers/cookies and hydrating `req.currentUser` (`AuthenticatedUser`).
+  - `requireRole(['student' | 'employer' | 'admin'])`: Enforces strict authorization policies and returns HTTP 403 Forbidden with clear diagnostic messaging upon role mismatch.
+  - Linked `authenticate` guard into the `/api/v1/auth/me` endpoint.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified 100% clean compilation via `npm run build`.
+
 ## [2026-10-13] Milestone 8: Authentication Endpoints & Business Logic (Phase 2.1 Complete)
 * Built full authentication module in `/backend/src/modules/auth`:
   - `auth.schema.ts`: Zod validation schemas enforcing strict email, password complexity, role selection (`student` / `employer`), and mandatory DPDPA consent acceptance.

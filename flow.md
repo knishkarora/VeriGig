@@ -31,16 +31,11 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 2.1 Authentication & RBAC Engine)
-* Implemented `src/modules/auth/`:
-  - `auth.schema.ts`: Zod validation schemas for registration, login, and mandatory DPDPA consent.
-  - `auth.service.ts`: Secure bcrypt hashing (cost 12), user creation, role profile provisioning (`student_profiles`, `business_profiles`), session token rotation, and immutable audit event emission.
-  - `auth.routes.ts`: Fastify route handlers registered under `/api/v1/auth`:
-    - `POST /register`: Registers user, creates profile, issues access JWT.
-    - `POST /login`: Validates password, checks suspension, sets HTTP-only refresh cookie, issues access JWT.
-    - `POST /refresh`: Rotates refresh token in database session, reissues access JWT.
-    - `POST /logout`: Invalidates session in database, clears cookie.
-    - `GET /me`: Validates JWT, returns user details and associated profile.
+## 3. Modified Scope (Phase 2.2 Route Guards & RBAC Middleware)
+* Implemented `src/middleware/auth.guard.ts`:
+  - `authenticate`: Fastify preHandler extracting and validating JWT tokens, populating `req.currentUser`.
+  - `requireRole(['student' | 'employer' | 'admin'])`: Configurable preHandler hook verifying user authorization and rejecting unauthorized requests with standard HTTP 403 Forbidden responses.
+  - Attached `authenticate` to `/api/v1/auth/me`.
 
 ## 4. Backend Execution Sequence
 ```
@@ -55,7 +50,11 @@ Fastify Server (src/index.ts -> src/app.ts)
   ├─> Multipart Limit Handler (File uploads restricted to 5MB, 3 files max)
   │
   ▼
-Route Resolver (/api/v1/auth/*)
+Route Resolver (/api/v1/*)
+  │
+  ├─> PreHandler Hooks:
+  │     ├─> authenticate: Extracts JWT payload -> req.currentUser (401 on missing/expired)
+  │     └─> requireRole: Validates role in allowed list (403 on role mismatch)
   │
   ├─> Zod Schema Validation (Request body, params, query)
   ├─> AuthService Execution (bcrypt password verify, DB transactions)
