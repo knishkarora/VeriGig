@@ -1,5 +1,16 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 11: Identity Verification Storage & Schema (Phase 3.1 Complete)
+* Designed identity verification database schemas in `/backend/src/db/schema/verification.ts`:
+  - `verification_requests`: Tracks submission type (`student_college_id`, `business_registration`), review status (`pending`, `under_review`, `approved`, `rejected`, `expired`), encrypted document identifiers, reviewer ID, reason codes, and expiry dates.
+  - `verification_documents`: Tracks private file keys, original names, MIME types, and file size in bytes with cascading foreign key references.
+  - Generated database migration `0001_violet_lilith.sql`.
+* Implemented `PrivateStorageService` in `/backend/src/services/storage.service.ts`:
+  - Strict MIME validation (JPEG, PNG, WEBP, PDF only).
+  - 5MB maximum file size enforcement with automatic cleanup on limit breach.
+  - Collision-resistant UUID key generation and streaming storage outside public accessibility.
+* Verified clean compilation (`tsc`).
+
 ## [2026-10-14] Milestone 10: Profile Management & Data Minimization (Phase 2.3 Complete)
 * Built profile management module in `/backend/src/modules/profiles`:
   - `profiles.schema.ts`: Validation schemas for student competencies, portfolio links, availability statuses, and employer details.

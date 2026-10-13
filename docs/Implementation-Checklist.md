@@ -90,10 +90,10 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 3: Identity Verification & Private Document Management
 *Objective: Private student and business credential verification with admin audit queue.*
 
-- [ ] **3.1 Verification Storage & Schema**
-  - [ ] Create `verification_requests` and `verification_documents` tables.
-  - [ ] Configure private object storage (local disk abstraction with restricted access or S3-compatible private bucket).
-  - [ ] File validation: MIME-type checking (PDF, JPG, PNG), max file size (5MB), sanitized filenames.
+- [x] **3.1 Verification Storage & Schema**
+  - [x] Create `verification_requests` and `verification_documents` tables with enums and relationships.
+  - [x] Configure private object storage (`PrivateStorageService` in `src/services/storage.service.ts`).
+  - [x] File validation: MIME-type checking (JPEG, PNG, WEBP, PDF), max file size (5MB), collision-resistant sanitized filenames.
 - [ ] **3.2 Verification API**
   - [ ] `POST /api/verifications/submit` (student college ID card / official email; business registration / GST / MSME).
   - [ ] `GET /api/verifications/status` (current verification state and reviewer notes).
