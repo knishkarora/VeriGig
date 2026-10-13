@@ -31,16 +31,16 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 3 Identity Verification & Governance Desk)
-* Implemented `src/modules/verification/`:
-  - `verification.schema.ts`: Zod schemas for credential submission and admin review with validity parameters.
-  - `verification.service.ts`: End-to-end credential intake, status tracking, admin review queue enrichment, and private document streaming with access audit logs.
-  - `verification.routes.ts`: Registered endpoints under `/api/v1/verifications`:
-    - `POST /submit`: Multipart upload of student ID / business registration to private storage.
-    - `GET /status`: User's verification status, reviewer reason, and expiry.
-    - `GET /admin/queue`: Admin governance desk list with student/employer filters.
-    - `GET /admin/requests/:requestId/documents/:docId`: Admin private document stream with audit logging.
-    - `POST /admin/requests/:id/review`: Approve/reject decision granting verified trust badges and logging immutable audit events.
+## 3. Modified Scope (Phase 4 Gig Lifecycle & Policy Engine)
+* Implemented `src/modules/gigs/`:
+  - `gigs.schema.ts`: Validation schemas for structured micro-gig creation, budget floors (>= ₹1,500), milestone sum validation, revision caps, and facet search.
+  - `gigs.service.ts`: Handlers for automated policy checking (rejecting academic dishonesty, homework cheating, and hazardous tasks), gig publishing, multi-facet query filtering, and administrative moderation.
+  - `gigs.routes.ts`: Registered endpoints under `/api/v1/gigs`:
+    - `GET /`: Public search and filtering by category, duration, workMode, city, budget range, and keywords.
+    - `GET /:id`: Public brief with milestone schedule and employer verification badge.
+    - `POST /`: Authenticated employer creation endpoint validating budget totals and policy rules.
+    - `GET /admin/pending`: Admin queue of flagged listings.
+    - `POST /admin/:id/moderate`: Admin approve/ban moderation endpoint with immutable audit logging.
 
 ## 4. Backend Execution Sequence
 ```

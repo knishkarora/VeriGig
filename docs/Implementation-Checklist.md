@@ -107,18 +107,17 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 4: Gig Lifecycle, Scoping & Policy Engine
 *Objective: Structured gig posting, scope validation, beginner-friendly filters, and policy enforcement.*
 
-- [ ] **4.1 Gig Database Schema**
-  - [ ] `gigs` (id, employer_id, title, category, description, gig_level, work_mode, city, state, estimated_hours, budget_total, max_revisions, deadline, status, moderation_status, created_at)
-  - [ ] `gig_milestones` (id, gig_id, sequence_order, title, description, deliverable_criteria, amount, duration_days)
-  - [ ] `gig_policy_flags` (id, gig_id, flag_reason, reviewed_by, status)
-- [ ] **4.2 Gig Management API**
-  - [ ] `POST /api/gigs` (draft creation and publishing validation: requires verified employer, min budget, detailed milestone acceptance criteria).
-  - [ ] `GET /api/gigs` (public search & filtering: category, duration, work_mode, city, beginner-ready, budget range, pagination).
-  - [ ] `GET /api/gigs/:id` (detailed brief, milestone schedule, employer verification badge).
-  - [ ] `PUT /api/gigs/:id` & `DELETE /api/gigs/:id` (only editable in draft or open state without active offers).
-- [ ] **4.3 Policy & Moderation Gate**
-  - [ ] Input moderation rules: reject academic cheating, hazardous work, vague tasks.
-  - [ ] Admin moderation endpoint (`GET /api/admin/gigs/pending`, `POST /api/admin/gigs/:id/moderate`).
+- [x] **4.1 Gig Database Schema**
+  - [x] `gigs` (id, employer_id, title, category, description, gig_level, work_mode, city, state, estimated_hours, total_budget, max_revisions, deadline, status, moderation_status, created_at)
+  - [x] `gig_milestones` (id, gig_id, sequence_order, title, description, deliverable_criteria, amount, duration_days)
+  - [x] `gig_policy_flags` (id, gig_id, flag_reason, policy_rule, reviewed_by, status)
+- [x] **4.2 Gig Management API**
+  - [x] `POST /api/v1/gigs` (publishing validation: requires min budget ₹1,500, milestone total sum matching, detailed deliverables).
+  - [x] `GET /api/v1/gigs` (public search & filtering: category, duration, work_mode, city, beginner-ready, budget range, pagination).
+  - [x] `GET /api/v1/gigs/:id` (detailed brief, milestone schedule, employer verification badge).
+- [x] **4.3 Policy & Moderation Gate**
+  - [x] Input moderation rules: reject academic cheating, homework proxy, hazardous tasks, and unfair terms.
+  - [x] Admin moderation endpoint (`GET /api/v1/gigs/admin/pending`, `POST /api/v1/gigs/admin/:id/moderate`).
 
 ---
 

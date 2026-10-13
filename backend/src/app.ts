@@ -103,6 +103,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { verificationRoutes } = await import('./modules/verification/verification.routes.js');
   await app.register(verificationRoutes, { prefix: '/api/v1/verifications' });
 
+  const { gigsRoutes } = await import('./modules/gigs/gigs.routes.js');
+  await app.register(gigsRoutes, { prefix: '/api/v1/gigs' });
+
   app.get('/api/v1/info', async () => {
     return {
       name: 'VeriGig REST API',

@@ -1,5 +1,18 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 13: Gig Lifecycle, Scoping & Policy Engine (Phase 4 Complete)
+* Implemented complete micro-gig management and policy enforcement module in `/backend/src/modules/gigs`:
+  - `gigs.schema.ts`: Enforces contractor safeguards: minimum budget floor ($\ge ₹1,500$), mandatory measurable deliverables, estimated hours, capped revisions ($1-5$), and strict sum matching between milestones and total contract budget.
+  - `gigs.service.ts`: Implemented automated policy compliance scanner detecting prohibited academic cheating (homework proxy, exams, thesis writing) and hazardous tasks, multi-facet query filtering (category, work mode, budget range, search terms), and administrative moderation actions.
+  - `gigs.routes.ts`: Registered endpoints under `/api/v1/gigs`:
+    - `GET /`: Public multi-facet feed with employer verification badges and milestone schedules.
+    - `GET /:id`: Detailed brief view.
+    - `POST /`: Protected employer creation route validating milestones and policy rules.
+    - `GET /admin/pending`: Admin moderation queue for flagged listings.
+    - `POST /admin/:id/moderate`: Administrative approval/rejection endpoint with immutable audit logging.
+* Generated database migration `0002_thin_grim_reaper.sql`.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified clean compilation (`tsc`).
+
 ## [2026-10-14] Milestone 12: Verification APIs & Admin Governance Desk (Phase 3 Complete)
 * Implemented complete Identity Verification lifecycle in `/backend/src/modules/verification`:
   - `verification.schema.ts`: Zod validation for multipart submissions and administrative approval/rejection decisions with validity limits.

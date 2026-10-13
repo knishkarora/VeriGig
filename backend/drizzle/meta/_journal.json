@@ -15,6 +15,13 @@
       "when": 1791920009690,
       "tag": "0001_violet_lilith",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791920469517,
+      "tag": "0002_thin_grim_reaper",
+      "breakpoints": true
     }
   ]
 }
