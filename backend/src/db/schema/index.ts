@@ -5,3 +5,4 @@ export * from './verification.js';
 export * from './gigs.js';
 export * from './applications.js';
 export * from './contracts.js';
+export * from './payments.js';

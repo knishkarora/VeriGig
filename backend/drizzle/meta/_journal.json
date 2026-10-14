@@ -36,6 +36,13 @@
       "when": 1791966177426,
       "tag": "0004_public_sleeper",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791967018958,
+      "tag": "0005_gifted_lake",
+      "breakpoints": true
     }
   ]
 }

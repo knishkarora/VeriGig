@@ -31,23 +31,22 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 6: Contracts, Two-Party Scope Acceptance & Milestone Execution)
-* Implemented `src/db/schema/contracts.ts`:
-  - `contracts`: Tracks two-party contracts, `totalAmount`, `termsVersion`, `confidentialityAccepted`, `ipClauseAccepted`, `maxRevisionsPerMilestone`, and status (`scope_pending`, `funded`, `in_progress`, `completed`, `cancelled`, `disputed`).
-  - `contract_milestones`: Manages sequence order, criteria, amount, status (`locked`, `active`, `submitted`, `under_review`, `revision_requested`, `approved`, `paid`, `disputed`), and due dates.
-  - `deliverable_submissions`: Multi-version deliverable history tracking `versionNumber`, notes, live URLs, repository URLs, and attachments.
-  - `revision_requests`: Capped revision feedback loop recording reviewer ID, actionable feedback, and timestamps.
-* Implemented `src/modules/contracts/`:
-  - `contracts.schema.ts`: Zod validation for offer creation, scope acceptance (mandatory IP & confidentiality flags), deliverable submissions, and revision feedback.
-  - `contracts.service.ts`: Complete contract state machine enforcing two-party scope signing, sequential milestone unlocking (milestone 1 -> milestone 2), revision capping (blocks revisions beyond `maxRevisionsPerMilestone`), deliverable versioning, and contract completion upon final milestone sign-off.
-  - `contracts.routes.ts`: Registered endpoints under `/api/v1/contracts`:
-    - `POST /create-offer`: Employer initiates contract offer from applicant proposal.
-    - `POST /:id/accept-scope`: Student contractor accepts terms, confidentiality, and IP transfer clause.
-    - `GET /`: User contract listing (student/employer).
-    - `GET /:id`: Full contract dossier with timeline, milestones, submissions, and revisions.
-    - `POST /:id/milestones/:milestoneId/submit`: Student delivers work with version tracking.
-    - `POST /:id/milestones/:milestoneId/request-revision`: Employer requests revision within capped limits.
-    - `POST /:id/milestones/:milestoneId/approve`: Employer signs off deliverable; activates next milestone or completes contract.
+## 3. Modified Scope (Phase 7: Payment Commitment, Sandbox Escrow Ledger & Webhooks)
+* Implemented `src/db/schema/payments.ts`:
+  - `payment_intents`: Tracks order IDs, amounts, provider statuses (`created`, `authorized`, `captured`, `failed`, `refunded`), and unique idempotency keys.
+  - `payment_events`: Immutable log of raw webhook payloads and provider references.
+  - `payouts`: Milestone payout records with gross amount, zero-commission pilot fee deduction, net student amount, and status (`pending`, `processing`, `completed`, `failed`).
+  - `ledger_entries`: Double-entry append-only accounting ledger recording debit/credit movements (`employer_account`, `sandbox_escrow`, `student_wallet`, `platform_revenue`) and entry types (`escrow_funded`, `milestone_payout`, `platform_fee`, `refund`).
+* Implemented `src/modules/payments/`:
+  - `gateway.service.ts`: `SandboxPaymentGatewayService` creating sandbox orders and verifying HMAC-SHA256 webhook signatures.
+  - `payments.schema.ts`: Zod validation for payment orders, idempotency enforcement, signed webhook payloads, and payout release authorizations.
+  - `payments.service.ts`: Enforces provider webhook as sole authority for funding state, records double-entry ledger entries, settles milestone payouts with zero pilot fees, computes student private lifetime earnings and pending escrow, and generates itemized receipts.
+  - `payments.routes.ts`: Registered endpoints under `/api/v1/payments`:
+    - `POST /create-order`: Employer creates funding order with mandatory idempotency key.
+    - `POST /webhook`: Digital signature-verified webhook handler processing `payment.captured` and updating contract state.
+    - `POST /release-payout`: Employer authorizes payout release for approved milestones.
+    - `GET /receipt/:contractId`: Itemized financial breakdown receipt with platform fee transparency.
+    - `GET /student/earnings`: Student private financial dashboard reporting lifetime earnings, pending escrow, and payout history.
 
 ## 4. Backend Execution Sequence
 ```

@@ -164,19 +164,19 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 7: Payment Commitment, Sandbox Escrow Ledger & Webhooks
 *Objective: Auditable financial state machine, payment intent tracking, and webhook-driven settlement.*
 
-- [ ] **7.1 Financial Ledger Schema**
-  - [ ] `payment_intents` (id, contract_id, order_id, amount, currency, provider_status, idempotency_key)
-  - [ ] `payment_events` (id, payment_intent_id, event_type, provider_reference, raw_payload, created_at)
-  - [ ] `payouts` (id, contract_milestone_id, recipient_id, amount, fee_deducted, status, provider_payout_id)
-  - [ ] `ledger_entries` (id, contract_id, debit_account, credit_account, amount, entry_type, created_at)
-- [ ] **7.2 Payment Provider / Sandbox Integration**
-  - [ ] Sandbox Payment Gateway service (Razorpay test order / simulated marketplace aggregator flow).
-  - [ ] `POST /api/payments/create-order` (creates funding order for accepted contract).
-  - [ ] `POST /api/payments/webhook` (signed webhook handler: strictly verifies signature before marking contract `funded` or milestone `paid`).
-  - [ ] Idempotency enforcement on every money-handling endpoint.
-- [ ] **7.3 Financial Reports & Receipts API**
-  - [ ] `GET /api/payments/receipt/:contractId` (generates detailed itemized receipt with platform fee breakdown).
-  - [ ] `GET /api/student/earnings` (private transaction ledger, pending payouts, completed settlements).
+- [x] **7.1 Financial Ledger Schema**
+  - [x] `payment_intents` (id, contract_id, order_id, amount, currency, provider_status, idempotency_key)
+  - [x] `payment_events` (id, payment_intent_id, event_type, provider_reference, raw_payload, created_at)
+  - [x] `payouts` (id, contract_milestone_id, recipient_id, amount, fee_deducted, status, provider_payout_id)
+  - [x] `ledger_entries` (id, contract_id, debit_account, credit_account, amount, entry_type, created_at)
+- [x] **7.2 Payment Provider / Sandbox Integration**
+  - [x] Sandbox Payment Gateway service (Razorpay test order / simulated marketplace aggregator flow).
+  - [x] `POST /api/v1/payments/create-order` (creates funding order for accepted contract).
+  - [x] `POST /api/v1/payments/webhook` (signed webhook handler: strictly verifies signature before marking contract `funded` or milestone `paid`).
+  - [x] Idempotency enforcement on every money-handling endpoint.
+- [x] **7.3 Financial Reports & Receipts API**
+  - [x] `GET /api/v1/payments/receipt/:contractId` (generates detailed itemized receipt with platform fee breakdown).
+  - [x] `GET /api/v1/student/earnings` (private transaction ledger, pending payouts, completed settlements).
 
 ---
 

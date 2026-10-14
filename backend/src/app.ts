@@ -112,10 +112,15 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { contractsRoutes } = await import('./modules/contracts/contracts.routes.js');
   await app.register(contractsRoutes, { prefix: '/api/v1/contracts' });
 
+  const { paymentsRoutes } = await import('./modules/payments/payments.routes.js');
+  await app.register(paymentsRoutes, { prefix: '/api/v1/payments' });
+
   // Direct alias for student applications tracking per specification
   const { ApplicationsService } = await import('./modules/applications/applications.service.js');
+  const { PaymentsService } = await import('./modules/payments/payments.service.js');
   const { authenticate, requireRole } = await import('./middleware/auth.guard.js');
   const applicationsService = new ApplicationsService();
+  const paymentsService = new PaymentsService();
 
   app.get(
     '/api/v1/student/applications',
@@ -123,6 +128,15 @@ export async function buildApp(): Promise<FastifyInstance> {
     async (req, reply) => {
       const apps = await applicationsService.getStudentApplications(req.currentUser!.id);
       return reply.send({ applications: apps, total: apps.length });
+    }
+  );
+
+  app.get(
+    '/api/v1/student/earnings',
+    { preHandler: [authenticate, requireRole(['student'])] },
+    async (req, reply) => {
+      const earnings = await paymentsService.getStudentEarnings(req.currentUser!.id);
+      return reply.send(earnings);
     }
   );
 

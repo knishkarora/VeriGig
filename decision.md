@@ -1,5 +1,27 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-14] Decision: Payment Commitment, Double-Entry Escrow Ledger & Webhook Authority (Phase 7)
+
+* **Context & Scope:** 
+  Financial settlement and escrow guarantees are critical to answering Judge Defense Matrix Q6 (preventing non-payment/fraud), Q9 (transparent revenue model), and Q13 (payment, milestone releases, and refunds).
+
+* **Choice Made:** 
+  Implemented an auditable financial architecture in `backend/src/modules/payments/`:
+  1. **Provider Webhook as Single Source of Financial Truth:** Client code never marks funds as deposited or paid out directly. Only signed provider webhooks (`payment.captured`, `payment.authorized`) or server-side authorized releases trigger balance state transitions.
+  2. **Append-Only Double-Entry Ledger (`ledger_entries`):** All financial movements create balanced debit/credit entries between `employer_account`, `sandbox_escrow`, `student_wallet`, and `platform_revenue`. Ledger records are strictly append-only and cannot be updated or deleted.
+  3. **Strict Idempotency Enforcement:** All payment order generation and milestone releases mandate an `idempotency_key` unique constraint in PostgreSQL. Duplicate network requests return the original intent without double-charging or double-crediting.
+  4. **Pilot Zero-Commission Policy:** To solve the initial two-sided marketplace cold start (Judge Defense Q9 & Q10), platform commission is 0% during the regional pilot cohort (standard 5% fee explicitly waived on itemized receipts with GST exempt line items).
+
+* **Rationale (Why over What):**
+  - **Judge Readiness & Escrow Compliance:** Generic platforms allow verbal deals or unsecured promises. VeriGig mandates full pre-authorized contract commitment in escrow before work begins. Using a double-entry ledger ensures every rupee is accounted for and verifiable in an audit.
+  - **Security:** HMAC-SHA256 signature verification protects webhook endpoints against tampering, spoofing, and replay attacks.
+
+* **Tradeoffs Accepted:**
+  - Sandbox mode uses simulated gateway tokens and deterministic identifiers (`order_sand_...`, `payout_sand_...`) designed to drop-in swap with Razorpay Route or cashfree live credentials for production deployment.
+
+* **Immutability Status:** Settled & Immutable.
+
+
 ## [2026-10-14] Decision: Two-Party Scope Acceptance & Capped Revision State Machine (Phase 6)
 
 * **Context & Scope:** 

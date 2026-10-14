@@ -1,5 +1,26 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 16: Payment Commitment, Sandbox Escrow Ledger & Webhooks (Phase 7 Complete)
+* Designed and generated financial ledger database schemas in `/backend/src/db/schema/payments.ts`:
+  - `payment_intents`: Tracks payment orders, amounts, currencies, provider statuses, and unique idempotency keys.
+  - `payment_events`: Append-only raw webhook audit log with provider references.
+  - `payouts`: Milestone payout records tracking gross amount, platform fee deduction, net disbursement, and completion status.
+  - `ledger_entries`: Double-entry accounting table recording auditable debit/credit movements (`employer_account`, `sandbox_escrow`, `student_wallet`, `platform_revenue`).
+  - Generated database migration `0005_gifted_lake.sql`.
+* Built sandbox payment provider and signed webhook verification in `/backend/src/modules/payments`:
+  - `gateway.service.ts`: `SandboxPaymentGatewayService` generating sandbox orders (`order_sand_...`) and verifying HMAC-SHA256 signatures.
+  - `payments.schema.ts`: Validation for funding order creation, idempotency keys, signed webhook events, and payout release triggers.
+  - `payments.service.ts`: Handlers enforcing provider webhooks as the sole authority for contract funding, double-entry escrow locking, zero-commission pilot milestone releases, itemized receipts with fee transparency, and student private earnings tracking.
+  - `payments.routes.ts`: Registered endpoints under `/api/v1/payments`:
+    - `POST /create-order`: Employer creates funding order with mandatory idempotency key.
+    - `POST /webhook`: Signed provider webhook handler updating contract to `funded` upon `payment.captured`.
+    - `POST /release-payout`: Employer authorizes payout release for approved milestones.
+    - `GET /receipt/:contractId`: Itemized financial breakdown receipt with platform fee transparency.
+    - `GET /student/earnings`: Student private financial dashboard reporting lifetime earnings, pending escrow, and payout history.
+* Added architectural decision entry to [[decision.md]] explaining the double-entry ledger, webhook authority, and zero-commission pilot strategy.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified clean compilation (`tsc`) across both backend and frontend.
+
+
 ## [2026-10-14] Milestone 15: Contracts, Two-Party Scope Acceptance & Milestone Execution (Phase 6 Complete)
 * Designed and generated relational contract database schemas in `/backend/src/db/schema/contracts.ts`:
   - `contracts`: Tracks binding agreements, `gigId`, `applicationId`, `studentId`, `employerId`, `totalAmount`, `termsVersion`, `confidentialityAccepted`, `ipClauseAccepted`, `maxRevisionsPerMilestone`, and status (`scope_pending`, `funded`, `in_progress`, `completed`, `cancelled`, `disputed`).
