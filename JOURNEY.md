@@ -1,5 +1,37 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 18: Ratings, Verified Completion Proof & In-App Messaging (Phase 9 Complete)
+* Designed and generated bilateral reviews, completion credentials, and messaging schemas:
+  - `/backend/src/db/schema/reviews.ts`:
+    * `reviews`: Double-sided rating mechanism with `contractId`, `reviewerId`, `revieweeId`, `rating` (1–5), `feedback`, `isPublic` (concealed until both parties review).
+    * `completion_records`: Tamper-evident credentials storing `verificationHash` (cryptographic SHA-256 digest of contract execution metadata), `skillsVerified`, and public verifiability flags.
+    * Generated database migration `0007_bright_talos.sql`.
+  - `/backend/src/db/schema/messaging.ts`:
+    * `conversations`: Contextual multi-party chat sessions indexed by `contextType` (`gig`, `application`, `contract`), `contextId`, and `participantIds`.
+    * `messages`: Message transcript storing `messageText`, `attachmentUrl`, `hasSafetyWarning`, `safetyWarnings` array, and `readAt`.
+    * Generated database migration `0008_legal_veda.sql`.
+* Built reviews and completion verification module in `/backend/src/modules/reviews`:
+  - `reviews.schema.ts`: Validation for ratings (1–5) and structured feedback.
+  - `reviews.service.ts`: Handlers enforcing double-sided review concealment (reviews hidden from counterparties until both submit or window expires), automatic student profile rating aggregate re-computation, deterministic SHA-256 certificate hashing, and public certificate lookup.
+  - `reviews.routes.ts`: Registered endpoints under `/api/v1/reviews`:
+    * `POST /api/v1/reviews`: Submit review for completed contract with double-sided concealment gate.
+    * `GET /api/v1/reviews/contract/:contractId`: Retrieve revealed reviews for a contract.
+    * `GET /api/v1/reviews/user/:userId`: Public verified reviews for student/employer profiles.
+    * `POST /api/v1/reviews/completion-records/generate/:contractId`: Generate tamper-evident completion certificate with SHA-256 hash.
+    * `GET /api/v1/verify/completion/:hash` (and `/api/verify/completion/:hash`): Public unauthenticated certificate verification endpoint.
+* Built contextual in-app messaging and real-time safety scanner in `/backend/src/modules/messaging`:
+  - `safety.service.ts`: `MessagingSafetyScanner` scanning messages in real time for off-platform contact sharing (phone numbers, WhatsApp, Telegram), off-platform payment solicitations (UPI handles, direct transfers), email sharing (DPDPA notice), and accidental credentials/secrets.
+  - `messaging.schema.ts`: Validation for conversation creation and message payloads.
+  - `messaging.service.ts`: Handlers for starting contextual conversations, message delivery with inline safety warning tagging, security audit logging (`safety_policy_warning_triggered`), and incremental message polling with read receipts.
+  - `messaging.routes.ts`: Registered endpoints under `/api/v1/messaging`:
+    * `POST /api/v1/messaging/conversations`: Find or create contextual conversation.
+    * `GET /api/v1/messaging/conversations`: List user conversations with unread message badges.
+    * `POST /api/v1/messaging/conversations/:id/messages`: Send message with safety scanner evaluation.
+    * `GET /api/v1/messaging/conversations/:id/messages`: Retrieve messages with optional incremental polling (`?after=`) and auto-read receipts.
+* Added architectural decision entry to [[decision.md]] explaining double-sided review concealment, portable SHA-256 certificate proof, and zero-latency safety advisories.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], [[Current Status.md]], and verified clean compilation (`tsc`) across backend and frontend.
+
+
 ## [2026-10-14] Milestone 17: Dispute Resolution, Governance & Immutable Audit Logs (Phase 8 Complete)
 * Designed and generated dispute resolution database schemas in `/backend/src/db/schema/disputes.ts`:
   - `disputes`: Tracks contract milestone disputes with `contractId`, `milestoneId`, `initiatedBy`, `reasonCategory` (`unresponsive_counterparty`, `deliverable_quality`, `scope_creep`, `unreasonable_revisions`, `unauthorized_work`, `other`), `explanation`, `status` (`open`, `evidence_pending`, `in_review`, `resolved`), and `resolutionType` (`refund_employer`, `payout_student`, `split_settlement`).

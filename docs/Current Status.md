@@ -47,5 +47,5 @@
 - [x] Phase 6: Contracts, two-party scope acceptance & milestone execution.
 - [x] Phase 7: Payment commitment, sandbox escrow ledger & webhooks.
 - [x] Phase 8: Dispute resolution, governance & immutable audit logs.
-- [ ] Phase 9: Ratings, verified completion proof & in-app messaging.
+- [x] Phase 9: Ratings, verified completion proof & in-app messaging.
 - [ ] Phase 10: Frontend API connection & end-to-end judge demonstration.

@@ -31,20 +31,21 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 8: Dispute Resolution, Governance & Immutable Audit Logs)
-* Implemented `src/db/schema/disputes.ts`:
-  - `disputes`: Tracks contract milestone disputes with `initiatedBy`, `reasonCategory`, `explanation`, `status` (`open`, `evidence_pending`, `in_review`, `resolved`), and `resolutionType` (`refund_employer`, `payout_student`, `split_settlement`).
-  - `dispute_evidence`: Bilateral evidence log tracking `uploadedBy`, notes, and file attachments/URLs.
-  - `dispute_decisions`: Administrative arbitration rulings recording `adminId`, `formalRuling`, `payoutAmountStudent`, and `refundAmountEmployer`.
-* Implemented `src/modules/disputes/`:
-  - `disputes.schema.ts`: Zod validation for dispute filing, evidence submissions, and admin arbitration rulings with strict mathematical reconciliation.
-  - `disputes.service.ts`: Handlers for freezing disputed milestones in escrow, collecting bilateral evidence, assembling comprehensive case dossiers for administrative review, executing binding arbitration rulings with double-entry ledger settlements, and logging immutable audit events.
-  - `disputes.routes.ts`: Registered endpoints under `/api/v1/disputes` with aliases in `app.ts`:
-    - `POST /api/v1/contracts/:id/disputes/raise` (and `/api/v1/disputes/raise`): Party files dispute; freezes milestone funds in escrow.
-    - `POST /api/v1/disputes/:id/evidence`: Student or employer attaches supporting evidence notes/documents.
-    - `GET /api/v1/disputes/:id`: Detailed dispute dossier inspection view.
-    - `GET /api/v1/admin/disputes` (and `/api/v1/disputes/admin/queue`): Admin arbitration desk listing active dispute cases.
-    - `POST /api/v1/admin/disputes/:id/resolve`: Admin issues formal ruling, triggers double-entry ledger transfers, updates contract lifecycle, and emits audit event.
+## 3. Modified Scope (Phase 9: Bilateral Reviews, Cryptographic Completion Proof & In-App Messaging)
+* Implemented `src/db/schema/reviews.ts` & `src/db/schema/messaging.ts`:
+  - `reviews`: Double-sided review gate tracking `contractId`, `reviewerId`, `revieweeId`, `rating`, `feedback`, `isPublic` (concealed until both submit).
+  - `completion_records`: Cryptographic completion credentials with portable SHA-256 digests (`verificationHash`) generated from contract execution data.
+  - `conversations`: Contextual multi-party chat sessions indexed by `contextType` (`gig`, `application`, `contract`) and `contextId`.
+  - `messages`: Contextual message log tracking `hasSafetyWarning`, `safetyWarnings`, `readAt`, and attachments.
+* Implemented `src/modules/reviews/`:
+  - `reviews.schema.ts`: Zod schema validation for ratings (1-5), structured feedback, and certificate generation.
+  - `reviews.service.ts`: Bilateral review concealment engine (reviews revealed only once both parties submit), automatic student rating re-aggregation, and SHA-256 certificate hashing with public verifiability.
+  - `reviews.routes.ts`: Endpoints under `/api/v1/reviews` and public verify routes `/api/v1/verify/completion/:hash`.
+* Implemented `src/modules/messaging/`:
+  - `safety.service.ts`: Real-time heuristic policy scanner flagging off-platform contact sharing (phone, WhatsApp, Telegram), off-platform payment terms (UPI handles, direct transfers), email disclosures, and credentials.
+  - `messaging.schema.ts`: Validation for starting contextual conversations and dispatching messages.
+  - `messaging.service.ts`: Contextual conversation manager, safety warning evaluation with security audit logging, and message polling with automatic read receipt updating.
+  - `messaging.routes.ts`: Registered endpoints under `/api/v1/messaging/conversations` for listing, creating, and retrieving messages.
 
 ## 4. Backend Execution Sequence
 ```

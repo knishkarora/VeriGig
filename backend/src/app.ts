@@ -208,6 +208,38 @@ export async function buildApp(): Promise<FastifyInstance> {
     }
   );
 
+  // Reviews & Completion Certificates
+  const { reviewsRoutes } = await import('./modules/reviews/reviews.routes.js');
+  await app.register(reviewsRoutes, { prefix: '/api/v1/reviews' });
+
+  // In-App Messaging
+  const { messagingRoutes } = await import('./modules/messaging/messaging.routes.js');
+  await app.register(messagingRoutes, { prefix: '/api/v1/messaging' });
+
+  const { ReviewsService } = await import('./modules/reviews/reviews.service.js');
+  const reviewsService = new ReviewsService();
+
+  // Public portable verification endpoint (Judge Matrix Q2 & Q5)
+  app.get<{
+    Params: { hash: string };
+  }>(
+    '/api/v1/verify/completion/:hash',
+    async (req, reply) => {
+      const cert = await reviewsService.getPublicCertificate(req.params.hash);
+      return reply.send(cert);
+    }
+  );
+
+  app.get<{
+    Params: { hash: string };
+  }>(
+    '/api/verify/completion/:hash',
+    async (req, reply) => {
+      const cert = await reviewsService.getPublicCertificate(req.params.hash);
+      return reply.send(cert);
+    }
+  );
+
   app.get('/api/v1/info', async () => {
     return {
       name: 'VeriGig REST API',

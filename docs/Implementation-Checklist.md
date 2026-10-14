@@ -198,15 +198,15 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 9: Ratings, Verified Completion Proof & In-App Messaging
 *Objective: Portable portfolio verification certificates, bilateral reviews, and contextual messaging.*
 
-- [ ] **9.1 Reviews & Completion Certificates**
-  - [ ] `reviews` table (contract_id, reviewer_id, reviewee_id, rating_score [1-5], written_feedback, skills_endorsed, created_at).
-  - [ ] Double-sided review gate: reviews revealed only after both parties submit or review window expires.
-  - [ ] `completion_records` table (unique verification hash, student_id, gig_title, employer_company, skills, completed_at, public_slug).
-  - [ ] Public verification endpoint: `GET /api/verify/completion/:hash` (portable, shareable credential proof for students).
-- [ ] **9.2 Contextual Messaging API**
-  - [ ] `conversations` (id, context_type [gig, application, contract], context_id, participant_ids)
-  - [ ] `messages` (id, conversation_id, sender_id, message_text, attachment_url, read_at, created_at)
-  - [ ] Real-time/polling messaging endpoint with safety warnings against off-platform payment or credential sharing.
+- [x] **9.1 Reviews & Completion Certificates**
+  - [x] `reviews` table (contract_id, reviewer_id, reviewee_id, rating_score [1-5], written_feedback, skills_endorsed, created_at).
+  - [x] Double-sided review gate: reviews revealed only after both parties submit or review window expires.
+  - [x] `completion_records` table (unique verification hash, student_id, gig_title, employer_company, skills, completed_at, public_slug).
+  - [x] Public verification endpoint: `GET /api/verify/completion/:hash` (portable, shareable credential proof for students).
+- [x] **9.2 Contextual Messaging API**
+  - [x] `conversations` (id, context_type [gig, application, contract], context_id, participant_ids)
+  - [x] `messages` (id, conversation_id, sender_id, message_text, attachment_url, read_at, created_at)
+  - [x] Real-time/polling messaging endpoint with safety warnings against off-platform payment or credential sharing.
 
 ---
 

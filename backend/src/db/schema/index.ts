@@ -7,3 +7,5 @@ export * from './applications.js';
 export * from './contracts.js';
 export * from './payments.js';
 export * from './disputes.js';
+export * from './reviews.js';
+export * from './messaging.js';

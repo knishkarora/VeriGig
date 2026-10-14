@@ -1,5 +1,40 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-14] Decision: Double-Sided Reviews, Cryptographic Completion Proof & In-App Messaging Safety (Phase 9)
+
+* **Context & Scope:** 
+  Micro-gig completion requires trustworthy, manipulation-resistant reputation feedback and portable proof of work, while in-app communication must proactively prevent off-platform disintermediation, fee avoidance, and privacy leaks. This directly fulfills Judge Defense Matrix Q2 (verified credentials & portfolio value), Q5 (reputation & trust mechanics), Q6 (anti-fraud & disintermediation protection), and Q8 (DPDPA 2023 compliance & data protection).
+
+* **Choice Made:** 
+  Implemented a dual-engine architecture across reviews, credentialing, and communication in `backend/src/modules/reviews/` and `backend/src/modules/messaging/`:
+  1. **Double-Sided Review Gate (`reviews`):**
+     - Reviews submitted by either the student or employer for a completed contract remain strictly confidential (`isPublic: false`) until both parties submit feedback or the evaluation period elapses.
+     - Neither party can see the other's score before providing their own rating (1–5 scale with structured feedback), eliminating retaliatory ratings or coercive review negotiation.
+     - Once unsealed, ratings automatically update the student's aggregate verified score (`ratingAvg`, `ratingCount`).
+  2. **Cryptographic Completion Proof (`completion_records`):**
+     - Upon contract completion and milestone sign-off, the server issues an immutable completion record containing a cryptographic SHA-256 digest (`verificationHash`).
+     - The digest is computed deterministically over `contractId + studentId + employerId + completedAt`.
+     - The certificate is publicly resolvable via `GET /api/v1/verify/completion/:hash` without authentication, providing an unfalsifiable, shareable link for student CVs, LinkedIn, or academic portfolios.
+  3. **Contextual Messaging with Real-Time Safety Scanner (`conversations`, `messages`):**
+     - In-app conversations are strictly contextual, anchored to a specific `gig`, `application`, or `contract`.
+     - A zero-latency heuristic scanner (`MessagingSafetyScanner`) audits all incoming messages for:
+       * Off-platform contact sharing (Indian/US phone numbers, WhatsApp links, Telegram handles).
+       * Off-platform payment terms (UPI handles, direct transfer phrases, GPay/PhonePe solicitations).
+       * Email address disclosures (DPDPA 2023 compliance advisory).
+       * Accidental API secrets, passwords, or bearer token disclosure.
+     - Violations flag the message with clear in-app safety advisories (`hasSafetyWarning: true`, warning notes) and emit a `safety_policy_warning_triggered` security audit event without dropping message delivery, educating users on platform protections while logging risk metrics.
+
+* **Rationale (Why over What):**
+  - **Reputation Integrity:** On generic gig marketplaces, freelancers and clients withhold honest feedback or trade 5-star ratings out of fear of retaliation. Blind double-sided submission guarantees unbiased appraisals.
+  - **Portable Proof over Platform Lock-in:** Students need portable credentials they can present to university placement cells, employers, and LinkedIn. A cryptographic hash provides instant, tamper-evident verification.
+  - **In-App Safety without Disruption:** Outright message blocking frustrates legitimate users, whereas immediate inline warnings and audit logging deter bad actors, preserve the escrow safety net, and protect students from payment scams.
+
+* **Tradeoffs Accepted:**
+  - Double-sided reviews require both parties to complete the review before ratings become public. If one party does not review, a background timeout window can reveal the unilateral review after a settlement grace period.
+
+* **Immutability Status:** Settled & Immutable.
+
+
 ## [2026-10-14] Decision: Milestone Dispute Escalation, Evidence Gathering & Admin Arbitration (Phase 8)
 
 * **Context & Scope:** 

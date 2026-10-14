@@ -50,6 +50,20 @@
       "when": 1791972563884,
       "tag": "0006_solid_rhodey",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791973263161,
+      "tag": "0007_bright_talos",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791973403176,
+      "tag": "0008_legal_veda",
+      "breakpoints": true
     }
   ]
 }
