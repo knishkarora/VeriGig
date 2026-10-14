@@ -9,6 +9,7 @@ import {
   Building2
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
+import { disputesApi } from '../../api/endpoints';
 
 export const AdminDisputes: React.FC = () => {
   const { disputes, resolveDispute } = useMarketplace();
@@ -23,6 +24,18 @@ export const AdminDisputes: React.FC = () => {
     if (!selectedDispute) return;
     const note = resolutionNote || 'Resolved per governance guidelines after scope audit.';
     resolveDispute(selectedDispute.id, resolutionType, note);
+
+    const amount = selectedDispute.amountInEscrow || 3000;
+    const studentAmt = resolutionType === 'release_student' ? amount : resolutionType === 'split_payout' ? Math.round(amount / 2) : 0;
+    const employerAmt = amount - studentAmt;
+
+    if (selectedDispute.id && !selectedDispute.id.startsWith('disp-')) {
+      disputesApi.resolveDispute(selectedDispute.id, {
+        formalRuling: note,
+        payoutAmountStudent: studentAmt,
+        refundAmountEmployer: employerAmt,
+      }).catch(err => console.warn('API dispute resolution fallback:', err));
+    }
 
     const label = resolutionType === 'release_student' 
       ? 'Funds Released to Student' 

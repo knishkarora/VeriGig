@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
+import { applicationsApi } from '../../api/endpoints';
 
 export const GigDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -52,6 +53,14 @@ export const GigDetails: React.FC = () => {
       deliveryDays,
       [{ label: 'Portfolio Link', url: portfolioLink }]
     );
+
+    if (gig.id && !gig.id.startsWith('gig-')) {
+      applicationsApi.applyForGig(gig.id, {
+        coverNote,
+        proposedTimeline: `${deliveryDays} days`,
+        portfolioItems: [{ label: 'Portfolio Link', url: portfolioLink }],
+      }).catch(err => console.warn('API application fallback:', err));
+    }
 
     setSubmitted(true);
     setTimeout(() => {

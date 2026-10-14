@@ -21,6 +21,9 @@ export const GigExplore: React.FC = () => {
   const [durationFilter, setDurationFilter] = useState<string>('All');
   const [locationFilter, setLocationFilter] = useState<string>('All');
   const [paymentFilter, setPaymentFilter] = useState<string>('All');
+  const [beginnerOnly, setBeginnerOnly] = useState(false);
+  const [verifiedSmeOnly, setVerifiedSmeOnly] = useState(false);
+  const [remoteOnly, setRemoteOnly] = useState(false);
 
   const categories: string[] = ['All', 'Web Dev', 'UI/UX', 'Graphic Design', 'Content & Copy', 'Social Media', 'Data & Research'];
 
@@ -35,8 +38,11 @@ export const GigExplore: React.FC = () => {
     const matchesDuration = durationFilter === 'All' || gig.targetDuration === durationFilter;
     const matchesLocation = locationFilter === 'All' || gig.locationScope === locationFilter;
     const matchesPayment = paymentFilter === 'All' || gig.paymentType === paymentFilter;
+    const matchesBeginner = !beginnerOnly || gig.totalBudget <= 3500;
+    const matchesVerified = !verifiedSmeOnly || gig.employerVerified;
+    const matchesRemote = !remoteOnly || gig.locationScope === 'Remote';
 
-    return matchesSearch && matchesCategory && matchesDuration && matchesLocation && matchesPayment;
+    return matchesSearch && matchesCategory && matchesDuration && matchesLocation && matchesPayment && matchesBeginner && matchesVerified && matchesRemote;
   });
 
   const clearFilters = () => {
@@ -45,9 +51,12 @@ export const GigExplore: React.FC = () => {
     setDurationFilter('All');
     setLocationFilter('All');
     setPaymentFilter('All');
+    setBeginnerOnly(false);
+    setVerifiedSmeOnly(false);
+    setRemoteOnly(false);
   };
 
-  const hasActiveFilters = categoryFilter !== 'All' || durationFilter !== 'All' || locationFilter !== 'All' || paymentFilter !== 'All' || searchTerm !== '';
+  const hasActiveFilters = categoryFilter !== 'All' || durationFilter !== 'All' || locationFilter !== 'All' || paymentFilter !== 'All' || searchTerm !== '' || beginnerOnly || verifiedSmeOnly || remoteOnly;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
@@ -136,6 +145,45 @@ export const GigExplore: React.FC = () => {
             <option value="milestone">Milestone Escrow</option>
             <option value="fixed">Fixed Single Escrow</option>
           </select>
+
+          {/* Quick toggle chips */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setBeginnerOnly(!beginnerOnly)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+                beginnerOnly
+                  ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              {beginnerOnly ? '✓ Beginner-Ready' : '+ Beginner-Ready (≤ ₹3.5k)'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setVerifiedSmeOnly(!verifiedSmeOnly)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+                verifiedSmeOnly
+                  ? 'bg-purple-100 text-purple-900 border-purple-300'
+                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              {verifiedSmeOnly ? '✓ Verified SME Only' : '+ Verified SME Only'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setRemoteOnly(!remoteOnly)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${
+                remoteOnly
+                  ? 'bg-blue-100 text-blue-900 border-blue-300'
+                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              {remoteOnly ? '✓ Remote Only' : '+ Remote Only'}
+            </button>
+          </div>
 
           {hasActiveFilters && (
             <button

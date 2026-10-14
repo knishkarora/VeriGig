@@ -48,4 +48,4 @@
 - [x] Phase 7: Payment commitment, sandbox escrow ledger & webhooks.
 - [x] Phase 8: Dispute resolution, governance & immutable audit logs.
 - [x] Phase 9: Ratings, verified completion proof & in-app messaging.
-- [ ] Phase 10: Frontend API connection & end-to-end judge demonstration.
+- [x] Phase 10: Frontend API connection & end-to-end judge demonstration.

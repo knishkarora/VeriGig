@@ -213,25 +213,26 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 10: Frontend Integration & Missing Flow Completion
 *Objective: Build missing user-facing views, connect all React views to the real Fastify API, and replace in-memory mocks.*
 
-- [ ] **10.1 Build Missing/Incomplete Frontend Views (Section 4 Gap Inventory)**
-  - [ ] **Messaging & Interview Scheduler:** Add in-platform conversation modal/panel and interview slot booking on `GigApplicants.tsx` and workspaces.
-  - [ ] **Employer Business Profile & Rehire List:** Create business profile page (`EmployerProfile.tsx`) displaying verified badge, company bio, and past hired students for 1-click rehire.
-  - [ ] **Student Profile Editing & Privacy Controls:** Add profile editor drawer on `StudentProfile.tsx` (manage skills, portfolio links, availability status, and DPDPA consent/deletion request).
-  - [ ] **Two-Party Scope Acceptance Modal:** Add binding scope review screen before contract activation with explicit revision limit, confidentiality, and IP assignment clauses.
-  - [ ] **Payment Checkout & Itemized Receipts:** Add payment confirmation modal on contract offer, receipt download, and student private transaction ledger drawer.
-  - [ ] **Student Dispute Intake Drawer:** Add dispute submission drawer on `StudentWorkspace.tsx` with category selection and file evidence upload.
-  - [ ] **Search & Filter Extensions:** Add "Beginner-ready", "Verified SME only", and "Remote compatibility" filter toggles on `GigExplore.tsx`.
-  - [ ] **Real Deliverable File Uploads & Versions:** Replace simulated deliverable link input with real file uploader, file list, and version history in workspaces.
-- [ ] **10.2 API Client Layer (`frontend/src/api`)**
-  - [ ] Axios/Fetch API client with automatic JWT token refresh, base URL configuration, and error toast handling.
-  - [ ] Typed API service functions for Auth, Gigs, Applications, Workspaces, Payments, Verifications, Admin.
-- [ ] **10.3 Context & View Connection**
-  - [ ] Replace `MarketplaceContext` mock arrays with React Query or server API state sync.
-  - [ ] Connect `AuthPage` to real login/registration & verification upload.
-  - [ ] Connect `GigExplore` and `GigDetails` to live gig query parameters and proposal submission.
-  - [ ] Connect `StudentWorkspace` and `EmployerWorkspace` to contract milestone state machine.
-  - [ ] Connect `AdminVerifications` and `AdminDisputes` to admin governance endpoints.
-  - [ ] Connect `AdminAnalytics` to real `/api/admin/analytics` event aggregations.
-- [ ] **10.4 Complete E2E Judge Demonstration Flow Validation**
-  - [ ] Run full rehearsal: Verified Employer posts scoped gig -> Verified Student applies -> Employer reviews fit score & hires -> Sandbox payment commits funds -> Student submits deliverable -> Employer reviews & releases -> Payout registered & portable completion credential generated.
-  - [ ] Verify test suite & typechecks pass 100% clean with zero build warnings.
+- [x] **10.1 Build Missing/Incomplete Frontend Views (Section 4 Gap Inventory)**
+  - [x] **Messaging & Interview Scheduler:** Add in-platform conversation modal/panel and interview slot booking on `GigApplicants.tsx` and workspaces.
+  - [x] **Employer Business Profile & Rehire List:** Create business profile page (`EmployerProfile.tsx`) displaying verified badge, company bio, and past hired students for 1-click rehire.
+  - [x] **Student Profile Editing & Privacy Controls:** Add profile editor drawer on `StudentProfile.tsx` (manage skills, portfolio links, availability status, and DPDPA consent/deletion request).
+  - [x] **Two-Party Scope Acceptance Modal:** Add binding scope review screen before contract activation with explicit revision limit, confidentiality, and IP assignment clauses.
+  - [x] **Payment Checkout & Itemized Receipts:** Add payment confirmation modal on contract offer, receipt download, and student private transaction ledger drawer.
+  - [x] **Student Dispute Intake Drawer:** Add dispute submission drawer on `StudentWorkspace.tsx` with category selection and file evidence upload.
+  - [x] **Search & Filter Extensions:** Add "Beginner-ready", "Verified SME only", and "Remote compatibility" filter toggles on `GigExplore.tsx`.
+  - [x] **Real Deliverable File Uploads & Versions:** Replace simulated deliverable link input with real file uploader, file list, and version history in workspaces.
+- [x] **10.2 API Client Layer (`frontend/src/api`)**
+  - [x] Axios/Fetch API client with automatic JWT token refresh, base URL configuration, and error toast handling.
+  - [x] Typed API service functions for Auth, Gigs, Applications, Workspaces, Payments, Verifications, Admin.
+- [x] **10.3 Context & View Connection**
+  - [x] Replace `MarketplaceContext` mock arrays with React Query or server API state sync.
+  - [x] Connect `AuthPage` to real login/registration & verification upload.
+  - [x] Connect `GigExplore` and `GigDetails` to live gig query parameters and proposal submission.
+  - [x] Connect `StudentWorkspace` and `EmployerWorkspace` to contract milestone state machine.
+  - [x] Connect `AdminVerifications` and `AdminDisputes` to admin governance endpoints.
+  - [x] Connect `AdminAnalytics` to real `/api/admin/analytics` event aggregations.
+- [x] **10.4 Complete E2E Judge Demonstration Flow Validation**
+  - [x] Run full rehearsal: Verified Employer posts scoped gig -> Verified Student applies -> Employer reviews fit score & hires -> Sandbox payment commits funds -> Student submits deliverable -> Employer reviews & releases -> Payout registered & portable completion credential generated.
+  - [x] Verify test suite & typechecks pass 100% clean with zero build warnings.
+

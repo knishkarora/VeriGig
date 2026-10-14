@@ -86,3 +86,30 @@ JSON HTTP Response
   - `under_review` -> `completed` (upon employer sign-off & release) OR `in_revision` (upon revision request)
 * **Trust Propagation:** Admin verification triggers immediate badge upgrade (`isVerified: true`), showing emerald verified badge across proposals, profiles, and listings.
 * **Frontend-Backend API Boundary:** Frontend communicates via authenticated REST API at `http://localhost:4000/api/v1` with credentials enabled for session cookies.
+
+## 6. Modified Scope (Phase 10: Frontend Integration & Missing Flow Parity)
+* **Unified API Client Layer (`frontend/src/api/`):**
+  - `client.ts`: Normalized fetch client with `include` credentials for HTTP-only refresh cookies, automatic JSON serialization, and structured `ApiClientError` extraction.
+  - `endpoints.ts`: Complete typed service mapping covering `authApi`, `profilesApi`, `verificationApi`, `gigsApi`, `applicationsApi`, `contractsApi`, `paymentsApi`, `disputesApi`, `reviewsApi`, and `messagingApi`.
+* **Missing User-Facing Modals & Drawers (`frontend/src/components/`):**
+  - `messaging/ChatModal.tsx`: Contextual real-time in-app conversation modal with zero-latency heuristic safety alerts for off-platform payment, phone, WhatsApp, or email sharing.
+  - `contracts/ScopeAcceptanceModal.tsx`: Two-party binding scope agreement gate with mandatory confidentiality (NDA), IP assignment transfer, and capped revision acknowledgment.
+  - `payments/PaymentEscrowModal.tsx`: Employer contract commitment modal into sandbox escrow with 0% pilot commission breakdown.
+  - `payments/ContractReceiptModal.tsx`: Itemized transaction receipt displaying gross amount, platform fee waiver, net disbursement, and immutable ledger hash.
+  - `disputes/RaiseDisputeDrawer.tsx`: Formal milestone dispute intake drawer supporting 6 reason categories, detailed narrative, and evidence link attachment.
+  - `reviews/ReviewModal.tsx`: Double-sided blind review modal (1–5 stars, written feedback, skill endorsements) with mutual concealment notice.
+  - `interviews/InterviewSchedulerModal.tsx`: Structured interview scheduler for candidate proposals.
+  - `student/EditProfileDrawer.tsx`: Comprehensive student profile editor with skills management, portfolio links, and DPDPA 2023 consent/privacy controls.
+* **Missing Standalone Pages (`frontend/src/pages/`):**
+  - `employer/EmployerProfile.tsx`: Dedicated employer business profile at `/app/employer/profile` with GSTIN verification status, company overview, and 1-click rehire talent roster.
+  - `shared/CompletionVerificationPage.tsx`: Public certificate verification page at `/verify/completion/:hash` rendering cryptographic SHA-256 seal, verified skills, and copyable proof URL.
+* **Integrated Views:**
+  - `App.tsx`: Registered routes for `/app/employer/profile` and `/verify/completion/:hash`.
+  - `Navbar.tsx`: Integrated employer business profile navigation, global chat button, and `ChatModal`.
+  - `GigApplicants.tsx`: Integrated explainable candidate fit breakdown pills, interview scheduler modal, chat modal, and payment escrow modal.
+  - `StudentWorkspace.tsx`: Integrated scope acceptance gate, dispute escalation drawer, double-sided review modal, and chat modal.
+  - `EmployerWorkspace.tsx`: Integrated contract settlement receipt, dispute escalation drawer, double-sided review modal, and chat modal.
+  - `StudentProfile.tsx`: Integrated profile editing drawer and cryptographic completion certificates section.
+  - `GigExplore.tsx`: Added quick-toggle filter pills for "Beginner-ready", "Verified SME only", and "Remote only".
+  - `AdminDisputes.tsx` & `AdminVerifications.tsx`: Connected to backend dispute resolution and verification decision endpoints.
+

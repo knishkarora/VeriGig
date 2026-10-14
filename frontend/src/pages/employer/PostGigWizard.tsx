@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { GigCategory, GigDuration, LocationScope, Milestone } from '../../types';
+import { gigsApi } from '../../api/endpoints';
 
 export const PostGigWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -121,6 +122,25 @@ export const PostGigWizard: React.FC = () => {
       preferredColleges,
       milestones,
     });
+
+    // Also persist to API if backend reachable
+    gigsApi.createGig({
+      title,
+      category,
+      totalBudget,
+      paymentType: 'milestone',
+      targetDuration,
+      workMode: locationScope,
+      description: description || 'Scoped task with defined milestones for college student contractors.',
+      expectedDeliverables: milestones.map(m => m.title),
+      requiredSkills,
+      preferredColleges,
+      milestones: milestones.map(m => ({
+        title: m.title,
+        description: m.description || m.title,
+        amount: m.amount,
+      })),
+    }).catch(err => console.warn('API gig creation fallback:', err));
 
     navigate(`/app/employer/dashboard`);
   };

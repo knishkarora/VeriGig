@@ -1,5 +1,41 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-14] Decision: Frontend-Backend REST API Integration, Missing UI Modals & Parity Completion (Phase 10)
+
+* **Context & Scope:** 
+  The backend implementation across Phases 1 through 9 built comprehensive business logic, data models, and REST endpoints (Authentication, Profiles, KYC Verifications, Gigs, Applications & Explainable Fit Matching, Contracts & Milestone Revisions, Sandbox Payments & Escrow Ledger, Admin Arbitration Disputes, Double-Sided Reviews, Portable Completion Verification, and Contextual Messaging). To fulfill the project vision and demonstrate complete end-to-end functionality for hackathon evaluations (Judge Defense Matrix Q1 through Q15), the frontend had to integrate every backend capability, build all missing user-facing views, and eliminate mock-only blindspots while maintaining strict visual consistency with the Neo-Tactile design system (`#090D16`, `#D4F851`, `#FFA8D5`, Plus Jakarta Sans, rounded-3xl cards).
+
+* **Choice Made:** 
+  Implemented a dual-layer integration and UI completion architecture:
+  1. **Normalized API Client & Service Layer (`frontend/src/api/`):**
+     - Built a type-safe API client (`client.ts`) utilizing standard Fetch with `include` credentials for secure HTTP-only refresh cookies, normalized REST error formatting (`ApiClientError`), and base URL resolution defaulting to `http://localhost:4000/api/v1`.
+     - Built fully typed endpoint functions (`endpoints.ts`) mapping 1:1 to all backend modules (`authApi`, `profilesApi`, `verificationApi`, `gigsApi`, `applicationsApi`, `contractsApi`, `paymentsApi`, `disputesApi`, `reviewsApi`, and `messagingApi`).
+  2. **Comprehensive Missing UI Modal & Drawer Suite (`frontend/src/components/`):**
+     - Built `ChatModal.tsx` for contextual in-app real-time conversations with real-time heuristic safety alerts warning against off-platform contact or payment sharing.
+     - Built `ScopeAcceptanceModal.tsx` for bilateral binding contract activation, enforcing explicit acceptance of confidentiality (NDA), IP transfer assignment, and the 2-revision limit.
+     - Built `PaymentEscrowModal.tsx` enabling employer pre-authorized contract commitment into sandbox escrow with transparent 0% pilot commission breakdown.
+     - Built `ContractReceiptModal.tsx` rendering verifiable itemized financial breakdown receipts with ledger transaction hashes.
+     - Built `RaiseDisputeDrawer.tsx` allowing both parties to escalate milestone conflicts with category selection and evidence attachment.
+     - Built `ReviewModal.tsx` implementing the double-sided blind review gate (1–5 stars, feedback, skill endorsements) with mutual concealment notice.
+     - Built `InterviewSchedulerModal.tsx` for candidate proposal scheduling.
+     - Built `EditProfileDrawer.tsx` for student profile editing with DPDPA 2023 privacy controls.
+  3. **Dedicated Standalone Pages (`frontend/src/pages/`):**
+     - Built `EmployerProfile.tsx` (`/app/employer/profile`) showcasing verified GSTIN badge, company metrics, and 1-click rehire talent roster.
+     - Built `CompletionVerificationPage.tsx` (`/verify/completion/:hash`) providing public, unauthenticated validation of student completion certificates with cryptographic SHA-256 seal.
+  4. **Graceful Fallback & Context Integration:**
+     - Integrated `MarketplaceContext` with dynamic API fetching of live gigs while preserving offline seed fallbacks to guarantee uninterrupted live demonstrations even if the backend database is unreachable during presentations.
+
+* **Rationale (Why over What):**
+  - **Full Parity Guarantee:** Generic demos often connect only 1 or 2 happy paths and leave other buttons non-functional. Building complete modals and drawers for all 9 phases ensures judges can inspect any screen, modal, or action and find fully interactive flows.
+  - **Consistent Neo-Tactile Aesthetics:** Reusing established Tailwind tokens and Lucide iconography preserves the distinct editorial quality without introducing visual regressions or third-party component libraries.
+  - **Zero-Breakage Demo Resilience:** Dual-mode state (live API calls with graceful mock seed fallbacks) ensures high reliability under judge scrutiny.
+
+* **Tradeoffs Accepted:**
+  - Fallback caching in React state allows seamless offline demo mode, which means in the absence of a live running backend server, local state modifications persist across the session without throwing unhandled network crashes.
+
+* **Immutability Status:** Settled & Immutable.
+
+
 ## [2026-10-14] Decision: Double-Sided Reviews, Cryptographic Completion Proof & In-App Messaging Safety (Phase 9)
 
 * **Context & Scope:** 

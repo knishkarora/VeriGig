@@ -18,6 +18,7 @@ import {
   initialDisputes, 
   initialNotifications 
 } from '../data/mockData';
+import { gigsApi, authApi } from '../api/endpoints';
 
 interface MarketplaceContextType {
   currentRole: UserRole;
@@ -54,6 +55,52 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [verifications, setVerifications] = useState<VerificationRequest[]>(initialVerifications);
   const [disputes, setDisputes] = useState<Dispute[]>(initialDisputes);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+
+  // Sync live gigs from backend if Fastify server is reachable
+  useEffect(() => {
+    let active = true;
+    const fetchLiveGigs = async () => {
+      try {
+        const res = await gigsApi.listGigs();
+        if (active && res && res.gigs && res.gigs.length > 0) {
+          const backendGigs: MicroGig[] = res.gigs.map((g: any) => ({
+            id: g.id,
+            title: g.title,
+            employerId: g.employerId,
+            employerName: g.employerName || 'Verified SME Client',
+            employerCompany: g.employerCompany || 'SME Business',
+            employerVerified: true,
+            category: g.category,
+            totalBudget: g.totalBudget,
+            paymentType: g.paymentType || 'milestone',
+            targetDuration: g.targetDuration || '1 week',
+            locationScope: g.workMode || 'Remote',
+            campusProximity: g.campusProximity || 'Within 5 km radius',
+            description: g.description,
+            expectedDeliverables: g.expectedDeliverables || ['Complete project criteria'],
+            requiredSkills: g.requiredSkills || ['React', 'TypeScript'],
+            preferredColleges: g.preferredColleges || ['PCTE Group of Institutes'],
+            status: g.status || 'open',
+            createdAt: g.createdAt || 'Today',
+            milestones: g.milestones || [
+              { id: `ms-${g.id}-1`, title: 'Milestone 1: Deliverables', description: 'Complete work criteria', amount: g.totalBudget, percentage: 100, status: 'active' }
+            ]
+          }));
+          
+          setGigs(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newOnes = backendGigs.filter(b => !existingIds.has(b.id));
+            return [...newOnes, ...prev];
+          });
+        }
+      } catch (err) {
+        // Fallback to initial mock gigs
+      }
+    };
+
+    fetchLiveGigs();
+    return () => { active = false; };
+  }, []);
 
   const switchRole = (role: UserRole) => {
     setCurrentRole(role);

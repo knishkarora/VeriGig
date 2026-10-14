@@ -8,15 +8,18 @@ import {
   PlusCircle, 
   ArrowUpRight,
   Wallet,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { UserRole } from '../../types';
 import { NotificationDrawer } from './NotificationDrawer';
+import { ChatModal } from '../messaging/ChatModal';
 
 export const Navbar: React.FC = () => {
   const { currentRole, currentUser, switchRole, unreadNotifCount } = useMarketplace();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [isRoleMenuOpen, setIsRoleMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -157,6 +160,14 @@ export const Navbar: React.FC = () => {
                   >
                     Workspace & Sign-Off
                   </Link>
+                  <Link 
+                    to="/app/employer/profile" 
+                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all ${
+                      isActive('/app/employer/profile') ? 'text-white bg-[#101014]' : 'text-slate-600 hover:text-[#101014] hover:bg-slate-100'
+                    }`}
+                  >
+                    Business Profile
+                  </Link>
                 </>
               )}
 
@@ -265,6 +276,19 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
+            {/* In-App Messaging Button */}
+            {currentRole !== 'guest' && (
+              <button
+                onClick={() => setIsChatOpen(true)}
+                className="relative p-2 rounded-full text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors border border-slate-200"
+                aria-label="Messages"
+                title="In-App Messaging"
+              >
+                <MessageSquare size={16} />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#D4F851] ring-2 ring-white"></span>
+              </button>
+            )}
+
             {/* Wallet pill if logged in */}
             {currentRole !== 'guest' && (
               <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-bold tabular-nums">
@@ -356,8 +380,20 @@ export const Navbar: React.FC = () => {
         )}
       </header>
 
-      {/* Drawer */}
+      {/* Notification Drawer */}
       <NotificationDrawer isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+
+      {/* In-App Contextual Chat Modal */}
+      <ChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        contextType="contract"
+        contextId="c7b2a19e-5e3a-4a21-99bc"
+        recipientId={currentRole === 'student' ? 'emp-apex-ludhiana' : 'stu-aarav-sharma'}
+        recipientName={currentRole === 'student' ? 'Apex Technologies Punjab' : 'Aarav Sharma'}
+        recipientRole={currentRole === 'student' ? 'employer' : 'student'}
+        currentUserId={currentUser.id}
+      />
     </>
   );
 };

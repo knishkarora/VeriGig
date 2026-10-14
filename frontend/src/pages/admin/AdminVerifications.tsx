@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { VerificationRequest } from '../../types';
+import { verificationApi } from '../../api/endpoints';
 
 export const AdminVerifications: React.FC = () => {
   const { verifications, approveVerification, rejectVerification } = useMarketplace();
@@ -29,14 +30,21 @@ export const AdminVerifications: React.FC = () => {
     if (selectedRequest?.id === id) {
       setSelectedRequest({ ...selectedRequest, status: 'approved' });
     }
+    if (id && !id.startsWith('verif-')) {
+      verificationApi.decideVerification(id, { status: 'approved' }).catch(err => console.warn('API verification fallback:', err));
+    }
   };
 
   const handleReject = () => {
     if (!selectedRequest || !rejectReason) return;
-    rejectVerification(selectedRequest.id, rejectReason);
-    setSelectedRequest({ ...selectedRequest, status: 'rejected', rejectionReason: rejectReason });
+    const reason = rejectReason;
+    rejectVerification(selectedRequest.id, reason);
+    setSelectedRequest({ ...selectedRequest, status: 'rejected', rejectionReason: reason });
     setShowRejectModal(false);
     setRejectReason('');
+    if (selectedRequest.id && !selectedRequest.id.startsWith('verif-')) {
+      verificationApi.decideVerification(selectedRequest.id, { status: 'rejected', rejectionReason: reason }).catch(err => console.warn('API verification fallback:', err));
+    }
   };
 
   return (

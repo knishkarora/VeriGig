@@ -1,5 +1,35 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 19: Frontend REST API Integration, Missing Views & E2E Flow Completion (Phase 10 Complete)
+* Built unified REST API client layer in `frontend/src/api`:
+  - `client.ts`: Custom fetch client with credentials support for HTTP-only JWT refresh cookie sessions, structured error typing (`ApiClientError`), and base URL resolution defaulting to `http://localhost:4000/api/v1`.
+  - `endpoints.ts`: Complete typed API functions spanning all 10 phases: `authApi`, `profilesApi`, `verificationApi`, `gigsApi`, `applicationsApi`, `contractsApi`, `paymentsApi`, `disputesApi`, `reviewsApi`, and `messagingApi`.
+* Built missing user-facing UI modals, drawers, and standalone views across `frontend/src/components` and `frontend/src/pages`:
+  - `ChatModal.tsx`: Contextual real-time messaging modal with heuristic safety detection alerting users against off-platform contact or payment attempts (phone numbers, WhatsApp links, UPI handles, external emails).
+  - `ScopeAcceptanceModal.tsx`: Two-party scope agreement modal enforcing explicit acceptance of confidentiality (NDA), IP transfer assignment upon payment release, and the 2-revision limit.
+  - `PaymentEscrowModal.tsx`: Employer contract commitment modal into sandbox escrow with 0% pilot commission breakdown.
+  - `ContractReceiptModal.tsx`: Itemized transaction receipt displaying gross amount, platform fee waiver, net disbursement, and cryptographic ledger hash.
+  - `RaiseDisputeDrawer.tsx`: Milestone dispute intake drawer with reason categories, explanation, and evidence link uploader.
+  - `ReviewModal.tsx`: Bilateral blind review modal (1–5 stars, feedback, skill endorsements) with double-sided concealment notice.
+  - `InterviewSchedulerModal.tsx`: Structured interview scheduler for candidate proposals.
+  - `EditProfileDrawer.tsx`: Student profile editor with skills management, portfolio links, and DPDPA 2023 privacy controls.
+  - `EmployerProfile.tsx`: Dedicated employer business profile at `/app/employer/profile` with GSTIN verification badge, company overview, and 1-click rehire talent pool.
+  - `CompletionVerificationPage.tsx`: Public certificate verification page at `/verify/completion/:hash` with official cryptographic SHA-256 seal and copyable proof link.
+* Integrated missing workflows into primary application screens:
+  - `App.tsx`: Registered routes for `/app/employer/profile` and `/verify/completion/:hash`.
+  - `Navbar.tsx`: Added employer Business Profile navigation link, global chat launcher, and `ChatModal`.
+  - `GigApplicants.tsx`: Integrated candidate fit engine breakdown pills, interview scheduler modal, chat modal, and payment escrow commitment modal.
+  - `StudentWorkspace.tsx`: Integrated scope acceptance gate, dispute escalation drawer, double-sided review modal, and chat modal.
+  - `EmployerWorkspace.tsx`: Integrated contract settlement receipt, dispute escalation drawer, double-sided review modal, and chat modal.
+  - `StudentProfile.tsx`: Integrated profile editor drawer and cryptographic completion certificates section linking to public proof.
+  - `GigExplore.tsx`: Added quick-toggle filter pills for "Beginner-ready", "Verified SME only", and "Remote only".
+  - `AdminDisputes.tsx` & `AdminVerifications.tsx`: Connected to backend dispute resolution and verification decision endpoints.
+  - `MarketplaceContext.tsx`: Integrated dynamic live gigs fetching with graceful fallback.
+* Added architectural decision entry to [[decision.md]] explaining the full frontend integration, UI modal suite, and dual-mode demo resilience.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and [[Current Status.md]].
+* Validated production build across both `frontend/` (`tsc -b && vite build`) and `backend/` (`tsc`) with 0 errors.
+
+
 ## [2026-10-14] Milestone 18: Ratings, Verified Completion Proof & In-App Messaging (Phase 9 Complete)
 * Designed and generated bilateral reviews, completion credentials, and messaging schemas:
   - `/backend/src/db/schema/reviews.ts`:

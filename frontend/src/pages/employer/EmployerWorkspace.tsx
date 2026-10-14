@@ -8,11 +8,20 @@ import {
   Star, 
   ThumbsUp, 
   RefreshCw, 
-  Award 
+  Award,
+  Receipt,
+  MessageSquare,
+  ShieldAlert,
+  FileText,
+  Lock
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { Milestone } from '../../types';
 import { TrustBadge } from '../../components/shared/TrustBadge';
+import { ContractReceiptModal } from '../../components/payments/ContractReceiptModal';
+import { RaiseDisputeDrawer } from '../../components/disputes/RaiseDisputeDrawer';
+import { ReviewModal } from '../../components/reviews/ReviewModal';
+import { ChatModal } from '../../components/messaging/ChatModal';
 
 export const EmployerWorkspace: React.FC = () => {
   const { gigId } = useParams<{ gigId: string }>();
@@ -23,16 +32,17 @@ export const EmployerWorkspace: React.FC = () => {
   const [revisionModalMilestone, setRevisionModalMilestone] = useState<Milestone | null>(null);
   const [revisionFeedback, setRevisionFeedback] = useState('');
 
-  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
-  const [ratingValue, setRatingValue] = useState(5);
-  const [testimonial, setTestimonial] = useState('Exceptional turnaround and clean code execution!');
-  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [isDisputeOpen, setIsDisputeOpen] = useState(false);
+  const [disputeMilestone, setDisputeMilestone] = useState<Milestone | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDoubleSidedReviewOpen, setIsDoubleSidedReviewOpen] = useState(false);
 
   const handleApprove = (milestoneId: string) => {
     approveMilestone(gig.id, milestoneId, 'Approved! Payout released from escrow.');
     const remaining = gig.milestones.filter(m => m.id !== milestoneId && m.status !== 'completed');
     if (remaining.length === 0) {
-      setTimeout(() => setIsRatingModalOpen(true), 1500);
+      setTimeout(() => setIsDoubleSidedReviewOpen(true), 1200);
     }
   };
 
@@ -43,14 +53,6 @@ export const EmployerWorkspace: React.FC = () => {
     requestRevision(gig.id, revisionModalMilestone.id, revisionFeedback);
     setRevisionModalMilestone(null);
     setRevisionFeedback('');
-  };
-
-  const handleRatingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setRatingSubmitted(true);
-    setTimeout(() => {
-      setIsRatingModalOpen(false);
-    }, 1500);
   };
 
   return (
@@ -90,6 +92,52 @@ export const EmployerWorkspace: React.FC = () => {
           <span className="text-3xl font-black text-[#121214]">₹{gig.totalBudget.toLocaleString()}</span>
           <div className="mt-1 text-xs text-emerald-800 font-bold">
             {gig.milestones.filter(m => m.status === 'completed').length} of {gig.milestones.length} Milestones Paid Out
+          </div>
+        </div>
+
+        {/* Action controls row */}
+        <div className="w-full pt-4 border-t border-purple-100 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsReceiptOpen(true)}
+              className="px-4 py-2 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <Receipt size={13} className="text-purple-700" />
+              <span>Settlement Receipt & Fee Breakdown</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsChatOpen(true)}
+              className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <MessageSquare size={13} className="text-slate-700" />
+              <span>Message Student</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {gig.milestones.every(m => m.status === 'completed') && (
+              <button
+                type="button"
+                onClick={() => setIsDoubleSidedReviewOpen(true)}
+                className="px-4 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#121214] text-xs font-black flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <Award size={14} />
+                <span>Submit Bilateral Review</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setDisputeMilestone(gig.milestones[0]);
+                setIsDisputeOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <ShieldAlert size={13} />
+              <span>Dispute Escrow</span>
+            </button>
           </div>
         </div>
       </div>
@@ -272,75 +320,50 @@ export const EmployerWorkspace: React.FC = () => {
         </div>
       )}
 
-      {/* Post-Completion Rating Modal */}
-      {isRatingModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsRatingModalOpen(false)} />
-          
-          <div className="relative w-full max-w-md bg-white border border-purple-100 rounded-[2.5rem] p-8 shadow-2xl space-y-5 text-center">
-            
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-              <Award size={32} />
-            </div>
+      {/* Contract Settlement Receipt Modal */}
+      <ContractReceiptModal
+        isOpen={isReceiptOpen}
+        onClose={() => setIsReceiptOpen(false)}
+        contractId={`contract-${gig.id}`}
+        contractTitle={gig.title}
+        employerName={gig.employerCompany}
+        studentName={gig.hiredStudentName || 'Aarav Sharma'}
+        totalAmount={gig.totalBudget}
+      />
 
-            <div>
-              <h3 className="text-xl font-black text-[#121214]">All Milestones Completed!</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1">
-                Rate your experience with <strong className="text-[#121214]">{gig.hiredStudentName || 'Aarav Sharma'}</strong> to build their campus trust score.
-              </p>
-            </div>
+      {/* Milestone Dispute Escalation Drawer */}
+      <RaiseDisputeDrawer
+        isOpen={isDisputeOpen}
+        onClose={() => setIsDisputeOpen(false)}
+        contractId={`contract-${gig.id}`}
+        milestoneId={disputeMilestone?.id || gig.milestones[0]?.id || 'ms-1'}
+        milestoneTitle={disputeMilestone?.title || gig.milestones[0]?.title || 'Milestone 1'}
+        milestoneAmount={disputeMilestone?.amount || gig.milestones[0]?.amount || 3000}
+        onDisputeRaised={() => {}}
+      />
 
-            {ratingSubmitted ? (
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold">
-                Review submitted and added to Aarav's verified profile!
-              </div>
-            ) : (
-              <form onSubmit={handleRatingSubmit} className="space-y-4 text-left">
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-2 text-center">
-                    Star Rating (1 to 5 Stars)
-                  </label>
-                  <div className="flex items-center justify-center gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        type="button"
-                        key={star}
-                        onClick={() => setRatingValue(star)}
-                        className="p-1 text-2xl transition-transform hover:scale-110"
-                      >
-                        <Star 
-                          size={26} 
-                          className={star <= ratingValue ? 'fill-amber-400 text-amber-400' : 'text-slate-300'} 
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
+      {/* Bilateral Double-Sided Review Modal */}
+      <ReviewModal
+        isOpen={isDoubleSidedReviewOpen}
+        onClose={() => setIsDoubleSidedReviewOpen(false)}
+        contractId={`contract-${gig.id}`}
+        revieweeId="stu-aarav-sharma"
+        revieweeName={gig.hiredStudentName || 'Aarav Sharma'}
+        revieweeRole="student"
+        onReviewSubmitted={() => {}}
+      />
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">
-                    Client Testimonial & Recommendation
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={testimonial}
-                    onChange={(e) => setTestimonial(e.target.value)}
-                    className="w-full p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214] font-medium"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all"
-                >
-                  Publish Verified Review
-                </button>
-              </form>
-            )}
-
-          </div>
-        </div>
-      )}
+      {/* In-App Contextual Chat Modal */}
+      <ChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        contextType="contract"
+        contextId={gig.id}
+        recipientId="stu-aarav-sharma"
+        recipientName={gig.hiredStudentName || 'Aarav Sharma'}
+        recipientRole="student"
+        currentUserId={gig.employerId}
+      />
 
     </div>
   );

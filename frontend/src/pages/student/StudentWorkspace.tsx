@@ -8,10 +8,19 @@ import {
   Code2, 
   AlertCircle, 
   ArrowLeft, 
-  Check
+  Check,
+  MessageSquare,
+  ShieldAlert,
+  FileText,
+  Award,
+  Sparkles
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { Milestone, MilestoneStatus } from '../../types';
+import { ScopeAcceptanceModal } from '../../components/contracts/ScopeAcceptanceModal';
+import { RaiseDisputeDrawer } from '../../components/disputes/RaiseDisputeDrawer';
+import { ReviewModal } from '../../components/reviews/ReviewModal';
+import { ChatModal } from '../../components/messaging/ChatModal';
 
 export const StudentWorkspace: React.FC = () => {
   const { gigId } = useParams<{ gigId: string }>();
@@ -20,6 +29,11 @@ export const StudentWorkspace: React.FC = () => {
   const gig = gigs.find(g => g.id === (gigId || 'gig-1')) || gigs[0];
 
   const [activeModalMilestone, setActiveModalMilestone] = useState<Milestone | null>(null);
+  const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
+  const [isDisputeOpen, setIsDisputeOpen] = useState(false);
+  const [disputeMilestone, setDisputeMilestone] = useState<Milestone | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [liveUrl, setLiveUrl] = useState('https://bakeology-preview.vercel.app');
   const [repoUrl, setRepoUrl] = useState('https://github.com/aaravsharma/bakeology-catalog');
   const [notes, setNotes] = useState('All requested features implemented and tested across mobile viewports.');
@@ -113,6 +127,52 @@ export const StudentWorkspace: React.FC = () => {
           <span className="text-3xl font-black text-[#121214]">₹{gig.totalBudget.toLocaleString()}</span>
           <div className="mt-1 text-xs text-emerald-800 font-bold">
             {gig.milestones.filter(m => m.status === 'completed').length} of {gig.milestones.length} Milestones Released
+          </div>
+        </div>
+
+        {/* Action controls row */}
+        <div className="w-full pt-4 border-t border-purple-100 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsScopeModalOpen(true)}
+              className="px-4 py-2 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <FileText size={13} className="text-purple-700" />
+              <span>Scope & Legal Terms (NDA)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsChatOpen(true)}
+              className="px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center gap-1.5 transition-colors"
+            >
+              <MessageSquare size={13} className="text-slate-700" />
+              <span>Message SME Client</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {gig.milestones.every(m => m.status === 'completed') && (
+              <button
+                type="button"
+                onClick={() => setIsReviewOpen(true)}
+                className="px-4 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#121214] text-xs font-black flex items-center gap-1.5 shadow-sm transition-all"
+              >
+                <Award size={14} />
+                <span>Submit Review & View Proof</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setDisputeMilestone(gig.milestones[0]);
+                setIsDisputeOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <ShieldAlert size={13} />
+              <span>Escalate Milestone</span>
+            </button>
           </div>
         </div>
       </div>
@@ -324,6 +384,52 @@ export const StudentWorkspace: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Two-Party Scope Acceptance Modal */}
+      <ScopeAcceptanceModal
+        isOpen={isScopeModalOpen}
+        onClose={() => setIsScopeModalOpen(false)}
+        contractId={`contract-${gig.id}`}
+        gigTitle={gig.title}
+        employerName={gig.employerCompany}
+        totalAmount={gig.totalBudget}
+        milestones={gig.milestones.map(m => ({ id: m.id, title: m.title, criteria: m.description, amount: m.amount }))}
+        onAccepted={() => {}}
+      />
+
+      {/* Milestone Dispute Escalation Drawer */}
+      <RaiseDisputeDrawer
+        isOpen={isDisputeOpen}
+        onClose={() => setIsDisputeOpen(false)}
+        contractId={`contract-${gig.id}`}
+        milestoneId={disputeMilestone?.id || gig.milestones[0]?.id || 'ms-1'}
+        milestoneTitle={disputeMilestone?.title || gig.milestones[0]?.title || 'Milestone 1'}
+        milestoneAmount={disputeMilestone?.amount || gig.milestones[0]?.amount || 3000}
+        onDisputeRaised={() => {}}
+      />
+
+      {/* Double-Sided Review & Rating Modal */}
+      <ReviewModal
+        isOpen={isReviewOpen}
+        onClose={() => setIsReviewOpen(false)}
+        contractId={`contract-${gig.id}`}
+        revieweeId={gig.employerId}
+        revieweeName={gig.employerCompany}
+        revieweeRole="employer"
+        onReviewSubmitted={() => {}}
+      />
+
+      {/* In-App Contextual Chat Modal */}
+      <ChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        contextType="contract"
+        contextId={gig.id}
+        recipientId={gig.employerId}
+        recipientName={gig.employerCompany}
+        recipientRole="employer"
+        currentUserId={currentUser.id}
+      />
 
     </div>
   );

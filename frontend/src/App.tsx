@@ -20,6 +20,10 @@ import { EmployerDashboard } from './pages/employer/EmployerDashboard';
 import { PostGigWizard } from './pages/employer/PostGigWizard';
 import { GigApplicants } from './pages/employer/GigApplicants';
 import { EmployerWorkspace } from './pages/employer/EmployerWorkspace';
+import { EmployerProfile } from './pages/employer/EmployerProfile';
+
+// Shared Pages
+import { CompletionVerificationPage } from './pages/shared/CompletionVerificationPage';
 
 // Admin Pages
 import { AdminVerifications } from './pages/admin/AdminVerifications';
@@ -65,6 +69,10 @@ export const App: React.FC = () => {
               <Route path="/app/employer/post-gig" element={<PostGigWizard />} />
               <Route path="/app/employer/gig/:id/applicants" element={<GigApplicants />} />
               <Route path="/app/employer/workspace/:gigId" element={<EmployerWorkspace />} />
+              <Route path="/app/employer/profile" element={<EmployerProfile />} />
+
+              {/* Public Portable Verification Page */}
+              <Route path="/verify/completion/:hash" element={<CompletionVerificationPage />} />
 
               {/* Administrative Governance Desk */}
               <Route path="/app/admin/verifications" element={<AdminVerifications />} />
