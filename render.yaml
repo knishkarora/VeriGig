@@ -25,13 +25,15 @@ services:
   - type: web
     name: verigig-frontend
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /*
+        destination: /index.html
+      - type: rewrite
+        source: /app/*
         destination: /index.html
     envVars:
       - key: VITE_API_URL
