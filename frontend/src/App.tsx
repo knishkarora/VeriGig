@@ -22,8 +22,11 @@ import { GigApplicants } from './pages/employer/GigApplicants';
 import { EmployerWorkspace } from './pages/employer/EmployerWorkspace';
 import { EmployerProfile } from './pages/employer/EmployerProfile';
 
-// Shared Pages
+// Shared & Legal Pages
 import { CompletionVerificationPage } from './pages/shared/CompletionVerificationPage';
+import { PrivacyPolicyPage } from './pages/legal/PrivacyPolicyPage';
+import { TermsPage } from './pages/legal/TermsPage';
+import { EscrowProtocolPage } from './pages/legal/EscrowProtocolPage';
 
 // Admin Pages
 import { AdminVerifications } from './pages/admin/AdminVerifications';
@@ -47,7 +50,7 @@ export const App: React.FC = () => {
       <BrowserRouter>
         <ScrollToTop />
         <div className="min-h-screen flex flex-col bg-[#090D16] text-[#D1D5DB]">
-          {/* Global Shell Navigation with instant Role Switcher */}
+          {/* Global Shell Navigation */}
           <Navbar />
 
           {/* Main Viewport Container */}
@@ -56,6 +59,11 @@ export const App: React.FC = () => {
               {/* Landing & Authentication */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/auth" element={<AuthPage />} />
+
+              {/* Legal & Trust Framework Pages */}
+              <Route path="/privacy" element={<PrivacyPolicyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/escrow" element={<EscrowProtocolPage />} />
 
               {/* Student Freelancer Module */}
               <Route path="/app/student/dashboard" element={<StudentDashboard />} />

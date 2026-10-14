@@ -9,7 +9,10 @@ import {
   ArrowUpRight,
   Wallet,
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  LogOut,
+  User as UserIcon,
+  ShieldCheck
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { UserRole } from '../../types';
@@ -17,23 +20,18 @@ import { NotificationDrawer } from './NotificationDrawer';
 import { ChatModal } from '../messaging/ChatModal';
 
 export const Navbar: React.FC = () => {
-  const { currentRole, currentUser, switchRole, unreadNotifCount } = useMarketplace();
+  const { currentRole, currentUser, switchRole, logout, unreadNotifCount } = useMarketplace();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isRoleMenuOpen, setIsRoleMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleRoleChange = (role: UserRole) => {
-    switchRole(role);
-    setIsRoleMenuOpen(false);
-    setIsMobileMenuOpen(false);
-    
-    if (role === 'student') navigate('/app/student/dashboard');
-    else if (role === 'employer') navigate('/app/employer/dashboard');
-    else if (role === 'admin') navigate('/app/admin/verifications');
-    else navigate('/');
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false);
+    navigate('/');
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -205,62 +203,74 @@ export const Navbar: React.FC = () => {
           {/* Right Action Bar */}
           <div className="flex items-center gap-3">
             
-            {/* Instant Demo Role Switcher Pill */}
-            <div className="relative">
-              <button
-                onClick={() => setIsRoleMenuOpen(!isRoleMenuOpen)}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-medium text-slate-800 hover:bg-slate-100 transition-all shadow-sm"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-slate-500 font-normal">Persona:</span>
-                <span className="capitalize font-bold text-[#101014]">{currentRole}</span>
-                <ChevronDown size={14} className="text-slate-400" />
-              </button>
+            {/* Authenticated User Account Menu */}
+            {currentRole !== 'guest' && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 hover:bg-slate-100 transition-all shadow-sm"
+                >
+                  <img
+                    src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'}
+                    alt={currentUser.name}
+                    className="w-6 h-6 rounded-full object-cover border border-slate-300"
+                  />
+                  <span className="font-bold text-[#101014] max-w-[100px] truncate">
+                    {currentUser.name.split(' ')[0]}
+                  </span>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded-full">
+                    {currentRole}
+                  </span>
+                  <ChevronDown size={14} className="text-slate-400" />
+                </button>
 
-              {isRoleMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-3xl bg-white border border-slate-200/80 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2">
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Switch Live Persona
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 rounded-3xl bg-white border border-slate-200/80 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 mb-2">
+                      <div className="font-extrabold text-xs text-[#101014] truncate">{currentUser.name}</div>
+                      <div className="text-[11px] text-slate-500 font-medium truncate">{currentUser.email}</div>
+                      <div className="text-[10px] font-bold text-purple-700 mt-1 flex items-center gap-1">
+                        <ShieldCheck size={12} />
+                        <span>{currentUser.collegeOrCompany || 'Verified Campus Account'}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      {currentRole === 'student' && (
+                        <Link
+                          to="/app/student/profile"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          <UserIcon size={14} />
+                          <span>View Student Profile</span>
+                        </Link>
+                      )}
+                      {currentRole === 'employer' && (
+                        <Link
+                          to="/app/employer/profile"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
+                        >
+                          <UserIcon size={14} />
+                          <span>Business Profile</span>
+                        </Link>
+                      )}
+                      
+                      <div className="border-t border-slate-100 my-1"></div>
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut size={14} />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => handleRoleChange('student')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-2xl transition-colors ${
-                      currentRole === 'student' ? 'bg-[#101014] text-white font-bold' : 'text-slate-800 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span>Student Freelancer</span>
-                    <span className={`text-[10px] font-semibold ${currentRole === 'student' ? 'text-[#D4F851]' : 'text-emerald-700'}`}>PCTE</span>
-                  </button>
-                  <button
-                    onClick={() => handleRoleChange('employer')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-2xl transition-colors ${
-                      currentRole === 'employer' ? 'bg-[#101014] text-white font-bold' : 'text-slate-800 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span>SME Employer</span>
-                    <span className={`text-[10px] font-semibold ${currentRole === 'employer' ? 'text-[#D4F851]' : 'text-purple-700'}`}>Bakery</span>
-                  </button>
-                  <button
-                    onClick={() => handleRoleChange('admin')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-2xl transition-colors ${
-                      currentRole === 'admin' ? 'bg-[#101014] text-white font-bold' : 'text-slate-800 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span>Admin Governance</span>
-                    <span className={`text-[10px] font-semibold ${currentRole === 'admin' ? 'text-[#D4F851]' : 'text-amber-700'}`}>Desk</span>
-                  </button>
-                  <div className="border-t border-slate-100 my-1"></div>
-                  <button
-                    onClick={() => handleRoleChange('guest')}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-2xl transition-colors ${
-                      currentRole === 'guest' ? 'bg-[#101014] text-white font-bold' : 'text-slate-800 hover:bg-slate-100'
-                    }`}
-                  >
-                    <span>Guest Landing View</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* Notification Bell */}
             <button

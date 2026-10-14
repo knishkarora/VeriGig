@@ -24,6 +24,8 @@ interface MarketplaceContextType {
   currentRole: UserRole;
   currentUser: User;
   switchRole: (role: UserRole) => void;
+  logout: () => void;
+  loginUser: (userData: User) => void;
   gigs: MicroGig[];
   proposals: Proposal[];
   verifications: VerificationRequest[];
@@ -48,8 +50,27 @@ interface MarketplaceContextType {
 const MarketplaceContext = createContext<MarketplaceContextType | undefined>(undefined);
 
 export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentRole, setCurrentRole] = useState<UserRole>('guest');
-  const [currentUser, setCurrentUser] = useState<User>(mockUsers.guest);
+  // Initialize role and user from localStorage if saved
+  const [currentRole, setCurrentRole] = useState<UserRole>(() => {
+    try {
+      const saved = localStorage.getItem('verigig_session_role');
+      return (saved as UserRole) || 'guest';
+    } catch {
+      return 'guest';
+    }
+  });
+
+  const [currentUser, setCurrentUser] = useState<User>(() => {
+    try {
+      const savedUser = localStorage.getItem('verigig_session_user');
+      if (savedUser) return JSON.parse(savedUser);
+      const savedRole = localStorage.getItem('verigig_session_role') as UserRole;
+      return mockUsers[savedRole] || mockUsers.guest;
+    } catch {
+      return mockUsers.guest;
+    }
+  });
+
   const [gigs, setGigs] = useState<MicroGig[]>(initialGigs);
   const [proposals, setProposals] = useState<Proposal[]>(initialProposals);
   const [verifications, setVerifications] = useState<VerificationRequest[]>(initialVerifications);
@@ -104,7 +125,37 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const switchRole = (role: UserRole) => {
     setCurrentRole(role);
-    setCurrentUser(mockUsers[role] || mockUsers.guest);
+    const user = mockUsers[role] || mockUsers.guest;
+    setCurrentUser(user);
+    try {
+      localStorage.setItem('verigig_session_role', role);
+      localStorage.setItem('verigig_session_user', JSON.stringify(user));
+    } catch {
+      // ignore
+    }
+  };
+
+  const loginUser = (userData: User) => {
+    setCurrentRole(userData.role);
+    setCurrentUser(userData);
+    try {
+      localStorage.setItem('verigig_session_role', userData.role);
+      localStorage.setItem('verigig_session_user', JSON.stringify(userData));
+    } catch {
+      // ignore
+    }
+  };
+
+  const logout = () => {
+    setCurrentRole('guest');
+    setCurrentUser(mockUsers.guest);
+    try {
+      localStorage.removeItem('verigig_session_role');
+      localStorage.removeItem('verigig_session_user');
+      authApi.logout().catch(() => {});
+    } catch {
+      // ignore
+    }
   };
 
   const addNotification = (title: string, message: string, type: NotificationItem['type'], link?: string) => {
@@ -366,6 +417,8 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       currentRole,
       currentUser,
       switchRole,
+      logout,
+      loginUser,
       gigs,
       proposals,
       verifications,

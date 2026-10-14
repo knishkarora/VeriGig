@@ -274,3 +274,13 @@
   - **Slop Elimination:** Purged category kicker badges ("THE TALENT ENGINE", "ALL-IN-ONE SYSTEM") above hero titles, removed robotic parenthetical labels (e.g., `(Home)`, `(All Categories)`), and replaced the uniform 4-card metric rows in `StudentDashboard`, `EmployerDashboard`, and `AdminAnalytics` with customized telemetry strips and command desks.
   - **Contrast & Hierarchy Rectification:** Elevated low-contrast `gray-on-color` text on `#FFA8D5` surfaces (e.g. Footer and applicant pills) and `bg-amber-50` dispute banners using deep plum and obsidian ink (`#180816` / `#380E29`), achieving WCAG AAA compliance.
   - **Validation:** Executed `impeccable detect` across all 16 views/components with 0 warnings reported. Re-verified `npm run build` with zero TypeScript or packaging errors.
+
+## [2026-10-14] Milestone 6: Product Furnishing & Cloud Deployment Readiness
+* **Context & Trigger:** Transition from internal evaluation prototype to production-grade product ready for college evaluation and deployment to Render & Supabase.
+* **Key Changes:**
+  - **Purged Preview Crutches:** Removed the artificial Persona Switcher pill from `Navbar.tsx` and 1-click demo buttons from `AuthPage.tsx`. Replaced with an authentic profile avatar menu, role badges, and functional `Sign Out` flow.
+  - **Legal Trust Framework:** Created dedicated, production-grade legal pages: `PrivacyPolicyPage.tsx` (DPDP Act compliance), `TermsPage.tsx` (scope limits & IP rights transfer), and `EscrowProtocolPage.tsx` (4-stage custody lifecycle). Connected all static footer links via React Router.
+  - **Simulated Razorpay Checkout Modal:** Engineered a realistic `RazorpayCheckoutModal.tsx` simulating UPI/QR, Cards, and Netbanking with PCI-DSS branding and instant test verification to demonstrate payment commitments without live merchant fees.
+  - **Cloud Deployment Configuration:** Generated `render.yaml` blueprint for unified Render deployment (Fastify backend + Vite static frontend) and added `frontend/public/_redirects` for SPA routing.
+  - **Environment & Storage Alignment:** Configured production-ready `backend/.env` with 64-character cryptographically secure `JWT_SECRET`, Supabase connection templates, and recommended Supabase Storage (1 GB free) for document uploads.
+  - **Verification:** Both `frontend` and `backend` built with 0 errors (`tsc && vite build`).

@@ -95,19 +95,19 @@ export const Footer: React.FC = () => {
               </div>
               <ul className="space-y-2">
                 <li>
-                  <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white cursor-pointer transition-all">
+                  <Link to="/privacy" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white transition-all">
                     Privacy Policy
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white cursor-pointer transition-all">
+                  <Link to="/terms" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white transition-all">
                     Terms & Condition
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white cursor-pointer transition-all">
+                  <Link to="/escrow" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white transition-all">
                     Escrow Protocol
-                  </span>
+                  </Link>
                 </li>
               </ul>
             </div>

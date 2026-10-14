@@ -10,6 +10,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { paymentsApi } from '../../api/endpoints';
+import { RazorpayCheckoutModal } from './RazorpayCheckoutModal';
 
 interface PaymentEscrowModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const PaymentEscrowModal: React.FC<PaymentEscrowModalProps> = ({
   onFunded,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showRazorpay, setShowRazorpay] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -40,9 +42,9 @@ export const PaymentEscrowModal: React.FC<PaymentEscrowModalProps> = ({
   const gstAmount = 0; // GST exempt during pilot
   const finalPayable = totalBudget;
 
-  const handleFundEscrow = async () => {
+  const handleRazorpaySuccess = async (details: { paymentId: string; method: string }) => {
     setIsProcessing(true);
-    setErrorMsg(null);
+    setShowRazorpay(false);
 
     try {
       if (contractId && !contractId.startsWith('contract-')) {
@@ -50,8 +52,8 @@ export const PaymentEscrowModal: React.FC<PaymentEscrowModalProps> = ({
         const orderRes = await paymentsApi.createOrder(contractId);
         // 2. Trigger webhook capture for sandbox simulation
         await paymentsApi.simulateWebhookCapture(
-          orderRes.paymentIntent.id,
-          orderRes.order.id,
+          orderRes.paymentIntent?.id || `pi_${Date.now()}`,
+          orderRes.order?.id || details.paymentId,
           totalBudget
         );
       }
@@ -158,16 +160,25 @@ export const PaymentEscrowModal: React.FC<PaymentEscrowModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={handleFundEscrow}
+            onClick={() => setShowRazorpay(true)}
             disabled={isProcessing}
             className="bg-[#D4F851] text-[#121214] font-bold px-5 py-2.5 rounded-2xl hover:bg-[#C5F82A] disabled:opacity-40 disabled:cursor-not-allowed transition-all text-xs flex items-center space-x-2 shadow-lg"
           >
             <CreditCard className="w-4 h-4" />
-            <span>{isProcessing ? 'Securing Escrow...' : 'Confirm & Fund Escrow'}</span>
+            <span>{isProcessing ? 'Securing Escrow...' : 'Proceed to Razorpay Checkout'}</span>
           </button>
         </div>
 
       </div>
+
+      {/* Razorpay Realistic Checkout Modal */}
+      <RazorpayCheckoutModal
+        isOpen={showRazorpay}
+        onClose={() => setShowRazorpay(false)}
+        onSuccess={handleRazorpaySuccess}
+        amount={finalPayable}
+        contractTitle={contractTitle}
+      />
     </div>
   );
 };

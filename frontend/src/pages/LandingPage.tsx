@@ -16,7 +16,7 @@ import { useMarketplace } from '../context/MarketplaceContext';
 import { TrustBadge } from '../components/shared/TrustBadge';
 
 export const LandingPage: React.FC = () => {
-  const { gigs, switchRole } = useMarketplace();
+  const { gigs } = useMarketplace();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   const categories: string[] = [
@@ -168,7 +168,6 @@ export const LandingPage: React.FC = () => {
 
                 <Link
                   to="/app/employer/post-gig"
-                  onClick={() => switchRole('employer')}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-slate-50 text-[#101014] border border-slate-200 font-bold text-xs sm:text-sm shadow-sm transition-all"
                 >
                   <MessageCircle size={16} className="text-purple-700" />
