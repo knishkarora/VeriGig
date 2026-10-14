@@ -145,19 +145,19 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 6: Contracts, Two-Party Scope Acceptance & Milestone Execution
 *Objective: Binding two-party scope acceptance, versioned deliverable submissions, and revision cycles.*
 
-- [ ] **6.1 Contract & Milestone State Machine**
-  - [ ] `contracts` (id, gig_id, application_id, student_id, employer_id, total_amount, terms_version, confidentiality_accepted, ip_clause_accepted, status [scope_pending, funded, in_progress, completed, cancelled, disputed], created_at)
-  - [ ] `contract_milestones` (id, contract_id, sequence_order, title, criteria, amount, status [locked, active, submitted, under_review, revision_requested, approved, paid, disputed], due_date)
-  - [ ] `deliverable_submissions` (id, milestone_id, version_number, student_notes, repository_url, file_references, submitted_at)
-  - [ ] `revision_requests` (id, milestone_id, feedback_text, requested_at)
-- [ ] **6.2 Contract Lifecycle API**
-  - [ ] `POST /api/contracts/create-offer` (employer initiates offer from shortlisted application).
-  - [ ] `POST /api/contracts/:id/accept-scope` (student signs scope, IP terms, confidentiality).
-  - [ ] `GET /api/contracts/:id` (complete contract timeline, active milestone, deliverable history).
-- [ ] **6.3 Deliverable Submission & Review API**
-  - [ ] `POST /api/contracts/:id/milestones/:milestoneId/submit` (student submits deliverables; milestone moves to `submitted`/`under_review`).
-  - [ ] `POST /api/contracts/:id/milestones/:milestoneId/request-revision` (employer requests change within allowed revision limit).
-  - [ ] `POST /api/contracts/:id/milestones/:milestoneId/approve` (employer approves deliverable; triggers payment release state).
+- [x] **6.1 Contract & Milestone State Machine**
+  - [x] `contracts` (id, gig_id, application_id, student_id, employer_id, total_amount, terms_version, confidentiality_accepted, ip_clause_accepted, status [scope_pending, funded, in_progress, completed, cancelled, disputed], created_at)
+  - [x] `contract_milestones` (id, contract_id, sequence_order, title, criteria, amount, status [locked, active, submitted, under_review, revision_requested, approved, paid, disputed], due_date)
+  - [x] `deliverable_submissions` (id, milestone_id, version_number, student_notes, repository_url, file_references, submitted_at)
+  - [x] `revision_requests` (id, milestone_id, feedback_text, requested_at)
+- [x] **6.2 Contract Lifecycle API**
+  - [x] `POST /api/v1/contracts/create-offer` (employer initiates offer from shortlisted application).
+  - [x] `POST /api/v1/contracts/:id/accept-scope` (student signs scope, IP terms, confidentiality).
+  - [x] `GET /api/v1/contracts/:id` (complete contract timeline, active milestone, deliverable history).
+- [x] **6.3 Deliverable Submission & Review API**
+  - [x] `POST /api/v1/contracts/:id/milestones/:milestoneId/submit` (student submits deliverables; milestone moves to `submitted`/`under_review`).
+  - [x] `POST /api/v1/contracts/:id/milestones/:milestoneId/request-revision` (employer requests change within allowed revision limit).
+  - [x] `POST /api/v1/contracts/:id/milestones/:milestoneId/approve` (employer approves deliverable; triggers payment release state).
 
 ---
 

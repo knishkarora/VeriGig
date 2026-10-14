@@ -109,6 +109,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { applicationsRoutes } = await import('./modules/applications/applications.routes.js');
   await app.register(applicationsRoutes, { prefix: '/api/v1/applications' });
 
+  const { contractsRoutes } = await import('./modules/contracts/contracts.routes.js');
+  await app.register(contractsRoutes, { prefix: '/api/v1/contracts' });
+
   // Direct alias for student applications tracking per specification
   const { ApplicationsService } = await import('./modules/applications/applications.service.js');
   const { authenticate, requireRole } = await import('./middleware/auth.guard.js');

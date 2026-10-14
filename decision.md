@@ -1,5 +1,28 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-14] Decision: Two-Party Scope Acceptance & Capped Revision State Machine (Phase 6)
+
+* **Context & Scope:** 
+  Micro-gig execution requires binding commitments between student contractors and SME employers, addressing Judge Defense Matrix Q1 (problem & lifecycle), Q6 (preventing exploitation & fraud), and Q8 (confidentiality, IP transfer, and data security).
+
+* **Choice Made:** 
+  Implemented a transactional contract state machine across `contracts`, `contract_milestones`, `deliverable_submissions`, and `revision_requests`:
+  1. **Two-Party Scope Acceptance Gate:** Employer offer generation establishes a `scope_pending` contract with isolated milestone clones. Execution begins only after the student contractor explicitly accepts confidentiality terms, the IP assignment clause (specifying work product transfer upon approved settlement), and the milestone breakdown.
+  2. **Capped Revision Cycles:** Every contract enforces a hard revision ceiling (`maxRevisionsPerMilestone`, default 2). The server blocks subsequent revision attempts beyond this cap, requiring the employer to either approve the deliverable or escalate to formal Admin Arbitration.
+  3. **Sequential Milestone Locking:** Only milestone 1 is unlocked initially; subsequent milestones remain strictly `locked` until the prior milestone is reviewed, approved, and released.
+  4. **Immutable Deliverable Versioning:** Submissions record auto-incrementing version numbers, repository/live preview URLs, student notes, and file attachments.
+
+* **Rationale (Why over What):**
+  - **Exploitation Protection:** Unbounded revision requests are the primary vector of student exploitation on generic freelancing platforms. Hard server-side enforcement prevents infinite rework loops.
+  - **Legal & IP Certainty:** Explicit two-party scope acceptance creates an auditable contract record. IP transfer is conditioned upon milestone sign-off, protecting the student during work and the SME upon completion.
+
+* **Tradeoffs Accepted:**
+  - Extra friction before work kickoff (student must review and sign scope instead of instant work start). This trade-off is essential to maintain the trust boundary.
+  - Hard revision cap may require admin dispute escalation if an SME is genuinely dissatisfied after 2 revisions.
+
+* **Immutability Status:** Settled & Immutable.
+
+
 ## [2026-10-14] Decision: Explainable Deterministic Candidate Fit Scoring Engine (Phase 5)
 
 * **Context & Scope:** 

@@ -31,21 +31,23 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 5: Proposals, Candidate Pipeline & Explainable Matching)
-* Implemented `src/db/schema/applications.ts`:
-  - `applications`: Stores student proposal submissions, status transitions (`submitted`, `shortlisted`, `interviewed`, `rejected`, `hired`), deterministic `fitScore`, structured `fitBreakdown`, and human-readable `fitExplanation`.
-  - `interviews`: Tracks scheduled interviews with datetime, instructions/meeting link, notes, and status.
-* Implemented `src/modules/applications/`:
-  - `matching.service.ts`: `CandidateFitEngine` calculating deterministic, explainable candidate suitability across 4 auditable dimensions: Skill Overlap (40%), Work Mode & Locality Compatibility (25%), Availability & Timeline Fit (20%), and Verified Track Record & Quality (15%).
-  - `applications.schema.ts`: Zod validation for proposals (`coverNote`, `proposedTimeline`, `portfolioItems`, `termsAccepted`), candidate status updates, and interview scheduling.
-  - `applications.service.ts`: Handlers enforcing student verification checks, duplicate proposal prevention, automatic fit scoring, candidate pipeline listing ordered by fit score, status management, and interview scheduling with immutable audit logging.
-  - `applications.routes.ts`: Registered endpoints under `/api/v1/applications` with aliases in `gigs.routes.ts` and `app.ts`:
-    - `POST /api/v1/gigs/:id/apply`: Authenticated verified student proposal submission.
-    - `GET /api/v1/student/applications`: Authenticated student proposal tracking.
-    - `GET /api/v1/gigs/:id/applications`: Authenticated employer applicant dossier ordered by fit score.
-    - `GET /api/v1/applications/:id`: Application dossier view with explainable fit score breakdowns.
-    - `PATCH /api/v1/applications/:id/status`: Employer shortlisting, rejection (with reason), and hiring.
-    - `POST /api/v1/applications/:id/interview`: Employer interview scheduling.
+## 3. Modified Scope (Phase 6: Contracts, Two-Party Scope Acceptance & Milestone Execution)
+* Implemented `src/db/schema/contracts.ts`:
+  - `contracts`: Tracks two-party contracts, `totalAmount`, `termsVersion`, `confidentialityAccepted`, `ipClauseAccepted`, `maxRevisionsPerMilestone`, and status (`scope_pending`, `funded`, `in_progress`, `completed`, `cancelled`, `disputed`).
+  - `contract_milestones`: Manages sequence order, criteria, amount, status (`locked`, `active`, `submitted`, `under_review`, `revision_requested`, `approved`, `paid`, `disputed`), and due dates.
+  - `deliverable_submissions`: Multi-version deliverable history tracking `versionNumber`, notes, live URLs, repository URLs, and attachments.
+  - `revision_requests`: Capped revision feedback loop recording reviewer ID, actionable feedback, and timestamps.
+* Implemented `src/modules/contracts/`:
+  - `contracts.schema.ts`: Zod validation for offer creation, scope acceptance (mandatory IP & confidentiality flags), deliverable submissions, and revision feedback.
+  - `contracts.service.ts`: Complete contract state machine enforcing two-party scope signing, sequential milestone unlocking (milestone 1 -> milestone 2), revision capping (blocks revisions beyond `maxRevisionsPerMilestone`), deliverable versioning, and contract completion upon final milestone sign-off.
+  - `contracts.routes.ts`: Registered endpoints under `/api/v1/contracts`:
+    - `POST /create-offer`: Employer initiates contract offer from applicant proposal.
+    - `POST /:id/accept-scope`: Student contractor accepts terms, confidentiality, and IP transfer clause.
+    - `GET /`: User contract listing (student/employer).
+    - `GET /:id`: Full contract dossier with timeline, milestones, submissions, and revisions.
+    - `POST /:id/milestones/:milestoneId/submit`: Student delivers work with version tracking.
+    - `POST /:id/milestones/:milestoneId/request-revision`: Employer requests revision within capped limits.
+    - `POST /:id/milestones/:milestoneId/approve`: Employer signs off deliverable; activates next milestone or completes contract.
 
 ## 4. Backend Execution Sequence
 ```

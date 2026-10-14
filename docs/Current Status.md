@@ -44,7 +44,7 @@
 - [x] Phase 3: Identity verification & private credential document streaming desk.
 - [x] Phase 4: Gig lifecycle, scoping safeguards, and policy moderation engine.
 - [x] Phase 5: Proposals, candidate pipeline & explainable matching engine.
-- [ ] Phase 6: Contracts, two-party scope acceptance & milestone execution.
+- [x] Phase 6: Contracts, two-party scope acceptance & milestone execution.
 - [ ] Phase 7: Payment commitment, sandbox escrow ledger & webhooks.
 - [ ] Phase 8: Dispute resolution, governance & immutable audit logs.
 - [ ] Phase 9: Ratings, verified completion proof & in-app messaging.

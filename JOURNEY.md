@@ -1,5 +1,27 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 15: Contracts, Two-Party Scope Acceptance & Milestone Execution (Phase 6 Complete)
+* Designed and generated relational contract database schemas in `/backend/src/db/schema/contracts.ts`:
+  - `contracts`: Tracks binding agreements, `gigId`, `applicationId`, `studentId`, `employerId`, `totalAmount`, `termsVersion`, `confidentialityAccepted`, `ipClauseAccepted`, `maxRevisionsPerMilestone`, and status (`scope_pending`, `funded`, `in_progress`, `completed`, `cancelled`, `disputed`).
+  - `contract_milestones`: Cloned milestone schedule tracking `sequenceOrder`, criteria, amount, status (`locked`, `active`, `submitted`, `under_review`, `revision_requested`, `approved`, `paid`, `disputed`), due dates, and sign-off timestamps.
+  - `deliverable_submissions`: Multi-version deliverable history tracking `versionNumber`, notes, live URLs, repository URLs, and attachments.
+  - `revision_requests`: Capped revision feedback loop recording reviewer ID, actionable feedback, and timestamps.
+  - Generated database migration `0004_public_sleeper.sql`.
+* Built contract lifecycle and milestone execution state machine in `/backend/src/modules/contracts`:
+  - `contracts.schema.ts`: Validation for offer creation, scope signing (mandating both confidentiality and IP transfer acceptance), versioned deliverable submissions, and actionable revision notes.
+  - `contracts.service.ts`: Handlers enforcing two-party scope acceptance gate, sequential milestone activation (milestone 1 -> 2), hard revision limits per milestone (default 2), deliverable versioning, and contract completion upon final milestone approval.
+  - `contracts.routes.ts`: Registered endpoints under `/api/v1/contracts`:
+    - `POST /create-offer`: Employer initiates contract offer from applicant proposal.
+    - `POST /:id/accept-scope`: Student contractor signs scope, confidentiality agreement, and IP clause.
+    - `GET /`: User contract listing (student/employer).
+    - `GET /:id`: Full contract dossier with timeline, milestones, submissions, and revisions.
+    - `POST /:id/milestones/:milestoneId/submit`: Student delivers work with version tracking.
+    - `POST /:id/milestones/:milestoneId/request-revision`: Employer requests revision within capped limits.
+    - `POST /:id/milestones/:milestoneId/approve`: Employer signs off deliverable; activates next milestone or completes contract.
+* Added architectural decision entry to [[decision.md]] explaining the two-party scope gate, IP transfer clauses, and capped revision safeguards.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified clean compilation (`tsc`) across both backend and frontend.
+
+
 ## [2026-10-14] Milestone 14: Proposals, Candidate Pipeline & Explainable Matching (Phase 5 Complete)
 * Implemented applications and interview database schema in `/backend/src/db/schema/applications.ts`:
   - `applications`: Tracks student proposal submissions with `gigId`, `studentId`, `coverNote`, `proposedTimeline`, `bidAmount`, `portfolioItems`, `status` (`submitted`, `shortlisted`, `interviewed`, `rejected`, `hired`), deterministic `fitScore`, structured `fitBreakdown`, and array of `fitExplanation` statements.
