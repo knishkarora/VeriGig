@@ -108,11 +108,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
             ]
           }));
           
-          setGigs(prev => {
-            const existingIds = new Set(prev.map(p => p.id));
-            const newOnes = backendGigs.filter(b => !existingIds.has(b.id));
-            return [...newOnes, ...prev];
-          });
+          setGigs(backendGigs);
         }
       } catch (err) {
         // Fallback to initial mock gigs

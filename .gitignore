@@ -23,6 +23,10 @@ uploads/
 storage/
 **/storage/
 
+# Database seed scripts & local migrations
+backend/src/db/seed.ts
+*seed.ts
+
 # Logs & Diagnostic Dumps
 logs/
 *.log
