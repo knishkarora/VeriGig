@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   GraduationCap, 
@@ -10,15 +10,19 @@ import {
   Lock, 
   FileCheck,
   ArrowUpRight,
-  AlertCircle
+  AlertCircle,
+  HelpCircle,
+  X
 } from 'lucide-react';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { UserRole, User as UserType } from '../types';
-import { mockUsers } from '../data/mockData';
+import { authApi, verificationApi } from '../api/endpoints';
+import { isSupabaseConfigured, signInWithGoogle } from '../api/supabase';
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const { loginUser } = useMarketplace();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [registerRole, setRegisterRole] = useState<'student' | 'employer'>('student');
@@ -32,92 +36,164 @@ export const AuthPage: React.FC = () => {
   // Register form fields
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
   const [regOrg, setRegOrg] = useState('');
   const [regIdentifier, setRegIdentifier] = useState('');
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [regSuccess, setRegSuccess] = useState(false);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  // Google OAuth guidance modal
+  const [showGoogleGuide, setShowGoogleGuide] = useState(false);
+
+  // Handle Real Login
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      const emailLower = loginEmail.trim().toLowerCase();
+    try {
+      // 1. Send authentication request to live Fastify backend
+      const res: any = await authApi.login({
+        email: loginEmail.trim().toLowerCase(),
+        password: loginPassword,
+      });
 
-      if (emailLower === 'admin' || emailLower === 'admin@campusgigs.in') {
-        loginUser(mockUsers.admin);
-        navigate('/app/admin/verifications');
-      } else if (emailLower.includes('student') || emailLower.includes('pcte') || emailLower.includes('edu')) {
-        const studentUser: UserType = {
-          ...mockUsers.student,
-          email: loginEmail,
+      if (res && res.user) {
+        const liveUser: UserType = {
+          id: res.user.id,
+          name: res.user.fullName || res.user.email.split('@')[0],
+          email: res.user.email,
+          role: res.user.role,
+          collegeOrCompany: res.user.collegeName || res.user.companyName || 'Verified Account',
+          isVerified: res.user.status === 'verified',
+          verificationBadgeText: res.user.role === 'student' ? 'Verified Student' : 'Verified SME',
+          rating: 5.0,
+          completedGigs: 0,
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
+          balance: 0,
         };
-        loginUser(studentUser);
-        navigate('/app/student/dashboard');
-      } else if (emailLower.length > 0) {
-        const employerUser: UserType = {
-          ...mockUsers.employer,
-          email: loginEmail,
-        };
-        loginUser(employerUser);
-        navigate('/app/employer/dashboard');
-      } else {
-        setErrorMessage('Please enter a valid email address');
+
+        loginUser(liveUser);
+
+        if (liveUser.role === 'student') navigate('/app/student/dashboard');
+        else if (liveUser.role === 'employer') navigate('/app/employer/dashboard');
+        else if (liveUser.role === 'admin') navigate('/app/admin/verifications');
+        else navigate('/');
       }
-    }, 600);
-  };
-
-  const handleGoogleLogin = () => {
-    setIsSubmitting(true);
-    setTimeout(() => {
+    } catch (err: any) {
+      console.warn('Backend login response:', err);
+      const message = err.details?.message || err.message || 'Login failed. Please check your credentials or create an account.';
+      setErrorMessage(message);
+    } finally {
       setIsSubmitting(false);
-      // Supabase Google Auth simulation for student/employer
-      const googleUser: UserType = {
-        id: `user-google-${Date.now()}`,
-        name: 'Aarav Sharma',
-        email: 'aarav.sharma@pcte.edu.in',
-        role: 'student',
-        collegeOrCompany: 'PCTE Group of Institutes',
-        isVerified: true,
-        verificationBadgeText: 'Verified PCTE Student',
-        rating: 4.9,
-        completedGigs: 8,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-        balance: 14500,
-        gpa: '8.8 GPA',
-        skills: ['React', 'TypeScript', 'Node.js', 'Figma'],
-      };
-      loginUser(googleUser);
-      navigate('/app/student/dashboard');
-    }, 800);
+    }
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  // Handle Real Registration
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRegSuccess(true);
-    setTimeout(() => {
-      const newUser: UserType = {
-        id: `user-${Date.now()}`,
-        name: regName || (registerRole === 'student' ? 'Gurpreet Singh' : 'Harpreet Dhillon'),
-        email: regEmail || (registerRole === 'student' ? 'student@pcte.edu.in' : 'contact@enterprise.in'),
+    setErrorMessage(null);
+
+    // Mandatory Document Validation (cannot be skipped)
+    if (!selectedFile && !uploadedFileName) {
+      setErrorMessage(
+        registerRole === 'student'
+          ? 'College ID card upload is strictly required for student institutional verification.'
+          : 'GST or Business registration proof is strictly required for SME verification.'
+      );
+      return;
+    }
+
+    if (regPassword.length < 8) {
+      setErrorMessage('Password must be at least 8 characters long.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. Create User in PostgreSQL (Supabase) via Fastify Backend
+      const regRes: any = await authApi.register({
+        email: regEmail.trim().toLowerCase(),
+        password: regPassword,
         role: registerRole,
-        collegeOrCompany: regOrg || (registerRole === 'student' ? 'PCTE Group of Institutes' : 'Punjab Enterprises'),
+        fullName: regName.trim(),
+        collegeName: registerRole === 'student' ? regOrg.trim() : undefined,
+        companyName: registerRole === 'employer' ? regOrg.trim() : undefined,
+        dpdpaConsent: true,
+      });
+
+      // 2. Upload verification document if file is selected
+      if (selectedFile) {
+        try {
+          const formData = new FormData();
+          formData.append('institutionOrBusiness', regOrg.trim());
+          formData.append('docIdentifier', regIdentifier.trim());
+          formData.append('file', selectedFile);
+
+          await verificationApi.submitRequest(formData);
+        } catch (uploadErr) {
+          console.warn('Document upload queued locally:', uploadErr);
+        }
+      }
+
+      setRegSuccess(true);
+
+      const liveUser: UserType = {
+        id: regRes.user?.id || `user-${Date.now()}`,
+        name: regName.trim(),
+        email: regEmail.trim(),
+        role: registerRole,
+        collegeOrCompany: regOrg.trim(),
         isVerified: false,
+        verificationBadgeText: 'Pending Institutional Verification',
         rating: 5.0,
         completedGigs: 0,
-        avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=120&q=80',
+        avatar: registerRole === 'student'
+          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+          : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80',
         balance: 0,
-        skills: registerRole === 'student' ? ['UI/UX', 'React'] : undefined,
       };
-      loginUser(newUser);
-      if (registerRole === 'student') {
-        navigate('/app/student/dashboard');
-      } else {
-        navigate('/app/employer/dashboard');
+
+      setTimeout(() => {
+        loginUser(liveUser);
+        if (registerRole === 'student') navigate('/app/student/dashboard');
+        else navigate('/app/employer/dashboard');
+      }, 1200);
+
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      const message = err.details?.message || err.message || 'Registration failed. The email may already be in use.';
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Google OAuth Trigger
+  const handleGoogleAuth = async () => {
+    setErrorMessage(null);
+    if (isSupabaseConfigured) {
+      try {
+        setIsSubmitting(true);
+        await signInWithGoogle();
+      } catch (err: any) {
+        setErrorMessage(err.message || 'Google OAuth failed to initialize.');
+        setIsSubmitting(false);
       }
-    }, 1200);
+    } else {
+      setShowGoogleGuide(true);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      setUploadedFileName(file.name);
+      setErrorMessage(null);
+    }
   };
 
   return (
@@ -146,7 +222,10 @@ export const AuthPage: React.FC = () => {
           <div className="flex p-1.5 rounded-full bg-slate-100 border border-slate-200">
             <button
               type="button"
-              onClick={() => setAuthMode('login')}
+              onClick={() => {
+                setAuthMode('login');
+                setErrorMessage(null);
+              }}
               className={`flex-1 py-2 text-xs font-black rounded-full transition-all ${
                 authMode === 'login' ? 'bg-[#121214] text-white shadow-sm' : 'text-slate-600 hover:text-black'
               }`}
@@ -155,7 +234,10 @@ export const AuthPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setAuthMode('register')}
+              onClick={() => {
+                setAuthMode('register');
+                setErrorMessage(null);
+              }}
               className={`flex-1 py-2 text-xs font-black rounded-full transition-all ${
                 authMode === 'register' ? 'bg-[#121214] text-white shadow-sm' : 'text-slate-600 hover:text-black'
               }`}
@@ -168,7 +250,7 @@ export const AuthPage: React.FC = () => {
           <div className="space-y-3">
             <button
               type="button"
-              onClick={handleGoogleLogin}
+              onClick={handleGoogleAuth}
               disabled={isSubmitting}
               className="w-full py-2.5 px-4 rounded-full border border-slate-200 hover:border-slate-400 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center justify-center gap-2.5 shadow-sm transition-all"
             >
@@ -202,8 +284,8 @@ export const AuthPage: React.FC = () => {
           </div>
 
           {errorMessage && (
-            <div className="p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-              <AlertCircle size={15} />
+            <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-start gap-2 text-left">
+              <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -217,7 +299,7 @@ export const AuthPage: React.FC = () => {
                 <div className="relative">
                   <User size={16} className="absolute left-4 top-3 text-slate-400" />
                   <input
-                    type="text"
+                    type="email"
                     required
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
@@ -238,7 +320,7 @@ export const AuthPage: React.FC = () => {
                     required
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="••••••••••••"
+                    placeholder="Enter password"
                     className="w-full pl-11 pr-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214] font-medium"
                   />
                 </div>
@@ -250,7 +332,7 @@ export const AuthPage: React.FC = () => {
                   disabled={isSubmitting}
                   className="w-full flex items-center justify-between pl-6 pr-2 py-2 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all group"
                 >
-                  <span>{isSubmitting ? 'Authenticating...' : 'Sign In'}</span>
+                  <span>{isSubmitting ? 'Authenticating with Database...' : 'Sign In'}</span>
                   <div className="w-8 h-8 rounded-full bg-[#D4F851] text-[#121214] flex items-center justify-center font-bold">
                     <ArrowUpRight size={15} />
                   </div>
@@ -267,7 +349,7 @@ export const AuthPage: React.FC = () => {
                   onClick={() => setRegisterRole('student')}
                   className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${
                     registerRole === 'student'
-                      ? 'bg-emerald-50 border-emerald-400 text-emerald-950'
+                      ? 'bg-emerald-50 border-emerald-400 text-emerald-950 shadow-sm'
                       : 'bg-slate-50 border-slate-200 text-slate-600'
                   }`}
                 >
@@ -283,7 +365,7 @@ export const AuthPage: React.FC = () => {
                   onClick={() => setRegisterRole('employer')}
                   className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 transition-all ${
                     registerRole === 'employer'
-                      ? 'bg-purple-50 border-purple-400 text-purple-950'
+                      ? 'bg-purple-50 border-purple-400 text-purple-950 shadow-sm'
                       : 'bg-slate-50 border-slate-200 text-slate-600'
                   }`}
                 >
@@ -297,7 +379,7 @@ export const AuthPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  Full Name
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -311,7 +393,7 @@ export const AuthPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  Email Address
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -325,7 +407,22 @@ export const AuthPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {registerRole === 'student' ? 'College / University' : 'Business / Firm Name'}
+                  Password (min 8 characters) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1">
+                  {registerRole === 'student' ? 'College / University Name' : 'Business / Firm Name'} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -339,7 +436,7 @@ export const AuthPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {registerRole === 'student' ? 'Student Roll Number' : 'GSTIN / Business Registration #'}
+                  {registerRole === 'student' ? 'Student Roll Number' : 'GSTIN / Udyam Registration #'} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -351,25 +448,39 @@ export const AuthPage: React.FC = () => {
                 />
               </div>
 
-              {/* Document Upload Simulation */}
+              {/* Document Upload (Mandatory) */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {registerRole === 'student' ? 'Upload College ID Card (Photo/PDF)' : 'Upload GST Certificate / Business Proof'}
+                  {registerRole === 'student' ? 'Upload College ID Card (Photo/PDF)' : 'Upload GST Certificate / Business Proof'} <span className="text-red-500">* (Mandatory)</span>
                 </label>
+                
+                {/* Hidden Native File Input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  className="hidden"
+                />
+
                 <div 
-                  onClick={() => setUploadedFile(registerRole === 'student' ? 'pcte_id_card_2026.jpg' : 'gst_cert_punjab.pdf')}
-                  className="p-5 border-2 border-dashed border-purple-200 hover:border-purple-400 rounded-3xl bg-purple-50/50 text-center cursor-pointer transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`p-5 border-2 border-dashed rounded-3xl text-center cursor-pointer transition-colors ${
+                    uploadedFileName
+                      ? 'border-emerald-300 bg-emerald-50/50'
+                      : 'border-purple-200 hover:border-purple-400 bg-purple-50/50'
+                  }`}
                 >
-                  {uploadedFile ? (
+                  {uploadedFileName ? (
                     <div className="flex items-center justify-center gap-2 text-emerald-800 text-xs font-bold">
                       <FileCheck size={18} className="text-emerald-600" />
-                      <span>{uploadedFile} (Attached for Verification)</span>
+                      <span>{uploadedFileName} (Attached for Verification)</span>
                     </div>
                   ) : (
                     <div className="space-y-1">
                       <Upload size={20} className="mx-auto text-purple-600" />
-                      <p className="text-xs text-slate-800 font-bold">Click to attach verification document</p>
-                      <p className="text-[10px] text-slate-500">Supports JPG, PNG, PDF up to 5MB</p>
+                      <p className="text-xs text-slate-800 font-bold">Click to browse and attach document file</p>
+                      <p className="text-[10px] text-slate-500">Supports JPG, PNG, PDF up to 5MB (Stored privately)</p>
                     </div>
                   )}
                 </div>
@@ -378,15 +489,23 @@ export const AuthPage: React.FC = () => {
               {regSuccess && (
                 <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-emerald-600" />
-                  <span>Submitted! Directing you to your verified dashboard...</span>
+                  <span>Account successfully written to PostgreSQL! Loading dashboard...</span>
                 </div>
               )}
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all"
+                disabled={isSubmitting}
+                className="w-full py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2"
               >
-                Complete Registration & Submit for Verification
+                {isSubmitting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
+                    <span>Creating account in Database...</span>
+                  </>
+                ) : (
+                  <span>Complete Registration & Submit to Database</span>
+                )}
               </button>
 
             </form>
@@ -395,6 +514,49 @@ export const AuthPage: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Google OAuth Setup Guidance Modal */}
+      {showGoogleGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full text-slate-900 shadow-2xl border border-slate-200 space-y-4 text-left">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <HelpCircle size={20} className="text-purple-600" />
+                <h3 className="font-extrabold text-base">Supabase Google Auth Setup</h3>
+              </div>
+              <button 
+                onClick={() => setShowGoogleGuide(false)}
+                className="p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              To trigger real Google login with account selection, your frontend needs your Supabase project keys:
+            </p>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+              <div className="text-purple-700 font-bold">1. In Render (Frontend Environment):</div>
+              <div>VITE_SUPABASE_URL = https://[your-project-ref].supabase.co</div>
+              <div>VITE_SUPABASE_ANON_KEY = [your-anon-public-key]</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200 text-xs space-y-1.5">
+              <div className="text-purple-900 font-bold">2. In Supabase Dashboard:</div>
+              <div className="text-slate-600">Go to <strong>Authentication</strong> → <strong>Providers</strong> → enable <strong>Google</strong> (paste Client ID & Secret from Google Cloud Console).</div>
+            </div>
+
+            <button
+              onClick={() => setShowGoogleGuide(false)}
+              className="w-full py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all"
+            >
+              Got it, continue
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

@@ -3,7 +3,16 @@
  * Connects React UI to Fastify REST API with full credentials (session cookies) support
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api/v1';
+const getApiBaseUrl = (): string => {
+  let base = (import.meta.env.VITE_API_URL as string | undefined)?.trim() || 'http://localhost:4000/api/v1';
+  base = base.replace(/\/+$/, '');
+  if (!base.endsWith('/api/v1')) {
+    base = `${base}/api/v1`;
+  }
+  return base;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export class ApiError extends Error {
   statusCode: number;
@@ -48,18 +57,18 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
-  get: <T>(endpoint: string, options?: RequestInit) => request<T>(endpoint, { ...options, method: 'GET' }),
-  post: <T>(endpoint: string, body?: any, options?: RequestInit) => 
+  get: <T = any>(endpoint: string, options?: RequestInit) => request<T>(endpoint, { ...options, method: 'GET' }),
+  post: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
     request<T>(endpoint, { 
       ...options, 
       method: 'POST', 
       body: body instanceof FormData ? body : JSON.stringify(body) 
     }),
-  patch: <T>(endpoint: string, body?: any, options?: RequestInit) => 
+  patch: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
     request<T>(endpoint, { 
       ...options, 
       method: 'PATCH', 
       body: body instanceof FormData ? body : JSON.stringify(body) 
     }),
-  delete: <T>(endpoint: string, options?: RequestInit) => request<T>(endpoint, { ...options, method: 'DELETE' }),
+  delete: <T = any>(endpoint: string, options?: RequestInit) => request<T>(endpoint, { ...options, method: 'DELETE' }),
 };

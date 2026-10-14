@@ -5,12 +5,19 @@ import { api } from './client';
 // ==========================================
 
 export const authApi = {
-  register: (data: { email: string; password: string; role: 'student' | 'employer' | 'admin' }) =>
-    api.post('/auth/register', data),
+  register: (data: {
+    email: string;
+    password: string;
+    role: 'student' | 'employer';
+    fullName: string;
+    collegeName?: string;
+    companyName?: string;
+    dpdpaConsent: boolean;
+  }) => api.post<{ message: string; user: any; token: string }>('/auth/register', data),
   login: (data: { email: string; password: string }) =>
-    api.post('/auth/login', data),
-  logout: () => api.post('/auth/logout'),
-  getCurrentUser: () => api.get<any>('/auth/me'),
+    api.post<{ message: string; user: any; token: string }>('/auth/login', data),
+  logout: () => api.post<{ message: string }>('/auth/logout'),
+  getCurrentUser: () => api.get<{ user: any }>('/auth/me'),
 };
 
 export const profilesApi = {

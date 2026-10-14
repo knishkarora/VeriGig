@@ -13,12 +13,14 @@ import {
   MessageSquare,
   ShieldAlert,
   FileText,
-  Lock
+  Lock,
+  CreditCard
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { Milestone } from '../../types';
 import { TrustBadge } from '../../components/shared/TrustBadge';
 import { ContractReceiptModal } from '../../components/payments/ContractReceiptModal';
+import { PaymentEscrowModal } from '../../components/payments/PaymentEscrowModal';
 import { RaiseDisputeDrawer } from '../../components/disputes/RaiseDisputeDrawer';
 import { ReviewModal } from '../../components/reviews/ReviewModal';
 import { ChatModal } from '../../components/messaging/ChatModal';
@@ -32,6 +34,7 @@ export const EmployerWorkspace: React.FC = () => {
   const [revisionModalMilestone, setRevisionModalMilestone] = useState<Milestone | null>(null);
   const [revisionFeedback, setRevisionFeedback] = useState('');
 
+  const [isEscrowModalOpen, setIsEscrowModalOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isDisputeOpen, setIsDisputeOpen] = useState(false);
   const [disputeMilestone, setDisputeMilestone] = useState<Milestone | null>(null);
@@ -98,6 +101,14 @@ export const EmployerWorkspace: React.FC = () => {
         {/* Action controls row */}
         <div className="w-full pt-4 border-t border-purple-100 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsEscrowModalOpen(true)}
+              className="px-4 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black flex items-center gap-1.5 transition-all shadow-md group"
+            >
+              <CreditCard size={14} className="text-[#D4F851]" />
+              <span>Fund Escrow (Razorpay)</span>
+            </button>
             <button
               type="button"
               onClick={() => setIsReceiptOpen(true)}
@@ -363,6 +374,17 @@ export const EmployerWorkspace: React.FC = () => {
         recipientName={gig.hiredStudentName || 'Aarav Sharma'}
         recipientRole="student"
         currentUserId={gig.employerId}
+      />
+
+      {/* Payment Escrow Funding Modal with Razorpay Checkout */}
+      <PaymentEscrowModal
+        isOpen={isEscrowModalOpen}
+        onClose={() => setIsEscrowModalOpen(false)}
+        contractId={gig.id}
+        contractTitle={gig.title}
+        studentName={gig.hiredStudentName || 'Aarav Sharma'}
+        totalBudget={gig.totalBudget}
+        onFunded={() => {}}
       />
 
     </div>

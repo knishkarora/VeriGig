@@ -20,6 +20,10 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
 
   # Frontend React Vite Static Site
   - type: web
@@ -37,4 +41,8 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
         sync: false

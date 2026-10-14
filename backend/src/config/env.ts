@@ -11,6 +11,9 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   STORAGE_PATH: z.string().default('./uploads'),
+  SUPABASE_URL: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().default('verigig-documents'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

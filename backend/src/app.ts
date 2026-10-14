@@ -32,12 +32,25 @@ export async function buildApp(): Promise<FastifyInstance> {
   // CORS configuration
   await app.register(cors, {
     origin: (origin, cb) => {
-      // Allow requests with no origin (e.g. mobile apps, curl) or matching dev origin
-      if (!origin || origin === config.CORS_ORIGIN || origin.startsWith('http://localhost:')) {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+      if (!origin) {
         cb(null, true);
         return;
       }
-      cb(new Error('Not allowed by CORS'), false);
+
+      const cleanOrigin = origin.replace(/\/+$/, '');
+      const cleanConfig = config.CORS_ORIGIN?.replace(/\/+$/, '');
+
+      if (
+        cleanOrigin === cleanConfig ||
+        cleanOrigin.startsWith('http://localhost:') ||
+        cleanOrigin.endsWith('.onrender.com') ||
+        cleanOrigin.endsWith('.pages.dev')
+      ) {
+        cb(null, true);
+        return;
+      }
+      cb(new Error(`Not allowed by CORS: ${origin}`), false);
     },
     credentials: true,
   });
