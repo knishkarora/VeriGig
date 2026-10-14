@@ -115,12 +115,18 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { paymentsRoutes } = await import('./modules/payments/payments.routes.js');
   await app.register(paymentsRoutes, { prefix: '/api/v1/payments' });
 
+  const { disputesRoutes } = await import('./modules/disputes/disputes.routes.js');
+  await app.register(disputesRoutes, { prefix: '/api/v1/disputes' });
+
   // Direct alias for student applications tracking per specification
   const { ApplicationsService } = await import('./modules/applications/applications.service.js');
   const { PaymentsService } = await import('./modules/payments/payments.service.js');
+  const { DisputesService } = await import('./modules/disputes/disputes.service.js');
+  const { raiseDisputeSchema, resolveDisputeSchema } = await import('./modules/disputes/disputes.schema.js');
   const { authenticate, requireRole } = await import('./middleware/auth.guard.js');
   const applicationsService = new ApplicationsService();
   const paymentsService = new PaymentsService();
+  const disputesService = new DisputesService();
 
   app.get(
     '/api/v1/student/applications',
@@ -137,6 +143,68 @@ export async function buildApp(): Promise<FastifyInstance> {
     async (req, reply) => {
       const earnings = await paymentsService.getStudentEarnings(req.currentUser!.id);
       return reply.send(earnings);
+    }
+  );
+
+  // Direct aliases for contract disputes and admin arbitration per checklist
+  app.post<{
+    Params: { id: string };
+  }>(
+    '/api/v1/contracts/:id/disputes/raise',
+    { preHandler: [authenticate] },
+    async (req, reply) => {
+      const bodyWithContractId = { ...(req.body as any), contractId: req.params.id };
+      const parsed = raiseDisputeSchema.parse(bodyWithContractId);
+      const result = await disputesService.raiseDispute(
+        req.currentUser!.id,
+        req.currentUser!.role,
+        parsed,
+        req.ip
+      );
+      return reply.status(201).send(result);
+    }
+  );
+
+  app.get<{
+    Querystring: { status?: string };
+  }>(
+    '/api/v1/admin/disputes',
+    { preHandler: [authenticate, requireRole(['admin'])] },
+    async (req, reply) => {
+      const disputesList = await disputesService.listDisputes(req.query.status);
+      return reply.send({ disputes: disputesList, total: disputesList.length });
+    }
+  );
+
+  app.get<{
+    Params: { id: string };
+  }>(
+    '/api/v1/admin/disputes/:id',
+    { preHandler: [authenticate, requireRole(['admin'])] },
+    async (req, reply) => {
+      const dossier = await disputesService.getDisputeById(
+        req.currentUser!.id,
+        req.currentUser!.role,
+        req.params.id
+      );
+      return reply.send(dossier);
+    }
+  );
+
+  app.post<{
+    Params: { id: string };
+  }>(
+    '/api/v1/admin/disputes/:id/resolve',
+    { preHandler: [authenticate, requireRole(['admin'])] },
+    async (req, reply) => {
+      const parsed = resolveDisputeSchema.parse(req.body);
+      const result = await disputesService.resolveDispute(
+        req.currentUser!.id,
+        req.params.id,
+        parsed,
+        req.ip
+      );
+      return reply.send(result);
     }
   );
 

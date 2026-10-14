@@ -1,5 +1,24 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 17: Dispute Resolution, Governance & Immutable Audit Logs (Phase 8 Complete)
+* Designed and generated dispute resolution database schemas in `/backend/src/db/schema/disputes.ts`:
+  - `disputes`: Tracks contract milestone disputes with `contractId`, `milestoneId`, `initiatedBy`, `reasonCategory` (`unresponsive_counterparty`, `deliverable_quality`, `scope_creep`, `unreasonable_revisions`, `unauthorized_work`, `other`), `explanation`, `status` (`open`, `evidence_pending`, `in_review`, `resolved`), and `resolutionType` (`refund_employer`, `payout_student`, `split_settlement`).
+  - `dispute_evidence`: Immutable evidence trail recording `uploadedBy`, note descriptions, and attached files/URLs.
+  - `dispute_decisions`: Administrative arbitration rulings recording `adminId`, `formalRuling`, `payoutAmountStudent`, and `refundAmountEmployer`.
+  - Generated database migration `0006_solid_rhodey.sql`.
+* Built dispute resolution and administrative arbitration module in `/backend/src/modules/disputes`:
+  - `disputes.schema.ts`: Validation for dispute filing, evidence submissions, and administrative arbitration rulings with strict mathematical reconciliation (`payout + refund === milestone.amount`).
+  - `disputes.service.ts`: Handlers for freezing disputed milestones in escrow, bilateral evidence gathering, comprehensive case dossier inspection, and administrative arbitration ruling execution with double-entry ledger settlements and immutable audit logs.
+  - `disputes.routes.ts`: Registered endpoints under `/api/v1/disputes` with aliases in `app.ts`:
+    - `POST /api/v1/contracts/:id/disputes/raise` (and `/api/v1/disputes/raise`): Party registers dispute and freezes milestone funds in escrow.
+    - `POST /api/v1/disputes/:id/evidence`: Submits evidence notes and document references.
+    - `GET /api/v1/disputes/:id`: Retrieves complete case dossier with milestones, deliverables, revisions, and evidence.
+    - `GET /api/v1/admin/disputes` (and `/api/v1/disputes/admin/queue`): Admin arbitration queue.
+    - `POST /api/v1/admin/disputes/:id/resolve`: Admin issues binding ruling, settles ledger accounts, and updates contract state.
+* Added architectural decision entry to [[decision.md]] explaining milestone freeze guarantees, bilateral evidence, and double-entry dispute settlement.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified clean compilation (`tsc`) across both backend and frontend.
+
+
 ## [2026-10-14] Milestone 16: Payment Commitment, Sandbox Escrow Ledger & Webhooks (Phase 7 Complete)
 * Designed and generated financial ledger database schemas in `/backend/src/db/schema/payments.ts`:
   - `payment_intents`: Tracks payment orders, amounts, currencies, provider statuses, and unique idempotency keys.

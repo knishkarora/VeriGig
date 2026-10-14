@@ -1,5 +1,27 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-14] Decision: Milestone Dispute Escalation, Evidence Gathering & Admin Arbitration (Phase 8)
+
+* **Context & Scope:** 
+  Micro-gig milestone conflicts (unreasonable revisions, unresponsive counterparties, scope disputes) require a formal escalation path to prevent non-payment, student exploitation, or client abandonment, directly addressing Judge Defense Matrix Q6 (fraud prevention) and Q13 (disputes and arbitration).
+
+* **Choice Made:** 
+  Implemented a structured, auditable dispute lifecycle in `backend/src/modules/disputes/`:
+  1. **Immediate Milestone Freeze:** Filing a dispute instantly locks the disputed milestone in `disputed` state, preventing unauthorized withdrawal, release, or cancellation while keeping undamaged contract milestones intact.
+  2. **Bilateral Evidence Gathering (`dispute_evidence`):** Both parties can attach immutable evidence notes and reference URLs/file keys to the case dossier.
+  3. **Binding Administrative Arbitration (`dispute_decisions`):** Platform administrators review the contract brief, deliverable history, revision transcripts, and submitted evidence to issue a binding ruling with a written justification.
+  4. **Strict Conservation of Funds in Ledger Settlement:** The ruling allocates the frozen milestone amount across `payoutAmountStudent` and `refundAmountEmployer`, strictly enforcing that `payout + refund === milestone.amount`. The settlement executes atomic double-entry ledger movements (Debit `sandbox_escrow` -> Credit `student_wallet` and/or `employer_account`), immediately updating the balance state and emitting an immutable audit event.
+
+* **Rationale (Why over What):**
+  - **Accountability over Informal Abandonment:** When freelancers and clients disagree on generic platforms, either the client charges back or the freelancer abandons work with zero recourse. VeriGig provides an objective, evidence-based arbitration desk with an auditable ledger trail.
+  - **Financial Soundness:** Enforcing mathematical equality between ruling settlement sums and escrowed milestone funds prevents platform deficit or unbacked balance inflation.
+
+* **Tradeoffs Accepted:**
+  - Administrative review requires human arbitrator intervention. This is acceptable and expected for trusted Tier-2/Tier-3 regional pilot deployments where high trust and dispute resolution integrity take priority over automated black-box closures.
+
+* **Immutability Status:** Settled & Immutable.
+
+
 ## [2026-10-14] Decision: Payment Commitment, Double-Entry Escrow Ledger & Webhook Authority (Phase 7)
 
 * **Context & Scope:** 

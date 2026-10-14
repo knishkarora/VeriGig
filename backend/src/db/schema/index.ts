@@ -6,3 +6,4 @@ export * from './gigs.js';
 export * from './applications.js';
 export * from './contracts.js';
 export * from './payments.js';
+export * from './disputes.js';

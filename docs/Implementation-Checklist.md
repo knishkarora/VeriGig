@@ -183,15 +183,15 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 8: Dispute Resolution, Governance & Immutable Audit Logs
 *Objective: Student/employer dispute escalation desk, evidence collection, and admin settlement.*
 
-- [ ] **8.1 Disputes Schema**
-  - [ ] `disputes` (id, contract_id, milestone_id, initiated_by, reason_category, explanation, status [open, evidence_pending, in_review, resolved], resolution_type [refund_employer, payout_student, split_settlement], created_at, resolved_at)
-  - [ ] `dispute_evidence` (id, dispute_id, uploaded_by, note, file_reference, submitted_at)
-  - [ ] `dispute_decisions` (id, dispute_id, admin_id, formal_ruling, payout_amount_student, refund_amount_employer, recorded_at)
-- [ ] **8.2 Dispute Lifecycle API**
-  - [ ] `POST /api/contracts/:id/disputes/raise` (freezes milestone, notifies other party).
-  - [ ] `POST /api/disputes/:id/evidence` (both parties upload supporting evidence).
-  - [ ] `GET /api/admin/disputes` & `GET /api/admin/disputes/:id` (admin case dossier).
-  - [ ] `POST /api/admin/disputes/:id/resolve` (admin issues binding ruling; triggers payout/refund webhook; records immutable audit log).
+- [x] **8.1 Disputes Schema**
+  - [x] `disputes` (id, contract_id, milestone_id, initiated_by, reason_category, explanation, status [open, evidence_pending, in_review, resolved], resolution_type [refund_employer, payout_student, split_settlement], created_at, resolved_at)
+  - [x] `dispute_evidence` (id, dispute_id, uploaded_by, note, file_reference, submitted_at)
+  - [x] `dispute_decisions` (id, dispute_id, admin_id, formal_ruling, payout_amount_student, refund_amount_employer, recorded_at)
+- [x] **8.2 Dispute Lifecycle API**
+  - [x] `POST /api/v1/contracts/:id/disputes/raise` (freezes milestone, notifies other party).
+  - [x] `POST /api/v1/disputes/:id/evidence` (both parties upload supporting evidence).
+  - [x] `GET /api/v1/admin/disputes` & `GET /api/v1/admin/disputes/:id` (admin case dossier).
+  - [x] `POST /api/v1/admin/disputes/:id/resolve` (admin issues binding ruling; triggers payout/refund webhook; records immutable audit log).
 
 ---
 

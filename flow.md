@@ -31,22 +31,20 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 7: Payment Commitment, Sandbox Escrow Ledger & Webhooks)
-* Implemented `src/db/schema/payments.ts`:
-  - `payment_intents`: Tracks order IDs, amounts, provider statuses (`created`, `authorized`, `captured`, `failed`, `refunded`), and unique idempotency keys.
-  - `payment_events`: Immutable log of raw webhook payloads and provider references.
-  - `payouts`: Milestone payout records with gross amount, zero-commission pilot fee deduction, net student amount, and status (`pending`, `processing`, `completed`, `failed`).
-  - `ledger_entries`: Double-entry append-only accounting ledger recording debit/credit movements (`employer_account`, `sandbox_escrow`, `student_wallet`, `platform_revenue`) and entry types (`escrow_funded`, `milestone_payout`, `platform_fee`, `refund`).
-* Implemented `src/modules/payments/`:
-  - `gateway.service.ts`: `SandboxPaymentGatewayService` creating sandbox orders and verifying HMAC-SHA256 webhook signatures.
-  - `payments.schema.ts`: Zod validation for payment orders, idempotency enforcement, signed webhook payloads, and payout release authorizations.
-  - `payments.service.ts`: Enforces provider webhook as sole authority for funding state, records double-entry ledger entries, settles milestone payouts with zero pilot fees, computes student private lifetime earnings and pending escrow, and generates itemized receipts.
-  - `payments.routes.ts`: Registered endpoints under `/api/v1/payments`:
-    - `POST /create-order`: Employer creates funding order with mandatory idempotency key.
-    - `POST /webhook`: Digital signature-verified webhook handler processing `payment.captured` and updating contract state.
-    - `POST /release-payout`: Employer authorizes payout release for approved milestones.
-    - `GET /receipt/:contractId`: Itemized financial breakdown receipt with platform fee transparency.
-    - `GET /student/earnings`: Student private financial dashboard reporting lifetime earnings, pending escrow, and payout history.
+## 3. Modified Scope (Phase 8: Dispute Resolution, Governance & Immutable Audit Logs)
+* Implemented `src/db/schema/disputes.ts`:
+  - `disputes`: Tracks contract milestone disputes with `initiatedBy`, `reasonCategory`, `explanation`, `status` (`open`, `evidence_pending`, `in_review`, `resolved`), and `resolutionType` (`refund_employer`, `payout_student`, `split_settlement`).
+  - `dispute_evidence`: Bilateral evidence log tracking `uploadedBy`, notes, and file attachments/URLs.
+  - `dispute_decisions`: Administrative arbitration rulings recording `adminId`, `formalRuling`, `payoutAmountStudent`, and `refundAmountEmployer`.
+* Implemented `src/modules/disputes/`:
+  - `disputes.schema.ts`: Zod validation for dispute filing, evidence submissions, and admin arbitration rulings with strict mathematical reconciliation.
+  - `disputes.service.ts`: Handlers for freezing disputed milestones in escrow, collecting bilateral evidence, assembling comprehensive case dossiers for administrative review, executing binding arbitration rulings with double-entry ledger settlements, and logging immutable audit events.
+  - `disputes.routes.ts`: Registered endpoints under `/api/v1/disputes` with aliases in `app.ts`:
+    - `POST /api/v1/contracts/:id/disputes/raise` (and `/api/v1/disputes/raise`): Party files dispute; freezes milestone funds in escrow.
+    - `POST /api/v1/disputes/:id/evidence`: Student or employer attaches supporting evidence notes/documents.
+    - `GET /api/v1/disputes/:id`: Detailed dispute dossier inspection view.
+    - `GET /api/v1/admin/disputes` (and `/api/v1/disputes/admin/queue`): Admin arbitration desk listing active dispute cases.
+    - `POST /api/v1/admin/disputes/:id/resolve`: Admin issues formal ruling, triggers double-entry ledger transfers, updates contract lifecycle, and emits audit event.
 
 ## 4. Backend Execution Sequence
 ```
