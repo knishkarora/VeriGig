@@ -124,21 +124,21 @@ Every task in this checklist is directly tied to answering a specific, hard judg
 ## Phase 5: Proposals, Candidate Pipeline & Explainable Matching
 *Objective: Student proposal submissions, employer candidate comparison, and transparent match scoring.*
 
-- [ ] **5.1 Applications Schema**
-  - [ ] `applications` (id, gig_id, student_id, cover_note, proposed_timeline, portfolio_items, status [submitted, shortlisted, interviewed, rejected, hired], created_at)
-  - [ ] `interviews` (id, application_id, scheduled_at, meeting_link_or_instructions, status, notes)
-- [ ] **5.2 Application Workflows API**
-  - [ ] `POST /api/gigs/:id/apply` (verified student only, duplicate application check, terms acceptance).
-  - [ ] `GET /api/student/applications` (student tracking their submitted proposals).
-  - [ ] `GET /api/gigs/:id/applications` (employer viewing applicant dossier for their gig).
-  - [ ] `PATCH /api/applications/:id/status` (employer shortlisting, rejecting with optional reason).
-- [ ] **5.3 Explainable Candidate Fit Scoring Engine**
-  - [ ] Deterministic fit service scoring:
+- [x] **5.1 Applications Schema**
+  - [x] `applications` (id, gig_id, student_id, cover_note, proposed_timeline, portfolio_items, status [submitted, shortlisted, interviewed, rejected, hired], created_at)
+  - [x] `interviews` (id, application_id, scheduled_at, meeting_link_or_instructions, status, notes)
+- [x] **5.2 Application Workflows API**
+  - [x] `POST /api/v1/gigs/:id/apply` (verified student only, duplicate application check, terms acceptance).
+  - [x] `GET /api/v1/student/applications` (student tracking their submitted proposals).
+  - [x] `GET /api/v1/gigs/:id/applications` (employer viewing applicant dossier for their gig).
+  - [x] `PATCH /api/v1/applications/:id/status` (employer shortlisting, rejecting with optional reason).
+- [x] **5.3 Explainable Candidate Fit Scoring Engine**
+  - [x] Deterministic fit service scoring:
     - Skill overlap (e.g., 3/4 required skills = 75%)
     - Work mode & location compatibility (remote = full match; on-site = city match)
     - Availability fit vs gig duration
     - Verified completion history & rating
-  - [ ] Expose breakdown object in API: `{ overallScore: 88, breakdown: ["All required skills present", "Matches remote preference", "2 past verified completions"] }`.
+  - [x] Expose breakdown object in API: `{ overallScore: 88, breakdown: ["All required skills present", "Matches remote preference", "2 past verified completions"] }`.
 
 ---
 

@@ -106,6 +106,23 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { gigsRoutes } = await import('./modules/gigs/gigs.routes.js');
   await app.register(gigsRoutes, { prefix: '/api/v1/gigs' });
 
+  const { applicationsRoutes } = await import('./modules/applications/applications.routes.js');
+  await app.register(applicationsRoutes, { prefix: '/api/v1/applications' });
+
+  // Direct alias for student applications tracking per specification
+  const { ApplicationsService } = await import('./modules/applications/applications.service.js');
+  const { authenticate, requireRole } = await import('./middleware/auth.guard.js');
+  const applicationsService = new ApplicationsService();
+
+  app.get(
+    '/api/v1/student/applications',
+    { preHandler: [authenticate, requireRole(['student'])] },
+    async (req, reply) => {
+      const apps = await applicationsService.getStudentApplications(req.currentUser!.id);
+      return reply.send({ applications: apps, total: apps.length });
+    }
+  );
+
   app.get('/api/v1/info', async () => {
     return {
       name: 'VeriGig REST API',

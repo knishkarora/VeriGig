@@ -98,4 +98,56 @@ export async function gigsRoutes(app: FastifyInstance, _opts: FastifyPluginOptio
       });
     }
   );
+
+  // ==========================================
+  // APPLICATIONS & CANDIDATE PIPELINE ALIASES
+  // ==========================================
+
+  // POST /api/v1/gigs/:id/apply (Student Applies to Gig)
+  const { ApplicationsService } = await import('../applications/applications.service.js');
+  const { applyGigSchema } = await import('../applications/applications.schema.js');
+  const applicationsService = new ApplicationsService();
+
+  app.post<{
+    Params: { id: string };
+  }>(
+    '/:id/apply',
+    { preHandler: [authenticate, requireRole(['student'])] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+      const parsed = applyGigSchema.parse(req.body);
+      const result = await applicationsService.applyToGig(
+        req.currentUser!.id,
+        req.params.id,
+        parsed,
+        req.ip
+      );
+
+      return reply.status(201).send({
+        message: 'Proposal submitted successfully with explainable candidate fit analysis',
+        application: result.application,
+        fitAnalysis: result.fitResult,
+      });
+    }
+  );
+
+  // GET /api/v1/gigs/:id/applications (Employer Views Applicants for Gig)
+  app.get<{
+    Params: { id: string };
+  }>(
+    '/:id/applications',
+    { preHandler: [authenticate, requireRole(['employer', 'admin'])] },
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
+      const candidates = await applicationsService.getGigApplications(
+        req.currentUser!.id,
+        req.currentUser!.role,
+        req.params.id
+      );
+
+      return reply.send({
+        gigId: req.params.id,
+        candidates,
+        total: candidates.length,
+      });
+    }
+  );
 }

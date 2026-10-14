@@ -31,16 +31,21 @@ Re-render across subscribed modules:
   └─> Admin Queue (`/app/admin/verifications`) reflects approved student IDs with updated trust badges
 ```
 
-## 3. Modified Scope (Phase 4 Gig Lifecycle & Policy Engine)
-* Implemented `src/modules/gigs/`:
-  - `gigs.schema.ts`: Validation schemas for structured micro-gig creation, budget floors (>= ₹1,500), milestone sum validation, revision caps, and facet search.
-  - `gigs.service.ts`: Handlers for automated policy checking (rejecting academic dishonesty, homework cheating, and hazardous tasks), gig publishing, multi-facet query filtering, and administrative moderation.
-  - `gigs.routes.ts`: Registered endpoints under `/api/v1/gigs`:
-    - `GET /`: Public search and filtering by category, duration, workMode, city, budget range, and keywords.
-    - `GET /:id`: Public brief with milestone schedule and employer verification badge.
-    - `POST /`: Authenticated employer creation endpoint validating budget totals and policy rules.
-    - `GET /admin/pending`: Admin queue of flagged listings.
-    - `POST /admin/:id/moderate`: Admin approve/ban moderation endpoint with immutable audit logging.
+## 3. Modified Scope (Phase 5: Proposals, Candidate Pipeline & Explainable Matching)
+* Implemented `src/db/schema/applications.ts`:
+  - `applications`: Stores student proposal submissions, status transitions (`submitted`, `shortlisted`, `interviewed`, `rejected`, `hired`), deterministic `fitScore`, structured `fitBreakdown`, and human-readable `fitExplanation`.
+  - `interviews`: Tracks scheduled interviews with datetime, instructions/meeting link, notes, and status.
+* Implemented `src/modules/applications/`:
+  - `matching.service.ts`: `CandidateFitEngine` calculating deterministic, explainable candidate suitability across 4 auditable dimensions: Skill Overlap (40%), Work Mode & Locality Compatibility (25%), Availability & Timeline Fit (20%), and Verified Track Record & Quality (15%).
+  - `applications.schema.ts`: Zod validation for proposals (`coverNote`, `proposedTimeline`, `portfolioItems`, `termsAccepted`), candidate status updates, and interview scheduling.
+  - `applications.service.ts`: Handlers enforcing student verification checks, duplicate proposal prevention, automatic fit scoring, candidate pipeline listing ordered by fit score, status management, and interview scheduling with immutable audit logging.
+  - `applications.routes.ts`: Registered endpoints under `/api/v1/applications` with aliases in `gigs.routes.ts` and `app.ts`:
+    - `POST /api/v1/gigs/:id/apply`: Authenticated verified student proposal submission.
+    - `GET /api/v1/student/applications`: Authenticated student proposal tracking.
+    - `GET /api/v1/gigs/:id/applications`: Authenticated employer applicant dossier ordered by fit score.
+    - `GET /api/v1/applications/:id`: Application dossier view with explainable fit score breakdowns.
+    - `PATCH /api/v1/applications/:id/status`: Employer shortlisting, rejection (with reason), and hiring.
+    - `POST /api/v1/applications/:id/interview`: Employer interview scheduling.
 
 ## 4. Backend Execution Sequence
 ```

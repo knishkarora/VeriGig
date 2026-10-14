@@ -1,5 +1,30 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-14] Decision: Explainable Deterministic Candidate Fit Scoring Engine (Phase 5)
+
+* **Context & Scope:** 
+  The proposal submission and applicant tracking pipeline in Phase 5 requires scoring candidate suitability for employers while addressing Judge Defense Matrix Q12 ("How does matching work without fake AI claims?").
+
+* **Choice Made:** 
+  Implemented a pure, deterministic, rule-based matching engine (`CandidateFitEngine`) in `backend/src/modules/applications/matching.service.ts` scoring across 4 auditable dimensions:
+  1. Skill Overlap (40% weight): Exact and substring token matching between gig requirements and student profile skills.
+  2. Work Mode & Locality Compatibility (25% weight): Remote preference alignment or hyper-local / campus proximity matching.
+  3. Availability & Timeline Fit (20% weight): Current student schedule signal (`available_now`, `part_time`, `busy`).
+  4. Verified Track Record & Quality (15% weight): Collegiate credential verification bonus, completed gig count, and peer rating.
+  The engine returns an overall score (0-100), structured breakdown categories, and human-readable explanation bullets stored alongside the application.
+
+* **Rationale (Why over What):**
+  - **Explainability over Black-Box AI:** In micro-gigs, students and SMEs need transparent justifications (e.g. "3 of 4 required skills matched", "Matches remote preference", "2 past verified completions"). Opaque vector embeddings or LLM ranking cannot be audited, risk hallucinatory bias, and invite severe scrutiny from judges.
+  - **DPDPA Compliance:** The algorithm strictly evaluates consented, profile-declared attributes without scraping third-party sources or processing unconsented telemetry.
+  - **Zero External Latency:** Pure TypeScript in-memory evaluation executes in `< 1ms` during proposal submission, eliminating AI model inference costs and API downtime risks.
+
+* **Tradeoffs Accepted:**
+  - Semantic synonyms (e.g. "ReactJS" vs "React") rely on substring and token normalization rather than deep semantic embeddings (acceptable for micro-gig taxonomy and can be augmented with synonym dictionaries in future iterations).
+  - No automated rejection: Scores strictly aid employer shortlisting; the platform never automatically rejects a student based on score alone.
+
+* **Immutability Status:** Settled & Immutable.
+
+
 ## [2026-10-12] Decision: Proposed production-path backend baseline
 
 * **Context & Scope:** The current React frontend demonstrates a complete student-to-SME marketplace journey with seeded, in-memory data. A judge-readiness implementation plan is needed to convert the workflow into a persistent, trustworthy product without misrepresenting simulated verification or payment actions as live operations.

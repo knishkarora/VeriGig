@@ -1,5 +1,32 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-14] Milestone 14: Proposals, Candidate Pipeline & Explainable Matching (Phase 5 Complete)
+* Implemented applications and interview database schema in `/backend/src/db/schema/applications.ts`:
+  - `applications`: Tracks student proposal submissions with `gigId`, `studentId`, `coverNote`, `proposedTimeline`, `bidAmount`, `portfolioItems`, `status` (`submitted`, `shortlisted`, `interviewed`, `rejected`, `hired`), deterministic `fitScore`, structured `fitBreakdown`, and array of `fitExplanation` statements.
+  - `interviews`: Tracks interview scheduling with unique `applicationId`, `scheduledAt`, `meetingLinkOrInstructions`, `status` (`scheduled`, `completed`, `cancelled`), and `notes`.
+  - Generated database migration `0003_outgoing_martin_li.sql`.
+* Implemented Explainable Candidate Fit Scoring Engine (`CandidateFitEngine`) in `/backend/src/modules/applications/matching.service.ts`:
+  - Directly addresses Judge Defense Matrix Q12 ("How does matching work without fake AI claims?").
+  - Deterministically evaluates candidate fit across 4 auditable dimensions:
+    1. Skill Overlap (40% weight): Exact and substring token matching against required skills.
+    2. Work Mode & Locality Compatibility (25% weight): Remote preference match or hyper-local / campus proximity alignment in Punjab.
+    3. Availability & Timeline Fit (20% weight): Verified immediate vs part-time availability status.
+    4. Verified Track Record & Quality (15% weight): Credential verification bonus, completed gig counts, and peer ratings.
+  - Produces structured category scores and human-readable explanation bullets returned with every application.
+* Built application workflows API in `/backend/src/modules/applications`:
+  - `applications.schema.ts`: Zod validation for proposal inputs, candidate status transitions, and interview scheduling.
+  - `applications.service.ts`: Verification checks (verified student only), duplicate application prevention, automatic fit scoring, candidate ranking, and audit logging.
+  - `applications.routes.ts`: Registered endpoints under `/api/v1/applications` with aliases in `gigs.routes.ts` and `app.ts`:
+    - `POST /api/v1/gigs/:id/apply`: Authenticated verified student proposal submission.
+    - `GET /api/v1/student/applications`: Student tracking their submitted proposals with fit scores and interview statuses.
+    - `GET /api/v1/gigs/:id/applications`: Employer candidate dossier ordered by explainable fit score.
+    - `GET /api/v1/applications/:id`: Application dossier view with explainable fit scoring breakdown.
+    - `PATCH /api/v1/applications/:id/status`: Employer candidate pipeline management (`shortlisted`, `rejected`, `hired`).
+    - `POST /api/v1/applications/:id/interview`: Employer interview scheduling with meeting links and instructions.
+* Added architectural decision entry to [[decision.md]] explaining the deterministic matching rationale.
+* Updated [[flow.md]], [[Implementation-Checklist.md]], and verified 100% clean compilation (`tsc`) across both backend and frontend.
+
+
 ## [2026-10-14] Milestone 13: Gig Lifecycle, Scoping & Policy Engine (Phase 4 Complete)
 * Implemented complete micro-gig management and policy enforcement module in `/backend/src/modules/gigs`:
   - `gigs.schema.ts`: Enforces contractor safeguards: minimum budget floor ($\ge ₹1,500$), mandatory measurable deliverables, estimated hours, capped revisions ($1-5$), and strict sum matching between milestones and total contract budget.

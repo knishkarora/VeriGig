@@ -38,6 +38,14 @@
 - [x] Master sequential implementation checklist established: [[Implementation-Checklist]].
 - [x] Existing frontend flows inventoried as Connect, Extend, Add, or Correct before backend work.
 - [x] Proposed API/database/payment-provider architecture recorded in [[decision]].
-- [ ] Phase 0: Demo integrity & frontend truthfulness audit.
-- [ ] Phase 1-9: Fastify + PostgreSQL backend, verification, contracts, and payment implementation.
+- [x] Phase 0: Demo integrity & frontend truthfulness audit.
+- [x] Phase 1: Fastify TypeScript scaffolding & PostgreSQL database schemas.
+- [x] Phase 2: Authentication, authorization (RBAC), and private profile management.
+- [x] Phase 3: Identity verification & private credential document streaming desk.
+- [x] Phase 4: Gig lifecycle, scoping safeguards, and policy moderation engine.
+- [x] Phase 5: Proposals, candidate pipeline & explainable matching engine.
+- [ ] Phase 6: Contracts, two-party scope acceptance & milestone execution.
+- [ ] Phase 7: Payment commitment, sandbox escrow ledger & webhooks.
+- [ ] Phase 8: Dispute resolution, governance & immutable audit logs.
+- [ ] Phase 9: Ratings, verified completion proof & in-app messaging.
 - [ ] Phase 10: Frontend API connection & end-to-end judge demonstration.
