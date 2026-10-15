@@ -103,12 +103,12 @@ export const CompletionVerificationPage: React.FC = () => {
     return (
       <div className="min-h-[70vh] flex items-center justify-center text-center p-4">
         <div className="space-y-3 max-w-md">
-          <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 flex items-center justify-center mx-auto">
+          <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-600 border border-red-500/30 flex items-center justify-center mx-auto">
             <Lock className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-white">Certificate Not Found</h2>
-          <p className="text-xs text-white/50">The verification hash provided does not match any sealed contract completion record.</p>
-          <Link to="/" className="inline-block mt-4 text-xs text-[#D4F851] hover:underline">
+          <h2 className="text-xl font-bold text-[#101014]">Certificate Not Found</h2>
+          <p className="text-xs text-slate-500">The verification hash provided does not match any sealed contract completion record.</p>
+          <Link to="/" className="inline-block mt-4 text-xs text-purple-700 font-bold hover:underline">
             Return to Homepage →
           </Link>
         </div>
@@ -123,7 +123,7 @@ export const CompletionVerificationPage: React.FC = () => {
       <div className="flex items-center justify-between">
         <Link
           to="/"
-          className="text-xs text-white/60 hover:text-white flex items-center space-x-1.5 transition-colors"
+          className="text-xs text-slate-600 hover:text-[#101014] flex items-center space-x-1.5 transition-colors font-medium"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to VeriGig Platform</span>
@@ -131,9 +131,9 @@ export const CompletionVerificationPage: React.FC = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={copyUrl}
-            className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-colors"
+            className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 shadow-sm px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition-colors"
           >
-            <Copy className="w-3.5 h-3.5 text-[#D4F851]" />
+            <Copy className="w-3.5 h-3.5 text-purple-700" />
             <span>{copied ? 'Link Copied!' : 'Copy Shareable Link'}</span>
           </button>
           <button

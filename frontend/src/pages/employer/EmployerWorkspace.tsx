@@ -17,7 +17,8 @@ import {
   CreditCard,
   Briefcase,
   Users,
-  AlertCircle
+  AlertCircle,
+  Layers
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { Milestone } from '../../types';
@@ -269,7 +270,12 @@ export const EmployerWorkspace: React.FC = () => {
         /* Deliverable Review Stream */
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-[#121214]">Milestone Review & Sign-Off Pipeline</h2>
+            <h2 className="text-xl font-black text-[#101014] flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
+                <Layers size={17} />
+              </span>
+              <span>Milestone Review & Sign-Off Pipeline</span>
+            </h2>
             <span className="text-xs text-slate-500 font-medium">Escrow releases immediately upon your sign-off</span>
           </div>
 

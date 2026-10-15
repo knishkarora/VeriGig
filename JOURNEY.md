@@ -1,5 +1,15 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-15] Milestone: Global Canvas Background & Font Contrast Rectification, Text Hierarchy Elevation
+* **Key Changes:**
+  - **Global Root Background Rectification:** Fixed [App.tsx](../frontend/src/App.tsx) root shell by replacing unintended hardcoded dark classes `bg-[#090D16] text-[#D1D5DB]` with the canonical soft lavender canvas `bg-[#F8F6FE] text-[#334155]` specified in [[DESIGN.md]]. This immediately resolved black-on-black collisions where dark headings (`#101014`) rendered on dark canvas.
+  - **Elevated Heading Hierarchy in Student Dashboard:** Enhanced "Active Contracts in Progress" and "My Submitted Proposals" in [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx) with dedicated rounded icon containers (`bg-purple-100 text-purple-700` and `bg-slate-100 text-slate-700`) and live status/count pill badges.
+  - **Elevated Heading Hierarchy in Employer Dashboard:** Enhanced "Your Posted Micro-Gigs" in [EmployerDashboard.tsx](../frontend/src/pages/employer/EmployerDashboard.tsx) with a tactile `Briefcase` badge container and active listings pill.
+  - **Elevated Heading Hierarchy in Workspaces:** Added rounded icon containers and status badges to "Past Completed Projects" and "Project Milestones & Deliverables" in [StudentWorkspace.tsx](../frontend/src/pages/student/StudentWorkspace.tsx) and [EmployerWorkspace.tsx](../frontend/src/pages/employer/EmployerWorkspace.tsx).
+  - **Consistent Section Header in Explorer:** Added a high-contrast "Available Campus Gigs" section header with opportunity count pill in [GigExplore.tsx](../frontend/src/pages/student/GigExplore.tsx).
+  - **Fixed Canvas Element Contrast:** Corrected canvas back buttons and ID readouts in [PublicEmployerProfile.tsx](../frontend/src/pages/employer/PublicEmployerProfile.tsx) and [CompletionVerificationPage.tsx](../frontend/src/pages/shared/CompletionVerificationPage.tsx) from low-contrast `text-white/80` or `text-slate-400` to high-contrast `text-slate-600 hover:text-[#101014]`.
+* **Verification:** Production build verified with `npm.cmd run build` passing with zero errors (all 2,362 modules transformed, built in 5.00s).
+
 ## [2026-10-15] Milestone: Employer KYC Verification, Public Enterprise Dossier, Dynamic Pipeline & Sanitized Workspace
 
 * **Key Changes:**

@@ -68,12 +68,12 @@ export const PublicEmployerProfile: React.FC = () => {
       <div className="flex items-center justify-between">
         <button 
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-[#101014] transition-colors"
         >
           <ArrowLeft size={14} /> Back
         </button>
         <span className="text-xs text-slate-500 font-mono">
-          Employer ID: <strong className="text-white/80">{id || currentUser.id}</strong>
+          Employer ID: <strong className="text-slate-800">{id || currentUser.id}</strong>
         </span>
       </div>
 
@@ -183,13 +183,13 @@ export const PublicEmployerProfile: React.FC = () => {
       <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-black text-white flex items-center gap-2">
-              <Briefcase size={20} className="text-[#D4F851]" />
+            <h2 className="text-xl font-black text-[#101014] flex items-center gap-2">
+              <Briefcase size={20} className="text-purple-700" />
               <span>Micro-Gigs Posted by {companyName}</span>
             </h2>
-            <p className="text-xs text-white/50 mt-0.5">Explore active campus projects open for student proposals</p>
+            <p className="text-xs text-slate-500 mt-0.5">Explore active campus projects open for student proposals</p>
           </div>
-          <span className="text-xs text-white/60 font-bold tabular-nums">
+          <span className="text-xs text-slate-500 font-bold tabular-nums">
             {employerGigs.length} {employerGigs.length === 1 ? 'Listing' : 'Listings'}
           </span>
         </div>

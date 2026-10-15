@@ -174,11 +174,15 @@ export const StudentWorkspace: React.FC = () => {
         {/* Past Completed Projects Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-[#101014] flex items-center gap-2">
-              <History size={18} className="text-slate-700" />
+            <h3 className="text-lg font-black text-[#101014] flex items-center gap-2.5">
+              <span className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
+                <History size={15} />
+              </span>
               <span>Past Completed Projects</span>
             </h3>
-            <span className="text-xs text-slate-500 font-bold">{pastGigs.length} Completed</span>
+            <span className="text-xs text-purple-900 bg-purple-50 border border-purple-200/80 px-3 py-1 rounded-full font-bold tabular-nums">
+              {pastGigs.length} Completed
+            </span>
           </div>
 
           {pastGigs.length > 0 ? (
@@ -432,8 +436,15 @@ export const StudentWorkspace: React.FC = () => {
       {/* Stage-Wise Milestones List */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black text-[#121214]">Project Milestones & Deliverables</h2>
-          <span className="text-xs font-bold text-slate-500">{gig.milestones.length} Milestones Structured</span>
+          <h2 className="text-xl font-black text-[#101014] flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
+              <Layers size={17} />
+            </span>
+            <span>Project Milestones & Deliverables</span>
+          </h2>
+          <span className="text-xs text-purple-900 bg-purple-50 border border-purple-200/80 px-3 py-1 rounded-full font-bold tabular-nums">
+            {gig.milestones.length} Milestones Structured
+          </span>
         </div>
 
         <div className="space-y-4">

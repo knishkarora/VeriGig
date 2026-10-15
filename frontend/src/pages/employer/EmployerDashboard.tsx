@@ -10,7 +10,8 @@ import {
   ArrowUpRight,
   ShieldCheck,
   ShieldAlert,
-  Edit3
+  Edit3,
+  Briefcase
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
@@ -222,8 +223,15 @@ export const EmployerDashboard: React.FC = () => {
       {/* Active Listings Grid */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black text-[#101014]">Your Posted Micro-Gigs</h2>
-          <span className="text-xs text-slate-500 font-bold tabular-nums">{myGigs.length} Active Listings</span>
+          <h2 className="text-xl font-black text-[#101014] flex items-center gap-2.5">
+            <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
+              <Briefcase size={17} />
+            </span>
+            <span>Your Posted Micro-Gigs</span>
+          </h2>
+          <span className="text-xs text-purple-900 bg-purple-50 border border-purple-200/80 px-3 py-1 rounded-full font-bold tabular-nums">
+            {myGigs.length} Active Listings
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

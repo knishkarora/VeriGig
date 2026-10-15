@@ -200,6 +200,18 @@ export const GigExplore: React.FC = () => {
       </div>
 
       {/* Gigs Feed Grid */}
+      <div className="flex items-center justify-between pt-2">
+        <h2 className="text-xl font-black text-[#101014] flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
+            <Layers size={17} />
+          </span>
+          <span>Available Campus Gigs</span>
+        </h2>
+        <span className="text-xs text-purple-900 bg-purple-50 border border-purple-200/80 px-3 py-1 rounded-full font-bold tabular-nums">
+          {filteredGigs.length} {filteredGigs.length === 1 ? 'Opportunity' : 'Opportunities'}
+        </span>
+      </div>
+
       {filteredGigs.length === 0 ? (
         <div className="py-20 text-center rounded-[2.5rem] bg-white border border-slate-200 shadow-sm space-y-3">
           <Layers size={36} className="mx-auto text-slate-300" />
