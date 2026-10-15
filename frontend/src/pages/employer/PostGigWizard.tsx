@@ -8,7 +8,8 @@ import {
   Trash2, 
   Sparkles, 
   ShieldCheck, 
-  ArrowUpRight
+  ArrowUpRight,
+  ShieldAlert
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { GigCategory, GigDuration, LocationScope, Milestone } from '../../types';
@@ -17,6 +18,38 @@ import { gigsApi } from '../../api/endpoints';
 export const PostGigWizard: React.FC = () => {
   const navigate = useNavigate();
   const { postGig, currentUser } = useMarketplace();
+
+  // Role Gate: Students cannot create or publish gigs
+  if (currentUser.role === 'student') {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-6">
+        <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto border border-amber-200">
+          <ShieldAlert size={32} />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-black text-[#101014]">Employer-Only Access</h1>
+          <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+            Only verified MSMEs and enterprise business accounts are authorized to publish micro-gigs and fund escrow milestones. As a campus freelancer, you can explore open projects and submit proposals.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <Link
+            to="/app/student/explore"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
+          >
+            <span>Browse Micro-Gigs</span>
+            <ArrowUpRight size={13} className="text-[#D4F851]" />
+          </Link>
+          <Link
+            to="/app/student/dashboard"
+            className="px-6 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors"
+          >
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isPublishing, setIsPublishing] = useState<boolean>(false);

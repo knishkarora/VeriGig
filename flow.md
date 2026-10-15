@@ -153,3 +153,20 @@ JSON HTTP Response
 * **Defensive Dynamic Gig Page Hydration (`GigDetails.tsx` & `PostGigWizard.tsx`):**
   - Resolved blank page crashes on `/app/gig/:id` and `/gigs/:id` by adding asynchronous backend hydration (`gigsApi.getGigById(id)`) and defensive null-safety guards across all gig fields (`employerCompany`, `milestones`, `expectedDeliverables`, `requiredSkills`).
   - Updated `PostGigWizard.tsx` so MSME publishing triggers backend persistence, maps the returned backend database UUID, adds the gig to context, and navigates directly to the dedicated gig view.
+
+## 10. Modified Scope: Dynamic Student Dashboard, Footer RBAC Sanitization & Stage-Isolated Workspace
+* **Dynamic Student Dashboard (`StudentDashboard.tsx`):**
+  - Replaced hardcoded "Protected Escrow ₹5,000" with "Secured In-Progress Pay". The figure is dynamically computed from the student's active gigs (`activeGigs.reduce(...)`), correctly reporting ₹0 for new accounts.
+  - Added an accessible modal detailing Escrow mechanics (client upfront deposit, work submission, automatic sign-off release).
+  - Dynamically hydrated the top welcome banner and right-side college credentials card with `currentUser.collegeOrCompany`, `currentUser.rollNumber`, and `currentUser.isVerified`.
+  - For unverified accounts, the UI renders "Verification Status: Pending" and prompts completion via a direct profile link, while preserving the priority queue explanation.
+  - Connected MSME Trust Score to real review counts ("New account • 0 reviews yet") and added an interactive modal explaining the 4 ways to raise the score (ID verification, on-time delivery, 5-star reviews, zero disputes).
+* **Footer RBAC Sanitization & PostGig Role Guard (`Footer.tsx` & `PostGigWizard.tsx`):**
+  - Removed employer-only "Post-a-Gig" link from the universal footer; replaced it with "Escrow Protection" (`/escrow`).
+  - Added a student role guard to `PostGigWizard.tsx` that blocks students from accessing the task creator with a polite notice and navigation CTAs.
+* **Stage-Isolated Workspace & Past Archive (`StudentWorkspace.tsx`, `Navbar.tsx`, `App.tsx`):**
+  - Decoupled workspace routing from hardcoded `/gig-1` in Navbar and registered `/app/student/workspace` and `/app/employer/workspace`.
+  - Enforced project ownership checking in `StudentWorkspace.tsx`: students are only shown projects where `hiredStudentId === currentUser.id`.
+  - When no active project exists, renders an idle state ("You are not under any active project") with a CTA to browse micro-gigs.
+  - Added a "Past Completed Projects" section allowing users to inspect archived project deliverables, proofs, and feedback, which renders a clean empty state for new users.
+

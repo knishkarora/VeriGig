@@ -59,3 +59,9 @@
   - [x] Fixed profile save loader hang: aligned backend Zod graduation range (2000–2035), auto-provisioned student profiles in service, injected Bearer auth tokens in API client, and added alerts.
   - [x] Fixed blank gig details page: added defensive checks for undefined employer data and asynchronous backend API fetching by UUID.
   - [x] Connected MSME post gig wizard to create real database gigs and route directly to newly published gig pages.
+- [x] Dynamic Student Dashboard, Footer RBAC Sanitization & Stage-Isolated Workspace:
+  - [x] Replaced "Protected Escrow" jargon with "Secured In-Progress Pay" and replaced static ₹5,000 with dynamic computation across student's active gigs (reporting ₹0 for new accounts). Added plain-language Escrow explainer modal.
+  - [x] Replaced static PCTE text in student banner and verification card with dynamic database properties (`currentUser.collegeOrCompany`, `currentUser.rollNumber`, and `currentUser.isVerified`). Unverified accounts show "Verification Status: Pending" and priority queue messaging.
+  - [x] Connected MSME Trust Score to real reviews count ("New account • 0 reviews yet") and added interactive "How to improve?" modal.
+  - [x] Removed employer-only "Post-a-Gig" link from the universal footer; replaced it with "Escrow Protection" (`/escrow`). Added student role guard to `PostGigWizard.tsx`.
+  - [x] Stage-isolated Active Workspace (`StudentWorkspace.tsx`): decoupled route from `/gig-1`, enforced student gig assignment check, added "No Active Projects" idle state for unrecruited users, and added "Past Completed Projects" archive inspection.

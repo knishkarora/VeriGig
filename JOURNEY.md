@@ -303,3 +303,18 @@
   - **Cloud Deployment Configuration:** Generated `render.yaml` blueprint for unified Render deployment (Fastify backend + Vite static frontend) and added `frontend/public/_redirects` for SPA routing.
   - **Environment & Storage Alignment:** Configured production-ready `backend/.env` with 64-character cryptographically secure `JWT_SECRET`, Supabase connection templates, and recommended Supabase Storage (1 GB free) for document uploads.
   - **Verification:** Both `frontend` and `backend` built with 0 errors (`tsc && vite build`).
+
+## [2026-10-15] Milestone 7: Dynamic Student Dashboard, Footer RBAC Sanitization & Stage-Isolated Workspace
+* **Context & Trigger:** Audit and remediation of static data artifacts, misleading placeholder values, footer RBAC violations, and leaking of unassigned active workspaces to newly registered students.
+* **Key Changes:**
+  - **Dynamic Secured Pay Telemetry (`StudentDashboard.tsx`):** Replaced technical jargon "Protected Escrow" with intuitive "Secured In-Progress Pay". Replaced the hardcoded ₹5,000 figure with dynamic calculation across active gigs (`activeGigs.reduce(...)`), accurately displaying ₹0 for new accounts. Added an educational modal explaining Escrow in plain terms.
+  - **Dynamic Campus ID Credentials:** Replaced static "Verified PCTE Student" and institution badges with real database values (`currentUser.collegeOrCompany`, `currentUser.rollNumber`, and `currentUser.isVerified`). Unverified accounts display "Verification Status: Pending" and clear priority queue messaging with a direct profile link.
+  - **MSME Trust Score Guidance:** Dynamically connected rating and reviews count ("New account • 0 reviews yet") and added an interactive modal explaining the 4 criteria to increase score from 0.0 to 5.0.
+  - **Footer RBAC Sanitization & PostGig Role Guard:** Removed employer-only "Post-a-Gig" link from the universal footer and replaced it with "Escrow Protection" (`/escrow`). Added a student role guard to `PostGigWizard.tsx` blocking unauthorized access with clear guidance.
+  - **Stage-Isolated Workspace & Past Archive (`StudentWorkspace.tsx`, `Navbar.tsx`, `App.tsx`):**
+    - Updated navigation and routes to generic `/app/student/workspace` and `/app/employer/workspace`.
+    - Enforced student project ownership checking: users only see workspaces where `hiredStudentId === currentUser.id`.
+    - If a user has no active projects, a clean "No Active Projects Right Now" empty state is rendered with a "Browse Available Micro-Gigs" CTA.
+    - Added a "Past Completed Projects" section allowing users to inspect archived deliverables, proofs, and feedback, which renders an empty state for new users.
+  - **Build Verification:** 100% clean production builds verified across both frontend and backend (`npm run build`).
+

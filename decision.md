@@ -241,3 +241,25 @@
   - Users must configure their local dev URL (`http://localhost:5173/**`) and production domain in their Supabase Dashboard's URL Configuration. This is standard OAuth protocol security behavior to prevent open redirect vulnerabilities.
 
 * **Immutability Status:** Settled & Immutable.
+
+## [2026-10-15] Decision: User Truthfulness, Dynamic Campus Verification, Role-Safe Footer & Stage-Isolated Workspace
+
+* **Context & Scope:** 
+  New student accounts displayed misleading static information on the Student Dashboard ("Protected Escrow ₹5,000", hardcoded "Verified PCTE Student" badge, hardcoded "PCTE Group of Institutes" verification card with static text, and "9 verified client endorsements"). Furthermore, the universal footer allowed students to access `/app/employer/post-gig`, and the "Active Workspace" navbar route (`/app/student/workspace/gig-1`) force-rendered a pre-existing project (`gig-1`) to students who had never applied or been hired.
+
+* **Choice Made:** 
+  1. **User-Friendly Financial Telemetry:** Replaced confusing jargon "Protected Escrow" with "Secured In-Progress Pay". Changed the static ₹5,000 figure to a dynamic accumulator calculated strictly from the logged-in student's active gigs (`activeGigs.reduce(...)`). New accounts with 0 active gigs accurately show ₹0. Added an educational modal explaining Escrow in plain terms.
+  2. **Dynamic Campus ID Credentials:** Replaced static PCTE text in the dashboard top banner and right-side verification card with dynamic database properties (`currentUser.isVerified`, `currentUser.collegeOrCompany`, and `currentUser.rollNumber`). Unverified accounts show "Verification Status: Pending" and clear guidance that verification grants priority ranking, with a direct action link to update college credentials.
+  3. **MSME Trust Score Guidance:** Dynamically formatted rating and review counts (showing "New account • 0 reviews yet" for zero-gig accounts). Added a dedicated "How to improve?" modal outlining the 4 actionable ways to raise the score (ID verification, on-time deliveries, 5-star reviews, zero disputes).
+  4. **Universal Role-Safe Footer & PostGig Role Guard:** Replaced the employer-specific "Post-a-Gig" link in the global footer with a universal "Escrow Protection" link (`/escrow`). Added a strict student role guard in `PostGigWizard.tsx` that blocks unauthorized access with a clear notice.
+  5. **Stage-Isolated Active Workspace & Past Archive:** Updated navbar and route paths to `/app/student/workspace` and `/app/employer/workspace`. In `StudentWorkspace.tsx`, verified that the rendered gig strictly belongs to `currentUser.id`. If a student has no active project, a clean "No Active Projects" idle state is displayed with a "Browse Micro-Gigs" CTA, alongside a "Past Completed Projects" section with project archive inspection.
+
+* **Rationale (Why over What):**
+  - Guarantees complete platform truthfulness and prevents confusion for newly onboarded students.
+  - Ensures robust RBAC and UI hygiene so students cannot access employer creation workflows.
+  - Preserves workspace integrity: students only see projects where mutual agreement and recruitment have taken place.
+
+* **Tradeoffs Accepted:**
+  - Demo student accounts without active assignments will no longer see mock project workspaces by default, maintaining rigorous data privacy and accurate user experience.
+
+* **Immutability Status:** Settled & Immutable.

@@ -73,6 +73,7 @@ export const App: React.FC = () => {
               <Route path="/app/student/gig/:id" element={<GigDetails />} />
               <Route path="/app/gig/:id" element={<GigDetails />} />
               <Route path="/gigs/:id" element={<GigDetails />} />
+              <Route path="/app/student/workspace" element={<StudentWorkspace />} />
               <Route path="/app/student/workspace/:gigId" element={<StudentWorkspace />} />
               <Route path="/app/student/profile" element={<StudentProfile />} />
 
@@ -80,6 +81,7 @@ export const App: React.FC = () => {
               <Route path="/app/employer/dashboard" element={<EmployerDashboard />} />
               <Route path="/app/employer/post-gig" element={<PostGigWizard />} />
               <Route path="/app/employer/gig/:id/applicants" element={<GigApplicants />} />
+              <Route path="/app/employer/workspace" element={<EmployerWorkspace />} />
               <Route path="/app/employer/workspace/:gigId" element={<EmployerWorkspace />} />
               <Route path="/app/employer/profile" element={<EmployerProfile />} />
 

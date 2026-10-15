@@ -105,7 +105,7 @@ export const Navbar: React.FC = () => {
                     Explore Micro-Gigs
                   </Link>
                   <Link 
-                    to="/app/student/workspace/gig-1" 
+                    to="/app/student/workspace" 
                     className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all ${
                       location.pathname.includes('/workspace') ? 'text-white bg-[#101014]' : 'text-slate-600 hover:text-[#101014] hover:bg-slate-100'
                     }`}
@@ -150,7 +150,7 @@ export const Navbar: React.FC = () => {
                     Applicant Pipeline
                   </Link>
                   <Link 
-                    to="/app/employer/workspace/gig-1" 
+                    to="/app/employer/workspace" 
                     className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all ${
                       location.pathname.includes('/workspace') ? 'text-white bg-[#101014]' : 'text-slate-600 hover:text-[#101014] hover:bg-slate-100'
                     }`}
@@ -366,7 +366,7 @@ export const Navbar: React.FC = () => {
               <>
                 <Link to="/app/student/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Dashboard</Link>
                 <Link to="/app/student/explore" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Explore Gigs</Link>
-                <Link to="/app/student/workspace/gig-1" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Workspace</Link>
+                <Link to="/app/student/workspace" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Workspace</Link>
                 <Link to="/app/student/profile" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Profile</Link>
               </>
             )}
@@ -375,7 +375,7 @@ export const Navbar: React.FC = () => {
                 <Link to="/app/employer/dashboard" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Dashboard</Link>
                 <Link to="/app/employer/post-gig" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Post a Gig</Link>
                 <Link to="/app/employer/gig/gig-2/applicants" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Applicants</Link>
-                <Link to="/app/employer/workspace/gig-1" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Workspace</Link>
+                <Link to="/app/employer/workspace" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Workspace</Link>
               </>
             )}
             {currentRole === 'admin' && (

@@ -26,10 +26,12 @@ import { ReviewModal } from '../../components/reviews/ReviewModal';
 import { ChatModal } from '../../components/messaging/ChatModal';
 
 export const EmployerWorkspace: React.FC = () => {
-  const { gigId } = useParams<{ gigId: string }>();
-  const { gigs, approveMilestone, requestRevision } = useMarketplace();
+  const { gigId } = useParams<{ gigId?: string }>();
+  const { gigs, currentUser, approveMilestone, requestRevision } = useMarketplace();
 
-  const gig = gigs.find(g => g.id === (gigId || 'gig-1')) || gigs[0];
+  const gig = gigId 
+    ? gigs.find(g => g.id === gigId) 
+    : (gigs.find(g => g.employerId === currentUser.id && g.status === 'in_progress') || gigs.find(g => g.employerId === currentUser.id) || gigs[0]);
 
   const [revisionModalMilestone, setRevisionModalMilestone] = useState<Milestone | null>(null);
   const [revisionFeedback, setRevisionFeedback] = useState('');
@@ -42,6 +44,7 @@ export const EmployerWorkspace: React.FC = () => {
   const [isDoubleSidedReviewOpen, setIsDoubleSidedReviewOpen] = useState(false);
 
   const handleApprove = (milestoneId: string) => {
+    if (!gig) return;
     approveMilestone(gig.id, milestoneId, 'Approved! Payout released from escrow.');
     const remaining = gig.milestones.filter(m => m.id !== milestoneId && m.status !== 'completed');
     if (remaining.length === 0) {
@@ -51,12 +54,24 @@ export const EmployerWorkspace: React.FC = () => {
 
   const handleRevisionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!revisionModalMilestone || !revisionFeedback.trim()) return;
+    if (!gig || !revisionModalMilestone || !revisionFeedback.trim()) return;
 
     requestRevision(gig.id, revisionModalMilestone.id, revisionFeedback);
     setRevisionModalMilestone(null);
     setRevisionFeedback('');
   };
+
+  if (!gig) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-4">
+        <h2 className="text-2xl font-black text-[#101014]">No Workspace Available</h2>
+        <p className="text-xs text-slate-500">There are no active gigs or deliverables to inspect right now.</p>
+        <Link to="/app/employer/dashboard" className="inline-block px-5 py-2.5 rounded-full bg-[#101014] text-white text-xs font-bold">
+          Go to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">

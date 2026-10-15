@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Wallet, 
@@ -9,16 +9,31 @@ import {
   FileText, 
   TrendingUp,
   Layers,
-  ChevronRight
+  ChevronRight,
+  HelpCircle,
+  X,
+  ShieldCheck,
+  Award,
+  AlertCircle
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
 
 export const StudentDashboard: React.FC = () => {
   const { currentUser, gigs, proposals } = useMarketplace();
+  const [isTrustModalOpen, setIsTrustModalOpen] = useState(false);
+  const [isEscrowModalOpen, setIsEscrowModalOpen] = useState(false);
 
   const activeGigs = gigs.filter(g => g.hiredStudentId === currentUser.id);
   const myProposals = proposals.filter(p => p.studentId === currentUser.id);
+
+  // Dynamically calculate secured project funds (escrow) across in-progress gigs
+  const protectedFunds = activeGigs.reduce((acc, gig) => {
+    const pendingAmount = (gig.milestones || [])
+      .filter(m => m.status === 'active' || m.status === 'under_review' || m.status === 'in_revision' || m.status === 'locked')
+      .reduce((sum, m) => sum + (m.amount || 0), 0);
+    return acc + pendingAmount;
+  }, 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
@@ -26,12 +41,27 @@ export const StudentDashboard: React.FC = () => {
       {/* Top Banner */}
       <div className="p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(100,65,180,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <h1 className="text-3xl font-black text-[#101014]">Welcome back, {currentUser.name}</h1>
-            <TrustBadge type="student" text="Verified PCTE Student" size="sm" />
+            {currentUser.isVerified ? (
+              <TrustBadge 
+                type="student" 
+                text={`Verified ${currentUser.collegeOrCompany ? currentUser.collegeOrCompany + ' ' : ''}Student`} 
+                size="sm" 
+              />
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300">
+                <Clock size={12} className="text-amber-600 shrink-0" />
+                <span>Verification Pending</span>
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 font-medium">
-            Pre-Final Year CSE • Roll #{currentUser.rollNumber} • {currentUser.collegeOrCompany}
+            {[
+              currentUser.degree || 'Campus Student',
+              currentUser.rollNumber ? `Roll #${currentUser.rollNumber}` : null,
+              currentUser.collegeOrCompany || 'College details pending'
+            ].filter(Boolean).join(' • ')}
           </p>
         </div>
 
@@ -54,7 +84,7 @@ export const StudentDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Financial & Performance Telemetry Deck (Replacing repetitive 4-card row) */}
+      {/* Financial & Performance Telemetry Deck */}
       <div className="p-6 sm:p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
           
@@ -74,23 +104,35 @@ export const StudentDashboard: React.FC = () => {
             <div className="text-[11px] text-emerald-700 font-bold mt-1">Instant UPI Payout Ready</div>
           </div>
 
-          {/* Active Escrow */}
+          {/* Secured In-Progress Pay (Escrow) */}
           <div className="pt-4 sm:pt-0 sm:px-6">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                Protected Escrow
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Secured In-Progress Pay
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsEscrowModalOpen(true)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                  title="What is Secured Pay / Escrow?"
+                >
+                  <HelpCircle size={13} />
+                </button>
+              </div>
               <div className="p-2 rounded-xl bg-slate-100 text-slate-800">
                 <Sparkles size={18} />
               </div>
             </div>
             <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
-              ₹5,000
+              ₹{protectedFunds.toLocaleString()}
             </div>
-            <div className="text-[11px] text-slate-500 font-semibold mt-1">Locked in active milestone</div>
+            <div className="text-[11px] text-slate-500 font-semibold mt-1">
+              {activeGigs.length > 0 ? 'Safely reserved in escrow for active milestones' : 'No active project funds locked'}
+            </div>
           </div>
 
-          {/* Completed Gigs */}
+          {/* Completed Deliverables */}
           <div className="pt-4 sm:pt-0 sm:px-6">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -103,23 +145,39 @@ export const StudentDashboard: React.FC = () => {
             <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
               {currentUser.completedGigs}
             </div>
-            <div className="text-[11px] text-emerald-700 font-bold mt-1">100% On-time completion</div>
+            <div className="text-[11px] text-emerald-700 font-bold mt-1">
+              {currentUser.completedGigs > 0 ? '100% On-time completion' : 'Ready for your first gig'}
+            </div>
           </div>
 
           {/* Trust Score */}
           <div className="pt-4 sm:pt-0 sm:pl-6">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                SME Trust Score
+                MSME Trust Score
               </span>
               <div className="p-2 rounded-xl bg-amber-50 text-amber-700">
                 <TrendingUp size={18} />
               </div>
             </div>
-            <div className="text-3xl font-black text-[#101014] mt-2 font-mono tabular-nums">
-              {currentUser.rating} <span className="text-base font-normal text-slate-400">/ 5.0</span>
+            <div className="flex items-baseline gap-2 mt-2">
+              <div className="text-3xl font-black text-[#101014] font-mono tabular-nums">
+                {currentUser.rating > 0 ? currentUser.rating.toFixed(1) : '0.0'}
+              </div>
+              <span className="text-base font-normal text-slate-400">/ 5.0</span>
             </div>
-            <div className="text-[11px] text-slate-500 font-semibold mt-1">9 verified client endorsements</div>
+            <div className="flex items-center justify-between mt-1">
+              <span className="text-[11px] text-slate-500 font-semibold">
+                {currentUser.completedGigs > 0 ? `${currentUser.completedGigs} verified reviews` : 'New account • 0 reviews yet'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsTrustModalOpen(true)}
+                className="text-[10px] text-purple-700 font-bold hover:underline"
+              >
+                How to improve?
+              </button>
+            </div>
           </div>
 
         </div>
@@ -138,65 +196,90 @@ export const StudentDashboard: React.FC = () => {
             <span className="text-xs text-slate-500 font-bold">{activeGigs.length} Ongoing</span>
           </div>
 
-          {activeGigs.map((gig) => {
-            const activeMs = gig.milestones.find(m => m.status === 'active' || m.status === 'under_review') || gig.milestones[0];
-            return (
-              <div 
-                key={gig.id}
-                className="p-8 rounded-[2.5rem] bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all space-y-5"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                      In Progress
-                    </span>
-                    <h3 className="text-xl font-black text-[#101014] mt-2">{gig.title}</h3>
-                    <p className="text-xs text-slate-500 font-medium">{gig.employerCompany} • {gig.locationScope}</p>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <span className="text-xl font-black text-[#101014] font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
-                    <span className="text-[11px] text-slate-400 block">{gig.milestones.length} Milestones</span>
-                  </div>
-                </div>
-
-                {/* Current Active Milestone Card */}
-                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-extrabold text-[#101014]">
-                      Active Stage: {activeMs.title}
-                    </span>
-                    <span className={`text-[11px] font-black px-3 py-0.5 rounded-full ${
-                      activeMs.status === 'under_review'
-                        ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                        : 'bg-white text-slate-900 border border-slate-200 shadow-sm'
-                    }`}>
-                      {activeMs.status === 'under_review' ? 'Pending SME Sign-Off' : 'In Progress'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">{activeMs.description}</p>
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[11px]">
-                    <span className="flex items-center gap-1 text-slate-600 font-medium">
-                      <Clock size={12} /> Target: {activeMs.deadline}
-                    </span>
-                    <span className="font-black text-emerald-800 font-mono tabular-nums">Escrow Release: ₹{activeMs.amount.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-slate-500 font-medium">
-                    SME Lead: {gig.employerName}
-                  </span>
-                  <Link
-                    to={`/app/student/workspace/${gig.id}`}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black transition-all shadow-sm"
-                  >
-                    <span>Open Workspace</span>
-                    <ChevronRight size={14} />
-                  </Link>
-                </div>
+          {activeGigs.length === 0 ? (
+            <div className="p-8 sm:p-12 rounded-[2.5rem] bg-white border border-dashed border-slate-200 text-center space-y-4">
+              <div className="w-14 h-14 rounded-3xl bg-purple-50 text-purple-700 flex items-center justify-center mx-auto border border-purple-100">
+                <Layers size={24} />
               </div>
-            );
-          })}
+              <div className="space-y-1">
+                <h3 className="text-base font-black text-[#101014]">No Active Contracts In Progress</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  You are currently not enrolled in any live project. Explore curated campus micro-gigs, submit proposals, and get hired by verified MSMEs to start earning.
+                </p>
+              </div>
+              <div className="pt-2">
+                <Link
+                  to="/app/student/explore"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
+                >
+                  <span>Browse Micro-Gigs</span>
+                  <div className="w-4 h-4 rounded-full bg-[#D4F851] text-[#101014] flex items-center justify-center font-bold">
+                    <ArrowUpRight size={11} />
+                  </div>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            activeGigs.map((gig) => {
+              const activeMs = gig.milestones.find(m => m.status === 'active' || m.status === 'under_review') || gig.milestones[0];
+              return (
+                <div 
+                  key={gig.id}
+                  className="p-8 rounded-[2.5rem] bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all space-y-5"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                        In Progress
+                      </span>
+                      <h3 className="text-xl font-black text-[#101014] mt-2">{gig.title}</h3>
+                      <p className="text-xs text-slate-500 font-medium">{gig.employerCompany} • {gig.locationScope}</p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <span className="text-xl font-black text-[#101014] font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
+                      <span className="text-[11px] text-slate-400 block">{gig.milestones.length} Milestones</span>
+                    </div>
+                  </div>
+
+                  {/* Current Active Milestone Card */}
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-extrabold text-[#101014]">
+                        Active Stage: {activeMs.title}
+                      </span>
+                      <span className={`text-[11px] font-black px-3 py-0.5 rounded-full ${
+                        activeMs.status === 'under_review'
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : 'bg-white text-slate-900 border border-slate-200 shadow-sm'
+                      }`}>
+                        {activeMs.status === 'under_review' ? 'Pending SME Sign-Off' : 'In Progress'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">{activeMs.description}</p>
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-[11px]">
+                      <span className="flex items-center gap-1 text-slate-600 font-medium">
+                        <Clock size={12} /> Target: {activeMs.deadline}
+                      </span>
+                      <span className="font-black text-emerald-800 font-mono tabular-nums">Escrow Release: ₹{activeMs.amount.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-slate-500 font-medium">
+                      SME Lead: {gig.employerName}
+                    </span>
+                    <Link
+                      to={`/app/student/workspace/${gig.id}`}
+                      className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black transition-all shadow-sm"
+                    >
+                      <span>Open Workspace</span>
+                      <ChevronRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              );
+            })
+          )}
 
           {/* Submitted Proposals Tracker */}
           <div className="pt-4 space-y-4">
@@ -266,25 +349,185 @@ export const StudentDashboard: React.FC = () => {
             </Link>
           </div>
 
-          {/* Verification Badge Status Card */}
-          <div className="p-7 rounded-[2.5rem] bg-white border border-emerald-200/80 shadow-sm space-y-3">
+          {/* Verification Badge Status Card (Dynamic Database-Backed) */}
+          <div className={`p-7 rounded-[2.5rem] bg-white shadow-sm space-y-3 border ${
+            currentUser.isVerified ? 'border-emerald-200/80' : 'border-amber-200/80'
+          }`}>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold">
-                <CheckCircle2 size={18} />
+              <div className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-white shrink-0 ${
+                currentUser.isVerified ? 'bg-emerald-600' : 'bg-amber-500'
+              }`}>
+                {currentUser.isVerified ? <CheckCircle2 size={18} /> : <Clock size={18} />}
               </div>
               <div>
-                <h4 className="text-xs font-black text-[#101014]">College ID Verified</h4>
-                <p className="text-[11px] text-emerald-800 font-bold">PCTE Group of Institutes</p>
+                <h4 className="text-xs font-black text-[#101014]">
+                  {currentUser.isVerified ? 'College ID Verified' : 'Verification Status: Pending'}
+                </h4>
+                <p className={`text-[11px] font-bold ${currentUser.isVerified ? 'text-emerald-800' : 'text-amber-800'}`}>
+                  {currentUser.collegeOrCompany || 'College details pending'}
+                  {currentUser.rollNumber ? ` • Roll #${currentUser.rollNumber}` : ' • Roll number pending'}
+                </p>
               </div>
             </div>
+            
             <p className="text-xs text-slate-600 leading-relaxed">
-              Your verified student credential gives you priority ranking on local SME proposal queues and instant milestone escrow release.
+              {currentUser.isVerified
+                ? 'Your verified student credential gives you priority ranking on local SME proposal queues and instant milestone escrow release.'
+                : 'Your credentials are currently not verified. Once verified, you will be given higher priority ranking on local SME proposal queues and instant milestone escrow release.'}
             </p>
+
+            {!currentUser.isVerified && (
+              <div className="pt-2">
+                <Link
+                  to="/app/student/profile"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-[11px] font-bold transition-all shadow-sm"
+                >
+                  <span>Update College Credentials</span>
+                  <ArrowUpRight size={13} className="text-[#D4F851]" />
+                </Link>
+              </div>
+            )}
           </div>
 
         </div>
 
       </div>
+
+      {/* Escrow & Secured Pay Explainer Modal */}
+      {isEscrowModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsEscrowModalOpen(false)} />
+          <div className="relative w-full max-w-lg bg-white border border-[#EDE8FD] rounded-[2.5rem] p-7 sm:p-8 shadow-2xl space-y-5 text-left">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <ShieldCheck size={18} />
+                </div>
+                <h3 className="text-base font-black text-[#101014]">What is Secured In-Progress Pay?</h3>
+              </div>
+              <button
+                onClick={() => setIsEscrowModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              In freelance and project work, <strong className="text-slate-900">Escrow</strong> means safe, guaranteed pay. Before you begin working on any milestone, the client deposits the entire milestone budget into a secure holding vault managed by VeriGig.
+            </p>
+
+            <div className="space-y-3">
+              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-100 text-xs text-purple-950 flex gap-3 items-start">
+                <span className="w-6 h-6 rounded-full bg-purple-200 text-purple-900 font-black text-[11px] flex items-center justify-center shrink-0">1</span>
+                <div>
+                  <strong className="block font-bold">Client Deposits Upfront</strong>
+                  The client cannot take the money back while you are actively working on the milestone.
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-100 text-xs text-purple-950 flex gap-3 items-start">
+                <span className="w-6 h-6 rounded-full bg-purple-200 text-purple-900 font-black text-[11px] flex items-center justify-center shrink-0">2</span>
+                <div>
+                  <strong className="block font-bold">You Submit Deliverables</strong>
+                  Submit your code, design links, or work outputs in the Active Workspace.
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 flex gap-3 items-start">
+                <span className="w-6 h-6 rounded-full bg-emerald-200 text-emerald-900 font-black text-[11px] flex items-center justify-center shrink-0">3</span>
+                <div>
+                  <strong className="block font-bold">Instant Payout Release</strong>
+                  Once the client signs off, the locked money is immediately released directly into your wallet.
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setIsEscrowModalOpen(false)}
+                className="w-full py-3 rounded-full bg-[#101014] hover:bg-slate-800 text-white font-bold text-xs transition-colors"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Trust Score Improvement Modal */}
+      {isTrustModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsTrustModalOpen(false)} />
+          <div className="relative w-full max-w-lg bg-white border border-[#EDE8FD] rounded-[2.5rem] p-7 sm:p-8 shadow-2xl space-y-5 text-left">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                  <Award size={18} />
+                </div>
+                <h3 className="text-base font-black text-[#101014]">How to Improve Your MSME Trust Score</h3>
+              </div>
+              <button
+                onClick={() => setIsTrustModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Your MSME Trust Score is an algorithmically computed reputation index (0.0 to 5.0) visible to regional businesses when reviewing candidate proposals. Here is how you can boost it:
+            </p>
+
+            <div className="space-y-3 text-xs text-slate-700">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3 items-start">
+                <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-slate-900 font-bold block">1. Verify College ID & Roll Number</strong>
+                  Uploading an official campus ID card unlocks instant verified status and gives you a baseline score boost.
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3 items-start">
+                <Clock size={16} className="text-purple-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-slate-900 font-bold block">2. Deliver Milestones On Time</strong>
+                  Every milestone submitted on or ahead of deadline improves your on-time reliability percentage.
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3 items-start">
+                <TrendingUp size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-slate-900 font-bold block">3. Earn 5-Star MSME Client Reviews</strong>
+                  Upon project completion, clients rate communication, quality, and technical scope. 5-star reviews rapidly lift your rating toward 5.0.
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex gap-3 items-start">
+                <ShieldCheck size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-slate-900 font-bold block">4. Zero Dispute Record</strong>
+                  Fulfilling agreed scopes and communicating proactively prevents arbitration escalations and protects your rating.
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex gap-3">
+              <Link
+                to="/app/student/profile"
+                onClick={() => setIsTrustModalOpen(false)}
+                className="flex-1 py-3 text-center rounded-full bg-[#101014] hover:bg-slate-800 text-white font-bold text-xs transition-colors"
+              >
+                Complete ID Verification
+              </Link>
+              <button
+                type="button"
+                onClick={() => setIsTrustModalOpen(false)}
+                className="px-6 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
