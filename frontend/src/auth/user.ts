@@ -45,5 +45,12 @@ export function toMarketplaceUser(
       : typeof profile.rollNumber === 'string'
       ? profile.rollNumber
       : undefined,
+    businessType: typeof profile.businessType === 'string' ? profile.businessType : undefined,
+    website: typeof profile.website === 'string' ? profile.website : undefined,
+    phone: typeof profile.contactPhoneEncrypted === 'string' ? profile.contactPhoneEncrypted : undefined,
+    address: typeof profile.registeredAddress === 'string' ? profile.registeredAddress : undefined,
+    verificationStatus: user.status === 'pending_verification' 
+      ? 'pending' 
+      : (isStudent ? (user.status === 'verified' ? 'approved' : 'none') : (profile.verifiedBadge ? 'approved' : 'none')),
   };
 }

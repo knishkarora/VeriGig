@@ -88,11 +88,23 @@ export class ProfilesService {
 
   // Business Profiles
   async getBusinessProfileByUserId(userId: string) {
-    const profile = await db.query.businessProfiles.findFirst({
+    let profile = await db.query.businessProfiles.findFirst({
       where: eq(businessProfiles.userId, userId),
     });
 
     if (!profile) {
+      const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+      if (user) {
+        const [created] = await db.insert(businessProfiles).values({
+          userId: user.id,
+          companyName: user.email.split('@')[0],
+          businessType: 'General Business',
+          city: 'Ludhiana',
+          state: 'Punjab',
+        }).returning();
+        return created;
+      }
+
       const err = new Error('Business profile not found');
       (err as any).statusCode = 404;
       throw err;
@@ -102,9 +114,15 @@ export class ProfilesService {
   }
 
   async getPublicBusinessProfile(businessProfileId: string) {
-    const profile = await db.query.businessProfiles.findFirst({
+    let profile = await db.query.businessProfiles.findFirst({
       where: eq(businessProfiles.id, businessProfileId),
     });
+
+    if (!profile) {
+      profile = await db.query.businessProfiles.findFirst({
+        where: eq(businessProfiles.userId, businessProfileId),
+      });
+    }
 
     if (!profile) {
       const err = new Error('Business profile not found');
@@ -112,9 +130,14 @@ export class ProfilesService {
       throw err;
     }
 
-    // Data Minimization: Strictly omit registrationNumberEncrypted, contactPhoneEncrypted, userId
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, profile.userId),
+    });
+
+    // Data Minimization: Strictly omit registrationNumberEncrypted, contactPhoneEncrypted, private credentials
     return {
       id: profile.id,
+      userId: profile.userId,
       companyName: profile.companyName,
       businessType: profile.businessType,
       website: profile.website,
@@ -122,18 +145,29 @@ export class ProfilesService {
       city: profile.city,
       state: profile.state,
       verifiedBadge: profile.verifiedBadge,
+      representativeEmail: user?.email,
     };
   }
 
   async updateBusinessProfile(userId: string, input: UpdateBusinessProfileInput) {
     const existing = await this.getBusinessProfileByUserId(userId);
 
+    const updatePayload: any = {
+      updatedAt: new Date(),
+    };
+
+    if (input.companyName !== undefined) updatePayload.companyName = input.companyName;
+    if (input.businessType !== undefined) updatePayload.businessType = input.businessType;
+    if (input.website !== undefined) updatePayload.website = input.website;
+    if (input.description !== undefined) updatePayload.description = input.description;
+    if (input.city !== undefined) updatePayload.city = input.city;
+    if (input.state !== undefined) updatePayload.state = input.state;
+    if (input.contactPhone !== undefined) updatePayload.contactPhoneEncrypted = input.contactPhone;
+    if (input.registrationNumber !== undefined) updatePayload.registrationNumberEncrypted = input.registrationNumber;
+
     const [updated] = await db
       .update(businessProfiles)
-      .set({
-        ...input,
-        updatedAt: new Date(),
-      })
+      .set(updatePayload)
       .where(eq(businessProfiles.id, existing.id))
       .returning();
 

@@ -21,6 +21,13 @@ export interface User {
   graduationYear?: number;
   portfolioLinks?: { label: string; url: string }[];
   availabilityStatus?: string;
+  businessType?: string;
+  website?: string;
+  phone?: string;
+  address?: string;
+  verificationStatus?: 'none' | 'pending' | 'under_review' | 'approved' | 'rejected';
+  verificationDocType?: string;
+  verificationDocNumber?: string;
 }
 
 export type MilestoneStatus = 'locked' | 'active' | 'under_review' | 'completed' | 'in_revision';

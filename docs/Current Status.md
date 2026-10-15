@@ -74,3 +74,11 @@
   - [x] Connected MSME Trust Score to real reviews count ("New account • 0 reviews yet") and added interactive "How to improve?" modal.
   - [x] Removed employer-only "Post-a-Gig" link from the universal footer; replaced it with "Escrow Protection" (`/escrow`). Added student role guard to `PostGigWizard.tsx`.
   - [x] Stage-isolated Active Workspace (`StudentWorkspace.tsx`): decoupled route from `/gig-1`, enforced student gig assignment check, added "No Active Projects" idle state for unrecruited users, and added "Past Completed Projects" archive inspection.
+
+- [x] Employer KYC Verification, Public Enterprise Dossier, Dynamic Pipeline & Sanitized Workspace:
+  - [x] Built `EditEmployerProfileDrawer.tsx` allowing employers to edit representative name, contact email, profile avatar (file upload or industry presets), company name, industry domain, website, bio, city, state, registered physical address (private KYC), direct phone number (private KYC), and official Indian business verification credentials (GSTIN, Udyam MSME, Business PAN, or Proprietor Aadhaar) with document proof upload.
+  - [x] Updated `EmployerDashboard.tsx` with dynamic verification badge states (`Verified SME Partner`, `Verification Under Review`, or `Unverified Employer`), an "Edit Business Profile" action button, and an interactive KYC prompt banner.
+  - [x] Built candidate-facing `PublicEmployerProfile.tsx` (`/employers/:id` and `/app/employer/:id/view`) and linked the "About the Business" card in `GigDetails.tsx` directly to it, displaying verified business metadata and active micro-gigs while concealing private contact details per DPDPA 2023.
+  - [x] Decoupled `Navbar.tsx` from hardcoded `/app/employer/gig/gig-2/applicants` to neutral `/app/employer/applicants`, upgraded `GigApplicants.tsx` to query the logged-in employer's gigs, provided an interactive multi-gig switcher bar, and handled empty states.
+  - [x] Sanitized `EmployerWorkspace.tsx` by eliminating all static mock student "Aarav Sharma" fallbacks, adding a "Contract Awaiting Student Hire" stage card with candidate review CTA for unassigned gigs, dynamically binding to the real student and current employer, and adding a multi-gig switcher bar.
+

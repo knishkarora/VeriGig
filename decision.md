@@ -263,3 +263,24 @@
   - Demo student accounts without active assignments will no longer see mock project workspaces by default, maintaining rigorous data privacy and accurate user experience.
 
 * **Immutability Status:** Settled & Immutable.
+
+## [2026-10-15] Decision: Employer KYC Verification, Public Enterprise Dossier, Dynamic Pipeline & Sanitized Workspace
+
+* **Context & Scope:** 
+  1. Employers on login lacked any self-service path to verify their business credentials, remaining stuck in an unverified state without an editing interface to update their representative name, email, profile avatar, company description, physical operating address, or contact phone.
+  2. The "Applicant Pipeline" tab in the desktop and mobile navigation was hardcoded to `/app/employer/gig/gig-2/applicants`, which forced employers to view candidate proposals for a static seeded gig ("Festive Handloom Lookbook & Digital Product Catalog PDF") regardless of who was logged in.
+  3. The "Employer Workspace" tab was hardcoded to mock student "Aarav Sharma" with static PCTE badges, lacked multi-gig switching capabilities, and displayed mock deliverables even when no candidate had been hired for a newly published gig.
+  4. Students viewing a micro-gig had no clickable mechanism to inspect the employer's profile, history, or active listings.
+* **Choice Made:** 
+  1. **Self-Service Employer Profile & KYC Verification:** Built `EditEmployerProfileDrawer.tsx` allowing employers to update personal details (Representative Name, Email, Avatar file upload/URL/industry presets), public business metadata (Company Name, Industry category, City, State, Website, Description), and confidential KYC records (Registered Street Address, Direct Phone Number, and Official Indian Business Credential). Supported official verification methods: GSTIN (Goods & Services Tax), Udyam MSME Registration, Business/Proprietor PAN, and Proprietor Aadhaar with document proof upload.
+  2. **Candidate-Facing Public Employer Profile (`PublicEmployerProfile.tsx`):** Created dedicated public routes (`/employers/:id` and `/app/employer/:id/view`) linked directly from the "About the Business" card in `GigDetails.tsx`. The public profile presents company branding, verified partner badge, industry, public city/state, website, bio, and all active micro-gigs posted by the enterprise. Sensitive contact records (address and phone) are strictly omitted in compliance with DPDPA 2023 data minimization principles.
+  3. **Decoupled Dynamic Applicant Pipeline:** Created `/app/employer/applicants`, updated Navbar links, and updated `GigApplicants.tsx` to automatically resolve the logged-in employer's own gigs (`gigs.filter(g => g.employerId === currentUser.id)`). Added an interactive gig switcher bar for multi-gig employers and clean empty states for zero-gig accounts.
+  4. **Sanitized Multi-Gig Employer Workspace (`EmployerWorkspace.tsx`):** Decoupled the workspace from static mock gigs. If no candidate has been hired, the workspace renders a clear "Contract Awaiting Student Hire" stage card with a direct link to candidate review. When a candidate is hired, the actual student name and real milestone submissions are rendered, with all modals dynamically bound to the real student and current employer IDs. Added a workspace gig switcher for multi-gig employers.
+* **Rationale (Why over What):**
+  - Indian MSME compliance requires robust verification paths (GSTIN/Udyam/PAN/Aadhaar) to build talent trust across regional campuses.
+  - Decoupling routes from hardcoded IDs ensures true dynamic multitenancy and prevents confusing cross-account seed data bleed.
+  - Strict data minimization under DPDPA 2023 protects employer privacy while providing full transparency to applying students.
+* **Tradeoffs Accepted:**
+  - Physical addresses and direct contact numbers are collected strictly for administrative KYC verification and remain inaccessible in public dossiers.
+* **Immutability Status:** Settled & Immutable.
+

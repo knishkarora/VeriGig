@@ -1,5 +1,16 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-15] Milestone: Employer KYC Verification, Public Enterprise Dossier, Dynamic Pipeline & Sanitized Workspace
+
+* **Key Changes:**
+  - **Self-Service Employer Profile & KYC Drawer:** Built `EditEmployerProfileDrawer.tsx` allowing employers to edit avatar (file upload or industry presets), representative full name, contact email, business name, industry domain, website, bio, city, state, registered physical address (private), direct phone number (private), and official Indian business verification credentials (GSTIN, Udyam MSME, Business PAN, or Proprietor Aadhaar) with document proof upload.
+  - **Dynamic Employer Dashboard Status & Verification Action Banner:** Updated `EmployerDashboard.tsx` to dynamically show verification status (Verified SME Partner, Verification Under Review, or Unverified Employer) and rendered a high-impact verification CTA banner allowing unverified employers to submit KYC credentials in 1 click.
+  - **Candidate-Facing Public Employer Profile:** Created `PublicEmployerProfile.tsx` (`/employers/:id` and `/app/employer/:id/view`) and wired the "About the Business" card in `GigDetails.tsx` to link directly to it. Public profile presents verified enterprise badge, industry, public location, website, company description, and all active posted micro-gigs, while strictly concealing private contact details (address, phone) per DPDPA 2023.
+  - **Dynamic Applicant Pipeline Route & Multi-Gig Switcher:** Decoupled `Navbar.tsx` from hardcoded `/app/employer/gig/gig-2/applicants` to neutral `/app/employer/applicants`, updated `App.tsx` routes, and upgraded `GigApplicants.tsx` to query the logged-in employer's gigs (`myGigs`), provide an interactive multi-gig switcher bar, and render empty states for zero-gig accounts.
+  - **Sanitized Multi-Gig Employer Workspace:** Completely eliminated hardcoded mock student "Aarav Sharma" fallbacks in `EmployerWorkspace.tsx`. If no student has been recruited yet, the workspace displays a "Contract Awaiting Student Hire" card pointing directly to applicant review. If hired, the workspace binds to the real student name, live milestone deliverables, and dynamic escrow actions, with a multi-gig switcher bar for employers with multiple active listings.
+* **Decisions Made:** [[decision.md]] — Employer KYC Verification, Public Enterprise Dossier, Dynamic Pipeline & Sanitized Workspace.
+* **Verification:** Production builds passed with 0 errors across both `frontend` (`npm run build` compiled client in ~3.8s) and `backend` (`tsc`).
+
 ## [2026-10-15] Milestone: Partner Campus Dropdown Restriction, Create Account Cleanup & Profile Completion Score Engine
 
 * **Key Changes:**

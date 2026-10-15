@@ -1,19 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   PlusCircle, 
   Users, 
   Clock, 
   Layers, 
-  Wallet,
-  ChevronRight,
-  ArrowUpRight
+  Wallet, 
+  ChevronRight, 
+  ArrowUpRight,
+  ShieldCheck,
+  ShieldAlert,
+  Edit3
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
+import { EditEmployerProfileDrawer } from '../../components/employer/EditEmployerProfileDrawer';
 
 export const EmployerDashboard: React.FC = () => {
   const { currentUser, gigs } = useMarketplace();
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
 
   const myGigs = gigs.filter(g => g.employerId === currentUser.id);
 
@@ -25,22 +30,47 @@ export const EmployerDashboard: React.FC = () => {
 
   const totalApplicants = myGigs.reduce((acc, g) => acc + g.applicantsCount, 0);
 
+  const isVerified = currentUser.isVerified;
+  const isPending = currentUser.verificationStatus === 'pending';
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
       
       {/* Top Banner */}
       <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-3xl font-black text-[#121214]">{currentUser.collegeOrCompany} Dashboard</h1>
-            <TrustBadge type="sme" text="Verified SME Partner" size="sm" />
+          <div className="flex flex-wrap items-center gap-2.5 mb-1">
+            <h1 className="text-3xl font-black text-[#121214]">
+              {currentUser.collegeOrCompany || currentUser.name} Dashboard
+            </h1>
+            {isVerified ? (
+              <TrustBadge type="sme" text="Verified SME Partner" size="sm" />
+            ) : isPending ? (
+              <span className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-300 px-3 py-1 rounded-full flex items-center gap-1.5">
+                <Clock size={13} className="text-amber-600 animate-pulse" />
+                <span>Verification Under Review</span>
+              </span>
+            ) : (
+              <span className="text-xs font-bold text-slate-700 bg-slate-100 border border-slate-300 px-3 py-1 rounded-full flex items-center gap-1.5">
+                <ShieldAlert size={13} className="text-amber-500" />
+                <span>Unverified Employer</span>
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 font-medium">
-            Managed by {currentUser.name} • Ludhiana Enterprise Partner Hub
+            Managed by {currentUser.name} • {currentUser.location || 'Ludhiana Enterprise Partner Hub'}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setIsEditDrawerOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all border border-slate-200"
+          >
+            <Edit3 size={14} />
+            <span>Edit Business Profile</span>
+          </button>
+
           <Link
             to="/app/employer/post-gig"
             className="inline-flex items-center gap-2 pl-6 pr-2 py-2 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all group"
@@ -52,6 +82,42 @@ export const EmployerDashboard: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Verification Action Banner (shown when unverified or pending) */}
+      {!isVerified && (
+        <div className={`p-6 sm:p-8 rounded-[2.5rem] border flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+          isPending 
+            ? 'bg-amber-50 border-amber-300' 
+            : 'bg-gradient-to-r from-purple-50 via-white to-purple-50/50 border-purple-200 shadow-sm'
+        }`}>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              {isPending ? (
+                <Clock className="w-5 h-5 text-amber-600 animate-pulse" />
+              ) : (
+                <ShieldCheck className="w-5 h-5 text-purple-700" />
+              )}
+              <h3 className="text-base font-black text-[#101014]">
+                {isPending 
+                  ? 'Business Verification Request Submitted' 
+                  : 'Verify Your Business with GSTIN, Udyam MSME, PAN, or Aadhaar'}
+              </h3>
+            </div>
+            <p className="text-xs text-slate-600 max-w-2xl leading-relaxed">
+              {isPending
+                ? 'Your registration documents are currently queued in the admin governance desk. Once verified, your listings will automatically display the green Verified SME Partner seal.'
+                : 'Get the Verified SME Partner trust seal to build confidence with student talent from PCTE and regional campuses, increasing candidate proposal velocity.'}
+            </p>
+          </div>
+
+          <button
+            onClick={() => setIsEditDrawerOpen(true)}
+            className="px-5 py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black shrink-0 transition-all shadow-sm"
+          >
+            {isPending ? 'View Submitted Credentials' : 'Add Verification Credentials'}
+          </button>
+        </div>
+      )}
 
       {/* SME Operational Telemetry Deck */}
       <div className="p-6 sm:p-8 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm">
@@ -211,6 +277,12 @@ export const EmployerDashboard: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Edit Profile Drawer */}
+      <EditEmployerProfileDrawer
+        isOpen={isEditDrawerOpen}
+        onClose={() => setIsEditDrawerOpen(false)}
+      />
 
     </div>
   );

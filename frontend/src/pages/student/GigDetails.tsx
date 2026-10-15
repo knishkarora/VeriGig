@@ -407,21 +407,32 @@ export const GigDetails: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-3">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">About the Business</h3>
+          <Link 
+            to={`/employers/${gig.employerId || 'emp-ludhiana'}`}
+            className="block p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm hover:border-purple-300 hover:shadow-md transition-all space-y-3 group text-left"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">About the Business</h3>
+              <span className="text-[11px] font-bold text-purple-700 group-hover:text-purple-900 flex items-center gap-1">
+                <span>View Profile</span>
+                <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </span>
+            </div>
+
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-slate-100 text-slate-900 flex items-center justify-center font-black text-sm">
+              <div className="w-11 h-11 rounded-2xl bg-slate-100 text-slate-900 flex items-center justify-center font-black text-sm border border-slate-200 shadow-sm">
                 {employerInitial}
               </div>
               <div>
-                <h4 className="text-sm font-black text-[#101014]">{employerCompany}</h4>
+                <h4 className="text-sm font-black text-[#101014] group-hover:text-purple-900 transition-colors">{employerCompany}</h4>
                 <p className="text-xs text-slate-500 font-medium">Representative: {employerName}</p>
               </div>
             </div>
+            
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Verified local enterprise partner. Documented milestone completion history across Ludhiana regional campus talent.
+              Verified local enterprise partner. Documented milestone completion history across Ludhiana regional campus talent. Click to inspect full business dossier and open micro-gigs.
             </p>
-          </div>
+          </Link>
 
         </div>
 

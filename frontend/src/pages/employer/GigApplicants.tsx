@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -21,14 +21,26 @@ import { PaymentEscrowModal } from '../../components/payments/PaymentEscrowModal
 export const GigApplicants: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { gigs, proposals, hireApplicant, shortlistApplicant } = useMarketplace();
+  const { currentUser, gigs, proposals, hireApplicant, shortlistApplicant } = useMarketplace();
 
-  const gig = gigs.find(g => g.id === (id || 'gig-1')) || gigs[0];
-  const gigProposals = proposals.filter(p => p.gigId === gig.id);
+  // Employer's own gigs
+  const myGigs = gigs.filter(g => g.employerId === currentUser.id);
+
+  // If id is specified in URL, use it; otherwise default to employer's first gig, or fallback to first gig
+  const activeGigId = id || (myGigs.length > 0 ? myGigs[0].id : (gigs.length > 0 ? gigs[0].id : ''));
+  const gig = gigs.find(g => g.id === activeGigId) || myGigs[0] || (id ? undefined : gigs[0]);
+  const gigProposals = gig ? proposals.filter(p => p.gigId === gig.id) : [];
 
   const [selectedProposalId, setSelectedProposalId] = useState<string>(
     gigProposals[0]?.id || ''
   );
+
+  // Update selected proposal if gig changes
+  useEffect(() => {
+    if (gigProposals.length > 0 && (!selectedProposalId || !gigProposals.some(p => p.id === selectedProposalId))) {
+      setSelectedProposalId(gigProposals[0].id);
+    }
+  }, [activeGigId, gigProposals, selectedProposalId]);
 
   const [isInterviewOpen, setIsInterviewOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -37,11 +49,35 @@ export const GigApplicants: React.FC = () => {
   const selectedProposal = gigProposals.find(p => p.id === selectedProposalId) || gigProposals[0];
 
   const handleHire = (proposalId: string) => {
+    if (!gig) return;
     hireApplicant(proposalId);
     setTimeout(() => {
       navigate(`/app/employer/workspace/${gig.id}`);
     }, 1500);
   };
+
+  // If no gig exists at all (e.g. newly created employer account with 0 gigs)
+  if (!gig) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center space-y-4">
+        <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+          <Layers size={32} />
+        </div>
+        <h2 className="text-2xl font-black text-[#101014]">No Micro-Gig Listings Found</h2>
+        <p className="text-xs text-slate-500 max-w-md mx-auto">
+          You haven't posted any micro-gigs yet. Post your first micro-gig to start receiving proposals and ranked dossiers from student freelancers.
+        </p>
+        <div className="pt-2">
+          <Link
+            to="/app/employer/post-gig"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#101014] text-white text-xs font-black shadow-md hover:bg-slate-800 transition-all"
+          >
+            <span>Post New Micro-Gig</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
@@ -58,6 +94,39 @@ export const GigApplicants: React.FC = () => {
           Listing: <strong className="text-slate-900">{gig.title}</strong>
         </span>
       </div>
+
+      {/* Multiple Gigs Switcher Tabs (if employer has multiple gigs) */}
+      {myGigs.length > 1 && (
+        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+          <span className="text-[11px] font-black uppercase tracking-wider text-slate-400 block">
+            Switch Job Listing Pipeline:
+          </span>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {myGigs.map(g => {
+              const count = proposals.filter(p => p.gigId === g.id).length;
+              const isActive = g.id === gig.id;
+              return (
+                <Link
+                  key={g.id}
+                  to={`/app/employer/gig/${g.id}/applicants`}
+                  className={`px-4 py-2 rounded-full text-xs font-bold transition-all shrink-0 flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-[#101014] text-white shadow-sm'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+                >
+                  <span className="max-w-[180px] truncate">{g.title}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    isActive ? 'bg-[#D4F851] text-[#101014]' : 'bg-white text-slate-700 border border-slate-200'
+                  }`}>
+                    {count}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(100,65,180,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -78,7 +147,7 @@ export const GigApplicants: React.FC = () => {
           <Layers size={36} className="mx-auto text-slate-300" />
           <h3 className="text-base font-black text-[#101014]">No applicants yet for this micro-gig</h3>
           <p className="text-xs text-slate-500">
-            Student freelancers from PCTE and GNDEC will submit proposals shortly.
+            Student freelancers from partner campuses will submit proposals shortly.
           </p>
         </div>
       ) : (

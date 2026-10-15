@@ -50,6 +50,8 @@ interface MarketplaceContextType {
   approveVerification: (id: string) => void;
   rejectVerification: (id: string, reason: string) => void;
   resolveDispute: (id: string, resolution: 'release_student' | 'refund_employer' | 'split_payout', note: string) => void;
+  updateCurrentUser: (userData: Partial<User>) => void;
+  submitVerificationRequest: (req: { institutionOrBusiness: string; idOrDocNumber: string; docImageUrl?: string; userType: 'student' | 'sme' }) => void;
 }
 
 const MarketplaceContext = createContext<MarketplaceContextType | undefined>(undefined);
@@ -491,13 +493,77 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     addNotification('Revision Requested', 'Structured revision feedback was sent to the student.', 'milestone', `/app/employer/workspace/${gigId}`);
   };
 
+  const updateCurrentUser = (partialUser: Partial<User>) => {
+    setCurrentUser(prev => {
+      const updated = { ...prev, ...partialUser };
+      try {
+        localStorage.setItem('verigig_session_user', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  };
+
+  const submitVerificationRequest = (req: {
+    institutionOrBusiness: string;
+    idOrDocNumber: string;
+    docImageUrl?: string;
+    userType: 'student' | 'sme';
+  }) => {
+    const newReq: VerificationRequest = {
+      id: `verif-${Date.now()}`,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userType: req.userType,
+      institutionOrBusiness: req.institutionOrBusiness,
+      idOrDocNumber: req.idOrDocNumber,
+      docImageUrl: req.docImageUrl || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80',
+      submittedAt: 'Just now',
+      status: 'pending',
+    };
+
+    setVerifications(prev => [newReq, ...prev]);
+    updateCurrentUser({
+      verificationStatus: 'pending',
+      verificationBadgeText: 'Verification pending',
+    });
+    addNotification(
+      'Verification Under Review',
+      `${req.userType === 'sme' ? 'Business registration (GSTIN/Udyam)' : 'Student ID'} credentials submitted for admin review.`,
+      'verification',
+      currentUser.role === 'employer' ? '/app/employer/profile' : '/app/student/profile'
+    );
+  };
+
   const approveVerification = (id: string) => {
-    setVerifications(prev => prev.map(v => v.id === id ? { ...v, status: 'approved' } : v));
+    setVerifications(prev => {
+      const updated = prev.map(v => v.id === id ? { ...v, status: 'approved' as const } : v);
+      const target = prev.find(v => v.id === id);
+      if (target && target.userId === currentUser.id) {
+        updateCurrentUser({
+          isVerified: true,
+          verificationStatus: 'approved',
+          verificationBadgeText: target.userType === 'sme' ? 'Verified SME Partner' : 'Verified Student',
+        });
+      }
+      return updated;
+    });
     addNotification('Verification Approved', 'College ID / Business registration proof has been verified.', 'verification', '/app/admin/verifications');
   };
 
   const rejectVerification = (id: string, reason: string) => {
-    setVerifications(prev => prev.map(v => v.id === id ? { ...v, status: 'rejected', rejectionReason: reason } : v));
+    setVerifications(prev => {
+      const updated = prev.map(v => v.id === id ? { ...v, status: 'rejected' as const, rejectionReason: reason } : v);
+      const target = prev.find(v => v.id === id);
+      if (target && target.userId === currentUser.id) {
+        updateCurrentUser({
+          verificationStatus: 'rejected',
+          verificationBadgeText: 'Verification rejected',
+        });
+      }
+      return updated;
+    });
     addNotification('Verification Rejected', `Rejected: ${reason}`, 'verification', '/app/admin/verifications');
   };
 
@@ -563,6 +629,8 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       approveVerification,
       rejectVerification,
       resolveDispute,
+      updateCurrentUser,
+      submitVerificationRequest,
     }}>
       {children}
     </MarketplaceContext.Provider>

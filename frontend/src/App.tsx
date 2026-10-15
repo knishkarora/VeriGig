@@ -21,6 +21,7 @@ import { PostGigWizard } from './pages/employer/PostGigWizard';
 import { GigApplicants } from './pages/employer/GigApplicants';
 import { EmployerWorkspace } from './pages/employer/EmployerWorkspace';
 import { EmployerProfile } from './pages/employer/EmployerProfile';
+import { PublicEmployerProfile } from './pages/employer/PublicEmployerProfile';
 
 // Shared & Legal Pages
 import { CompletionVerificationPage } from './pages/shared/CompletionVerificationPage';
@@ -80,10 +81,13 @@ export const App: React.FC = () => {
               {/* Employer SME Module */}
               <Route path="/app/employer/dashboard" element={<EmployerDashboard />} />
               <Route path="/app/employer/post-gig" element={<PostGigWizard />} />
+              <Route path="/app/employer/applicants" element={<GigApplicants />} />
               <Route path="/app/employer/gig/:id/applicants" element={<GigApplicants />} />
               <Route path="/app/employer/workspace" element={<EmployerWorkspace />} />
               <Route path="/app/employer/workspace/:gigId" element={<EmployerWorkspace />} />
               <Route path="/app/employer/profile" element={<EmployerProfile />} />
+              <Route path="/employers/:id" element={<PublicEmployerProfile />} />
+              <Route path="/app/employer/:id/view" element={<PublicEmployerProfile />} />
 
               {/* Public Portable Verification Page */}
               <Route path="/verify/completion/:hash" element={<CompletionVerificationPage />} />

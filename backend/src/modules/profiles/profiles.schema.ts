@@ -26,6 +26,11 @@ export const updateBusinessProfileSchema = z.object({
   description: z.string().max(2000).optional(),
   city: z.string().min(2).optional(),
   state: z.string().min(2).optional(),
+  contactPhone: z.string().max(30).optional(),
+  registeredAddress: z.string().max(500).optional(),
+  registrationNumber: z.string().max(100).optional(),
+  fullName: z.string().min(2).max(255).optional(),
+  avatarUrl: z.string().optional(),
 });
 
 export type UpdateStudentProfileInput = z.infer<typeof updateStudentProfileSchema>;
