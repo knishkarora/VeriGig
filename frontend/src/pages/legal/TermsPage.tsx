@@ -8,7 +8,7 @@ export const TermsPage: React.FC = () => {
       {/* Back button */}
       <Link
         to="/"
-        className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-[#101014] transition-colors btn-tactile"
       >
         <ArrowLeft size={16} />
         <span>Return to Marketplace</span>

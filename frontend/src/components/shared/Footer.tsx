@@ -116,7 +116,7 @@ export const Footer: React.FC = () => {
           {/* Right Column: Floating White Newsletter Card */}
           <div className="lg:col-span-4">
             <div className="p-6 sm:p-7 rounded-[2rem] bg-white text-[#101014] shadow-xl border border-pink-200/80 space-y-4">
-              <h4 className="text-xl font-extrabold tracking-tight">Weekly Drop</h4>
+              <h4 className="text-xl font-extrabold tracking-tight text-[#101014]">Weekly Drop</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Stay updated with newly funded campus micro-gigs, student spotlights, and local SME briefs.
               </p>
@@ -140,7 +140,7 @@ export const Footer: React.FC = () => {
                   {/* Signature Pill Submit Button with Pink Arrow Circle */}
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white font-bold text-xs transition-all group shadow-md"
+                    className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white font-bold text-xs transition-all group shadow-md btn-tactile"
                   >
                     <span>Subscribe to Drops</span>
                     <div className="w-8 h-8 rounded-full bg-[#FFA8D5] text-[#101014] flex items-center justify-center font-bold group-hover:scale-105 transition-transform">

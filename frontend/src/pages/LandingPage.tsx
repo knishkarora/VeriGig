@@ -12,12 +12,14 @@ import {
   Check,
   MessageCircle
 } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { TrustBadge } from '../components/shared/TrustBadge';
 
 export const LandingPage: React.FC = () => {
   const { gigs } = useMarketplace();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const shouldReduceMotion = useReducedMotion();
 
   const categories: string[] = [
     'All',
@@ -101,9 +103,15 @@ export const LandingPage: React.FC = () => {
 
           <div className="relative z-10">
             
-            {/* Top Row Student Showcase Badges */}
-            <div className="hidden md:flex justify-between items-center px-8 mb-6 pointer-events-none">
-              <div className="flex items-center gap-3 p-2 pr-4 rounded-2xl bg-white/95 border border-slate-200/80 shadow-lg -rotate-3">
+            {/* Top Row Student Showcase Badges with interactive hover motion */}
+            <div className="hidden md:flex justify-between items-center px-8 mb-6">
+              <motion.div 
+                initial={shouldReduceMotion ? false : { opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="flex items-center gap-3 p-2 pr-4 rounded-2xl bg-white/95 border border-slate-200/80 shadow-lg -rotate-3 cursor-default transition-shadow hover:shadow-xl"
+              >
                 <img 
                   src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" 
                   alt="Aanya" 
@@ -113,9 +121,15 @@ export const LandingPage: React.FC = () => {
                   <div className="text-xs font-bold text-[#101014]">Aanya S. • PCTE</div>
                   <div className="text-[10px] text-emerald-700 font-semibold">Verified Student Profile</div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex items-center gap-3 p-2 pr-4 rounded-2xl bg-white/95 border border-slate-200/80 shadow-lg rotate-2">
+              <motion.div 
+                initial={shouldReduceMotion ? false : { opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.08, ease: [0.23, 1, 0.32, 1] }}
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="flex items-center gap-3 p-2 pr-4 rounded-2xl bg-white/95 border border-slate-200/80 shadow-lg rotate-2 cursor-default transition-shadow hover:shadow-xl"
+              >
                 <img 
                   src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=120&q=80" 
                   alt="Rohan" 
@@ -125,9 +139,15 @@ export const LandingPage: React.FC = () => {
                   <div className="text-xs font-bold text-[#101014]">Rohan M. • GNDEC</div>
                   <div className="text-[10px] text-purple-700 font-semibold">Verified Full-Stack</div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex items-center gap-3 p-2 pr-4 rounded-2xl bg-white/95 border border-slate-200/80 shadow-lg rotate-4">
+              <motion.div 
+                initial={shouldReduceMotion ? false : { opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.16, ease: [0.23, 1, 0.32, 1] }}
+                whileHover={{ y: -4, scale: 1.02 }}
+                className="flex items-center gap-3 p-2 pr-4 rounded-2xl bg-white/95 border border-slate-200/80 shadow-lg rotate-4 cursor-default transition-shadow hover:shadow-xl"
+              >
                 <img 
                   src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80" 
                   alt="Harman" 
@@ -137,16 +157,22 @@ export const LandingPage: React.FC = () => {
                   <div className="text-xs font-bold text-[#101014]">Harman K. • Thapar</div>
                   <div className="text-[10px] text-emerald-700 font-semibold">Top Rated UI Designer</div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Center Hero Title & Action Pills */}
-            <div className="text-center max-w-3xl mx-auto py-4 sm:py-8 space-y-6 relative">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-900 text-xs font-black tracking-wide">
+            {/* Center Hero Title & Action Pills with Staggered Entrance */}
+            <motion.div 
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+              className="text-center max-w-3xl mx-auto py-4 sm:py-8 space-y-6 relative"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-900 text-xs font-black tracking-wide shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></span>
                 <span>Pilot Prototype • Punjab Campus & SME Network</span>
               </div>
               
-              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-[#101014] tracking-tight uppercase leading-none">
+              <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black text-[#101014] tracking-tight uppercase leading-none selection:bg-[#D4F851]">
                 CampusGigs
               </h1>
 
@@ -154,28 +180,32 @@ export const LandingPage: React.FC = () => {
                 A verified micro-gig trust workflow connecting students with local SMEs. Two-party scope agreements, milestone commitments, and portable portfolio records.
               </p>
 
-              {/* Dual Pill CTA Buttons */}
+              {/* Dual Pill CTA Buttons with Emil Kowalski Tactile Interaction */}
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                <Link
-                  to="/app/student/explore"
-                  className="inline-flex items-center gap-2 pl-6 pr-2.5 py-2.5 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] font-black text-xs sm:text-sm shadow-md transition-all group"
-                >
-                  <span>Explore Micro-Gigs</span>
-                  <div className="w-7 h-7 rounded-full bg-[#101014] text-white flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">
-                    <ArrowUpRight size={15} />
-                  </div>
-                </Link>
+                <motion.div whileTap={{ scale: 0.97 }}>
+                  <Link
+                    to="/app/student/explore"
+                    className="inline-flex items-center gap-2 pl-6 pr-2.5 py-2.5 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] font-black text-xs sm:text-sm shadow-md transition-all group btn-tactile"
+                  >
+                    <span>Explore Micro-Gigs</span>
+                    <div className="w-7 h-7 rounded-full bg-[#101014] text-white flex items-center justify-center group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
+                      <ArrowUpRight size={15} />
+                    </div>
+                  </Link>
+                </motion.div>
 
-                <Link
-                  to="/app/employer/post-gig"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-slate-50 text-[#101014] border border-slate-200 font-bold text-xs sm:text-sm shadow-sm transition-all"
-                >
-                  <MessageCircle size={16} className="text-purple-700" />
-                  <span>Post a Task (SMEs)</span>
-                </Link>
+                <motion.div whileTap={{ scale: 0.97 }}>
+                  <Link
+                    to="/app/employer/post-gig"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white hover:bg-slate-50 text-[#101014] border border-slate-200 font-bold text-xs sm:text-sm shadow-sm transition-all btn-tactile hover:border-slate-300"
+                  >
+                    <MessageCircle size={16} className="text-purple-700" />
+                    <span>Post a Task (SMEs)</span>
+                  </Link>
+                </motion.div>
               </div>
 
-            </div>
+            </motion.div>
 
           </div>
 
@@ -189,20 +219,25 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* 4-Card Media Showcase Grid */}
+          {/* 4-Card Media Showcase Grid with Scroll Stagger & Smooth Springs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-8 relative z-10">
             {showcaseTracks.map((track, idx) => (
-              <div 
+              <motion.div 
                 key={idx}
-                className="group relative rounded-[2rem] overflow-hidden aspect-[4/5] shadow-sm border border-slate-200/80 flex flex-col justify-between p-4 transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5"
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.5, delay: idx * 0.08, ease: [0.23, 1, 0.32, 1] }}
+                whileHover={{ y: -6, transition: { duration: 0.25, ease: [0.23, 1, 0.32, 1] } }}
+                className="group relative rounded-[2rem] overflow-hidden aspect-[4/5] shadow-sm border border-slate-200/80 flex flex-col justify-between p-4 transition-shadow hover:shadow-2xl"
               >
                 <img 
                   src={track.image} 
                   alt={track.title} 
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#101014]/75 via-transparent to-black/25" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#101014]/80 via-black/20 to-black/30" />
 
                 <div className="relative z-10 flex justify-end">
                   <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-white/95 text-[#101014] shadow-sm backdrop-blur-md tabular-nums">
@@ -218,14 +253,14 @@ export const LandingPage: React.FC = () => {
 
                 <Link
                   to={track.link}
-                  className="relative z-10 flex items-center justify-between pl-4 pr-1.5 py-1.5 rounded-full bg-white text-[#101014] shadow-lg transition-all"
+                  className="relative z-10 flex items-center justify-between pl-4 pr-1.5 py-1.5 rounded-full bg-white text-[#101014] shadow-lg transition-all group/btn btn-tactile"
                 >
-                  <span className="font-extrabold text-xs tracking-wide uppercase">{track.title}</span>
-                  <div className="w-7 h-7 rounded-full bg-[#D4F851] text-[#101014] flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span className="font-extrabold text-xs tracking-wide uppercase text-[#101014]">{track.title}</span>
+                  <div className="w-7 h-7 rounded-full bg-[#D4F851] text-[#101014] flex items-center justify-center group-hover/btn:scale-110 transition-transform">
                     <ArrowUpRight size={15} />
                   </div>
                 </Link>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -241,11 +276,17 @@ export const LandingPage: React.FC = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             
-            {/* Left High-Contrast Jet Black Card */}
-            <div className="lg:col-span-5 rounded-[2rem] sm:rounded-[2.5rem] bg-[#101014] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden shadow-xl">
+            {/* Left High-Contrast Jet Black Card with Guaranteed Explicit Contrast */}
+            <motion.div 
+              initial={shouldReduceMotion ? false : { opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+              className="lg:col-span-5 rounded-[2rem] sm:rounded-[2.5rem] bg-[#101014] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden shadow-2xl border border-white/10"
+            >
               
               <svg 
-                className="w-28 h-20 mb-4" 
+                className="w-28 h-20 mb-4 opacity-90" 
                 viewBox="0 0 140 100" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
@@ -260,45 +301,54 @@ export const LandingPage: React.FC = () => {
               </svg>
 
               <div className="space-y-4 my-auto">
-                <h3 className="text-3xl sm:text-4xl font-black tracking-tight leading-[1.12]">
+                {/* Guaranteed White Heading - No black-on-black text bug */}
+                <h3 className="text-3xl sm:text-4xl font-black tracking-tight leading-[1.12] text-white">
                   Grow faster with verified student talent.
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
                   CampusGigs connects regional clinics, bakeries, and retail brands with verified campus builders for discrete digital deliverables, eliminating traditional agency overhead.
                 </p>
               </div>
 
               <div className="pt-8">
-                <Link
-                  to="/auth"
-                  className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-white text-[#101014] font-extrabold text-xs sm:text-sm transition-transform hover:scale-[1.02]"
-                >
-                  <span>Post a Micro-Task</span>
-                  <div className="w-8 h-8 rounded-full bg-[#FFA8D5] text-[#101014] flex items-center justify-center font-bold">
-                    <ArrowUpRight size={16} />
-                  </div>
-                </Link>
+                <motion.div whileTap={{ scale: 0.98 }}>
+                  <Link
+                    to="/auth"
+                    className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-white text-[#101014] font-extrabold text-xs sm:text-sm transition-transform hover:scale-[1.02] shadow-lg group btn-tactile"
+                  >
+                    <span className="text-[#101014]">Post a Micro-Task</span>
+                    <div className="w-8 h-8 rounded-full bg-[#FFA8D5] text-[#101014] flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                      <ArrowUpRight size={16} />
+                    </div>
+                  </Link>
+                </motion.div>
               </div>
 
-            </div>
+            </motion.div>
 
             {/* Right Lifestyle Photography Card */}
-            <div className="lg:col-span-7 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-xl min-h-[350px] relative">
+            <motion.div 
+              initial={shouldReduceMotion ? false : { opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
+              className="lg:col-span-7 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-xl min-h-[350px] relative group"
+            >
               <img 
                 src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=80" 
                 alt="Students collaborating" 
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#101014]/80 via-transparent to-transparent flex items-end p-8">
-                <div className="text-white space-y-1">
-                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#101014] bg-[#D4F851] px-3 py-1 rounded-full">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#101014]/90 via-[#101014]/40 to-transparent flex items-end p-8">
+                <div className="text-white space-y-1.5">
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#101014] bg-[#D4F851] px-3 py-1 rounded-full shadow-sm">
                     Campus Network
                   </span>
-                  <p className="text-lg font-bold">Ludhiana & Punjab Academic Talent Pool</p>
-                  <p className="text-xs text-slate-200">Targeted student cohort from PCTE, GNDEC, and Thapar completing 48hr to 2-week structured milestones.</p>
+                  <p className="text-lg font-bold text-white">Ludhiana & Punjab Academic Talent Pool</p>
+                  <p className="text-xs text-slate-200 leading-relaxed">Targeted student cohort from PCTE, GNDEC, and Thapar completing 48hr to 2-week structured milestones.</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
           </div>
 
@@ -325,9 +375,9 @@ export const LandingPage: React.FC = () => {
               <thead>
                 <tr className="border-b border-slate-200 text-xs font-extrabold uppercase tracking-wider text-slate-400">
                   <th className="py-4 px-6">Comparison Matrix</th>
-                  <th className="py-4 px-6 text-white bg-[#101014] rounded-t-3xl">
+                  <th className="py-4 px-6 text-white bg-[#101014] rounded-t-3xl shadow-sm">
                     <div className="flex items-center gap-2">
-                      <span className="font-black text-sm">CampusGigs (VeriGig)</span>
+                      <span className="font-black text-sm text-white">CampusGigs (VeriGig)</span>
                       <span className="text-[10px] bg-[#D4F851] text-[#101014] font-black px-2 py-0.5 rounded-full">Zero Bloat</span>
                     </div>
                   </th>
@@ -337,36 +387,36 @@ export const LandingPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
                 
-                <tr className="hover:bg-slate-50/50 transition-colors">
+                <tr className="hover:bg-purple-50/40 transition-colors">
                   <td className="py-4 px-6 font-bold text-slate-900">Task Scope & Velocity</td>
-                  <td className="py-4 px-6 bg-[#101014]/5 font-bold text-[#101014]">
+                  <td className="py-4 px-6 bg-purple-50/60 font-bold text-[#101014] border-x border-purple-100">
                     48-hr to 2-week micro-gigs with discrete deliverables.
                   </td>
                   <td className="py-4 px-6 text-slate-500">Unbounded scope, endless bidding wars, high bot spam.</td>
                   <td className="py-4 px-6 text-slate-500">3-6 month mandatory corporate commitments.</td>
                 </tr>
 
-                <tr className="hover:bg-slate-50/50 transition-colors">
+                <tr className="hover:bg-purple-50/40 transition-colors">
                   <td className="py-4 px-6 font-bold text-slate-900">Identity & Campus Trust</td>
-                  <td className="py-4 px-6 bg-[#101014]/5 font-bold text-[#101014]">
+                  <td className="py-4 px-6 bg-purple-50/60 font-bold text-[#101014] border-x border-purple-100">
                     Verified physical student IDs (PCTE, GNDEC) & SME credentials.
                   </td>
                   <td className="py-4 px-6 text-slate-500">Anonymous accounts, unvetted agencies, scam bids.</td>
                   <td className="py-4 px-6 text-slate-500">Self-reported resumes without institutional verification.</td>
                 </tr>
 
-                <tr className="hover:bg-slate-50/50 transition-colors">
+                <tr className="hover:bg-purple-50/40 transition-colors">
                   <td className="py-4 px-6 font-bold text-slate-900">Payment Commitment & Fees</td>
-                  <td className="py-4 px-6 bg-[#101014]/5 font-bold text-[#101014]">
+                  <td className="py-4 px-6 bg-purple-50/60 font-bold text-[#101014] border-x border-purple-100">
                     Pre-funded milestone commitments via authorized payment aggregators. Free basic posting during pilot.
                   </td>
                   <td className="py-4 px-6 text-slate-500">Hefty 10–20% platform cut on students, high dispute overhead.</td>
                   <td className="py-4 px-6 text-slate-500">Frequent unpaid internship complaints and delayed stipends.</td>
                 </tr>
 
-                <tr className="hover:bg-slate-50/50 transition-colors">
+                <tr className="hover:bg-purple-50/40 transition-colors">
                   <td className="py-4 px-6 font-bold text-slate-900">Local Proximity & Remote Options</td>
-                  <td className="py-4 px-6 bg-[#101014]/5 font-bold text-[#101014] rounded-b-3xl">
+                  <td className="py-4 px-6 bg-purple-50/60 font-bold text-[#101014] rounded-b-3xl border-x border-b border-purple-100">
                     Hyper-local trust wedge for regional site visits, with remote options open to verified students.
                   </td>
                   <td className="py-4 px-6 text-slate-500">Global bidding pool, time zone disconnect, impersonal.</td>
@@ -387,7 +437,7 @@ export const LandingPage: React.FC = () => {
         <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(100,65,180,0.08)] p-6 sm:p-12 space-y-8">
           
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-[11px] font-black uppercase tracking-widest text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+            <span className="text-[11px] font-black uppercase tracking-widest text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200 shadow-sm">
               The Accountability Guarantee
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-[#101014] tracking-tight">
@@ -399,45 +449,50 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4">
-            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#101014] text-white flex items-center justify-center font-black text-sm">
-                1
-              </div>
-              <h3 className="text-sm font-black text-[#101014]">Two-Party Scope Agreement</h3>
-              <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                SME defines measurable deliverables, timeline, and budget. Student accepts the exact scope and IP terms before work commences.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-900 flex items-center justify-center font-black text-sm">
-                2
-              </div>
-              <h3 className="text-sm font-black text-[#101014]">Payment Commitment</h3>
-              <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                Total contract budget is committed before student begins. Neither party is exposed to ghosting or unpaid completed labor.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-900 flex items-center justify-center font-black text-sm">
-                3
-              </div>
-              <h3 className="text-sm font-black text-[#101014]">Evidence & Limited Revisions</h3>
-              <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                Student uploads timestamped deliverables. SME approves or requests structured feedback within agreed revision limits.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 space-y-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#D4F851] text-[#101014] flex items-center justify-center font-black text-sm">
-                4
-              </div>
-              <h3 className="text-sm font-black text-[#101014]">Portable Proof of Work</h3>
-              <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                Approved milestones trigger payout and bilateral ratings, generating an immutable, shareable completion credential.
-              </p>
-            </div>
+            {[
+              {
+                num: '1',
+                bg: 'bg-[#101014] text-white',
+                title: 'Two-Party Scope Agreement',
+                desc: 'SME defines measurable deliverables, timeline, and budget. Student accepts the exact scope and IP terms before work commences.'
+              },
+              {
+                num: '2',
+                bg: 'bg-purple-100 text-purple-900',
+                title: 'Payment Commitment',
+                desc: 'Total contract budget is committed before student begins. Neither party is exposed to ghosting or unpaid completed labor.'
+              },
+              {
+                num: '3',
+                bg: 'bg-emerald-100 text-emerald-900',
+                title: 'Evidence & Limited Revisions',
+                desc: 'Student uploads timestamped deliverables. SME approves or requests structured feedback within agreed revision limits.'
+              },
+              {
+                num: '4',
+                bg: 'bg-[#D4F851] text-[#101014]',
+                title: 'Portable Proof of Work',
+                desc: 'Approved milestones trigger payout and bilateral ratings, generating an immutable, shareable completion credential.'
+              }
+            ].map((stage, idx) => (
+              <motion.div 
+                key={idx}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{ duration: 0.45, delay: idx * 0.08, ease: [0.23, 1, 0.32, 1] }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="p-6 rounded-3xl bg-slate-50 border border-slate-200/90 space-y-3 transition-shadow hover:shadow-lg hover:border-purple-200"
+              >
+                <div className={`w-10 h-10 rounded-2xl ${stage.bg} flex items-center justify-center font-black text-sm shadow-sm`}>
+                  {stage.num}
+                </div>
+                <h3 className="text-sm font-black text-[#101014]">{stage.title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                  {stage.desc}
+                </p>
+              </motion.div>
+            ))}
           </div>
 
         </div>
@@ -466,36 +521,42 @@ export const LandingPage: React.FC = () => {
 
             <Link
               to="/app/student/explore"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#101014] hover:underline"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#101014] hover:underline btn-tactile"
             >
               <span>View all {gigs.length} micro-gigs</span>
               <ArrowUpRight size={14} />
             </Link>
           </div>
 
-          {/* Category Filter Pills (clean, no parentheses) */}
+          {/* Category Filter Pills with Smooth Interactive Feedback */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
             {categories.map((cat) => (
-              <button
+              <motion.button
                 key={cat}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                   selectedCategory === cat
                     ? 'bg-[#101014] text-white shadow-md'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-black'
                 }`}
               >
                 {cat === 'All' ? 'All Gigs' : cat}
-              </button>
+              </motion.button>
             ))}
           </div>
 
           {/* Gigs Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGigs.slice(0, 6).map((gig) => (
-              <div 
+            {filteredGigs.slice(0, 6).map((gig, idx) => (
+              <motion.div 
                 key={gig.id}
-                className="p-6 rounded-3xl bg-white border border-slate-200/80 hover:border-slate-300 hover:shadow-xl transition-all flex flex-col justify-between group shadow-sm"
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-30px" }}
+                transition={{ duration: 0.45, delay: idx * 0.05, ease: [0.23, 1, 0.32, 1] }}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="p-6 rounded-3xl bg-white border border-slate-200/80 hover:border-purple-300 hover:shadow-xl transition-all flex flex-col justify-between group shadow-sm"
               >
                 <div>
                   {/* Category & Budget */}
@@ -511,7 +572,7 @@ export const LandingPage: React.FC = () => {
 
                   {/* Title */}
                   <Link to={`/app/student/gig/${gig.id}`}>
-                    <h3 className="text-base font-bold text-[#101014] group-hover:underline transition-colors line-clamp-2 mb-2 leading-snug">
+                    <h3 className="text-base font-bold text-[#101014] group-hover:text-purple-700 group-hover:underline transition-colors line-clamp-2 mb-2 leading-snug">
                       {gig.title}
                     </h3>
                   </Link>
@@ -539,15 +600,15 @@ export const LandingPage: React.FC = () => {
 
                   {/* Skills */}
                   <div className="flex flex-wrap gap-1.5 mb-6">
-                    {gig.requiredSkills.slice(0, 3).map((skill, idx) => (
-                      <span key={idx} className="text-[10px] font-semibold px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+                    {gig.requiredSkills.slice(0, 3).map((skill, sIdx) => (
+                      <span key={sIdx} className="text-[10px] font-semibold px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
                         {skill}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                {/* Bottom Pill CTA */}
+                {/* Bottom Pill CTA with tactile click */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                   <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
                     <span className="flex items-center gap-1"><Clock size={12} /> {gig.targetDuration}</span>
@@ -555,18 +616,20 @@ export const LandingPage: React.FC = () => {
                     <span>{gig.milestones.length} Milestones</span>
                   </div>
 
-                  <Link
-                    to={`/app/student/gig/${gig.id}`}
-                    className="inline-flex items-center gap-1 pl-3.5 pr-1.5 py-1.5 rounded-full bg-[#101014] text-white text-xs font-bold hover:bg-slate-800 transition-all group/btn"
-                  >
-                    <span>Details</span>
-                    <div className="w-5 h-5 rounded-full bg-[#D4F851] text-[#101014] flex items-center justify-center font-bold">
-                      <ArrowUpRight size={12} />
-                    </div>
-                  </Link>
+                  <motion.div whileTap={{ scale: 0.96 }}>
+                    <Link
+                      to={`/app/student/gig/${gig.id}`}
+                      className="inline-flex items-center gap-1.5 pl-3.5 pr-1.5 py-1.5 rounded-full bg-[#101014] text-white text-xs font-bold hover:bg-slate-800 transition-all group/btn shadow-sm btn-tactile"
+                    >
+                      <span className="text-white">Details</span>
+                      <div className="w-5 h-5 rounded-full bg-[#D4F851] text-[#101014] flex items-center justify-center font-bold group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform">
+                        <ArrowUpRight size={12} />
+                      </div>
+                    </Link>
+                  </motion.div>
                 </div>
 
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -574,7 +637,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ============================================================ */}
-      {/* SECTION 5: CAMPUS NETWORK PARTNERS                           */}
+      {/* SECTION 6: CAMPUS NETWORK PARTNERS                           */}
       {/* ============================================================ */}
       <section id="colleges" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm space-y-4">
@@ -591,13 +654,15 @@ export const LandingPage: React.FC = () => {
               'Chitkara University',
               'Christian Medical College (CMC)'
             ].map((campus, idx) => (
-              <div 
+              <motion.div 
                 key={idx}
-                className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 flex items-center gap-2 hover:border-[#101014] transition-colors"
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 flex items-center gap-2 hover:border-[#101014] hover:bg-white transition-all shadow-sm cursor-default"
               >
                 <GraduationCap size={15} className="text-slate-700" />
                 <span>{campus}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -606,3 +671,4 @@ export const LandingPage: React.FC = () => {
     </div>
   );
 };
+

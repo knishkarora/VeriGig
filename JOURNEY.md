@@ -339,3 +339,21 @@
     - Added a "Past Completed Projects" section allowing users to inspect archived deliverables, proofs, and feedback, which renders an empty state for new users.
   - **Build Verification:** 100% clean production builds verified across both frontend and backend (`npm run build`).
 
+## Milestone 26: Frontend Visual Polish, Heading Contrast Fixes & Micro-Animations
+* **Objective:** Elevate visual polish, eliminate unreadable black headings on dark cards, and incorporate purposeful Emil Kowalski micro-animations while preserving the existing brand and layout architecture.
+* **Key Changes:**
+  - **Dark Surface Contrast Rectification (`LandingPage.tsx`):**
+    - Corrected Section 2's high-contrast jet black card (`bg-[#101014]`) heading "Grow faster with verified student talent." by adding explicit `text-white` and `text-slate-200` to prevent inheriting dark body text.
+    - Updated comparison matrix data cells to use subtle background tints (`bg-purple-50/60 font-bold text-[#101014]`) with clean borders instead of muddy dark opacity fills.
+    - Fixed return back buttons in `TermsPage.tsx`, `PrivacyPolicyPage.tsx`, and `EscrowProtocolPage.tsx` to `text-slate-600 hover:text-[#101014]`, eliminating the invisible `hover:text-white` bug on light canvases.
+  - **Motion System Foundations (`index.css`):**
+    - Introduced Emil Kowalski custom cubic-bezier curves (`--ease-out: cubic-bezier(0.23, 1, 0.32, 1)`, `--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1)`).
+    - Removed blanket `transition: all` anti-pattern from `.editorial-card` in favor of hardware-accelerated `transform` and `box-shadow` transitions.
+    - Added `.btn-tactile` utility with `active:scale-[0.97]` for responsive physical feedback.
+    - Added `@media (prefers-reduced-motion: reduce)` accessibility safeguards.
+  - **Choreographed Micro-Animations (`LandingPage.tsx`, `Navbar.tsx`, `Footer.tsx`):**
+    - Orchestrated hero entrance with staggered `framer-motion` reveals.
+    - Applied interactive hover dynamics to top student showcase badges with subtle elevation.
+    - Added staggered scroll-reveal to the 4 task track media cards and 4-stage milestone lifecycle cards.
+    - Added button-in-button trailing icon hover transitions and tactile press feedback across primary CTAs.
+  - **Verification:** Verified clean TypeScript build and Vite compilation without errors.

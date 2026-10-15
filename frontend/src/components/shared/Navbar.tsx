@@ -310,7 +310,7 @@ export const Navbar: React.FC = () => {
             {currentRole === 'guest' ? (
               <Link
                 to="/auth"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] text-xs font-black shadow-sm transition-all group"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] text-xs font-black shadow-sm transition-all group btn-tactile"
               >
                 <span>Login / Register</span>
                 <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -318,7 +318,7 @@ export const Navbar: React.FC = () => {
             ) : currentRole === 'student' ? (
               <Link
                 to="/app/student/explore"
-                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] text-xs font-black shadow-sm transition-all group"
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] text-xs font-black shadow-sm transition-all group btn-tactile"
               >
                 <span>Find Gigs</span>
                 <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -326,7 +326,7 @@ export const Navbar: React.FC = () => {
             ) : currentRole === 'employer' ? (
               <Link
                 to="/app/employer/post-gig"
-                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm btn-tactile"
               >
                 <PlusCircle size={14} className="text-[#D4F851]" />
                 <span>Post a Task</span>
@@ -334,7 +334,7 @@ export const Navbar: React.FC = () => {
             ) : (
               <Link
                 to="/app/admin/verifications"
-                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all"
+                className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all btn-tactile"
               >
                 <span>Verify IDs</span>
               </Link>

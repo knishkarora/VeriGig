@@ -82,3 +82,9 @@
   - [x] Decoupled `Navbar.tsx` from hardcoded `/app/employer/gig/gig-2/applicants` to neutral `/app/employer/applicants`, upgraded `GigApplicants.tsx` to query the logged-in employer's gigs, provided an interactive multi-gig switcher bar, and handled empty states.
   - [x] Sanitized `EmployerWorkspace.tsx` by eliminating all static mock student "Aarav Sharma" fallbacks, adding a "Contract Awaiting Student Hire" stage card with candidate review CTA for unassigned gigs, dynamically binding to the real student and current employer, and adding a multi-gig switcher bar.
 
+- [x] Frontend Visual Polish, Heading Contrast Fixes & Emil Kowalski Micro-Animations:
+  - [x] Fixed black-on-black text contrast issue on dark cards (explicit `text-white` on `LandingPage.tsx` Section 2 heading and high-contrast subtext).
+  - [x] Fixed invisible return link hover state on light background across legal pages (`TermsPage.tsx`, `PrivacyPolicyPage.tsx`, `EscrowProtocolPage.tsx`).
+  - [x] Introduced Emil Kowalski custom cubic-bezier easings (`--ease-out`, `--ease-in-out`), refined `.editorial-card` transitions, and added `.btn-tactile` physical press feedback (`active:scale-[0.97]`).
+  - [x] Integrated `framer-motion` staggered entrances, interactive badge float dynamics, smooth card scroll-reveals, and tactile button feedback across `LandingPage.tsx`, `Navbar.tsx`, and `Footer.tsx`.
+  - [x] Verified 100% clean production build with zero errors.
