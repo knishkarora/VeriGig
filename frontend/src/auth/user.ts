@@ -40,5 +40,10 @@ export function toMarketplaceUser(
       : undefined,
     portfolioLinks: Array.isArray(profile.portfolioLinks) ? profile.portfolioLinks : [],
     availabilityStatus: typeof profile.availabilityStatus === 'string' ? profile.availabilityStatus : undefined,
+    rollNumber: typeof profile.rollNumberEncrypted === 'string'
+      ? profile.rollNumberEncrypted
+      : typeof profile.rollNumber === 'string'
+      ? profile.rollNumber
+      : undefined,
   };
 }

@@ -51,3 +51,11 @@
 - [x] Phase 10: Frontend API connection & end-to-end judge demonstration.
 - [x] Google OAuth & Supabase URL callback resolution: added automated OAuth session detection in `AuthPage.tsx`, loading states, context synchronization, and dynamic role parameter handling.
 - [x] Unified email/Google account sessions and profile truthfulness: Google identities are verified and provisioned through the Fastify backend, auth cookies are issued for registration as well as login, and new profiles no longer receive seeded avatar, portfolio, skills, academic, or business data.
+- [x] Streamlined Onboarding, In-Profile Verification & Dynamic Gig Hydration:
+  - [x] Removed college details, roll number, and student ID upload from sign up (`AuthPage.tsx`); added password confirmation.
+  - [x] Moved college details, roll number, and student ID upload to profile drawer (`EditProfileDrawer.tsx`) accessible by both Google OAuth and email users.
+  - [x] Graduation year interactive slider spanning 2000–2035 with class badges and select menu.
+  - [x] Canonical, alphabetical skills catalog (90+ tools/skills in `skills.ts`) eliminating arbitrary text entries.
+  - [x] Fixed profile save loader hang: aligned backend Zod graduation range (2000–2035), auto-provisioned student profiles in service, injected Bearer auth tokens in API client, and added alerts.
+  - [x] Fixed blank gig details page: added defensive checks for undefined employer data and asynchronous backend API fetching by UUID.
+  - [x] Connected MSME post gig wizard to create real database gigs and route directly to newly published gig pages.

@@ -40,6 +40,7 @@ interface MarketplaceContextType {
   markAllNotificationsRead: () => void;
   addNotification: (title: string, message: string, type: NotificationItem['type'], link?: string) => void;
   postGig: (gig: Partial<MicroGig> & { title: string; category: MicroGig['category']; totalBudget: number; milestones: Milestone[] }) => string;
+  addOrUpdateGig: (gig: MicroGig) => void;
   submitProposal: (gigId: string, coverNote: string, bidAmount: number, deliveryTimeDays: number, portfolioLinks: { label: string; url: string }[]) => void;
   hireApplicant: (proposalId: string) => void;
   shortlistApplicant: (proposalId: string) => void;
@@ -157,6 +158,9 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
         });
         setCurrentRole(liveUser.role);
         setCurrentUser(liveUser);
+        if (result?.token) {
+          localStorage.setItem('verigig_auth_token', result.token);
+        }
         localStorage.removeItem(OAUTH_PENDING_ROLE_KEY);
         localStorage.setItem('verigig_session_role', liveUser.role);
         localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
@@ -248,6 +252,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       localStorage.removeItem('verigig_session_role');
       localStorage.removeItem('verigig_session_user');
+      localStorage.removeItem('verigig_auth_token');
       authApi.logout().catch(() => {});
       supabase?.auth.signOut().catch(() => {});
     } catch {
@@ -276,8 +281,20 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
+  const addOrUpdateGig = (gig: MicroGig) => {
+    setGigs(prev => {
+      const idx = prev.findIndex(g => g.id === gig.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], ...gig };
+        return next;
+      }
+      return [gig, ...prev];
+    });
+  };
+
   const postGig = (newGigData: Partial<MicroGig> & { title: string; category: MicroGig['category']; totalBudget: number; milestones: Milestone[] }): string => {
-    const gigId = `gig-${Date.now()}`;
+    const gigId = newGigData.id || `gig-${Date.now()}`;
     const newGig: MicroGig = {
       id: gigId,
       title: newGigData.title,
@@ -298,13 +315,21 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       status: 'open',
       applicantsCount: 0,
       createdAt: 'Just now',
-      milestones: newGigData.milestones.map((ms, idx) => ({
+      milestones: (newGigData.milestones || []).map((ms, idx) => ({
         ...ms,
         status: idx === 0 ? 'active' : 'locked'
       }))
     };
 
-    setGigs(prev => [newGig, ...prev]);
+    setGigs(prev => {
+      const existingIdx = prev.findIndex(g => g.id === gigId);
+      if (existingIdx >= 0) {
+        const next = [...prev];
+        next[existingIdx] = newGig;
+        return next;
+      }
+      return [newGig, ...prev];
+    });
     addNotification('New Gig Published', `Your gig "${newGig.title}" is now visible to campus talent!`, 'system', `/app/student/gig/${gigId}`);
     return gigId;
   };
@@ -528,6 +553,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       markAllNotificationsRead,
       addNotification,
       postGig,
+      addOrUpdateGig,
       submitProposal,
       hireApplicant,
       shortlistApplicant,

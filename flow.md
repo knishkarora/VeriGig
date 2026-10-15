@@ -139,3 +139,17 @@ JSON HTTP Response
   5. The backend issues the same application JWT and refresh-token cookies used by password login. The frontend maps the returned profile record directly into its session and navigates by the persisted role.
 * **Boundary safeguards:** The browser never trusts Google user metadata as a VeriGig role or profile record. Google avatar metadata is display-only for that active OAuth session; email registrations use initials until an avatar feature is explicitly added.
 
+## 9. Modified Scope: Streamlined Registration, In-Profile Verification & Dynamic Gig Hydration
+* **Streamlined Sign-Up Flow:**
+  - `AuthPage.tsx` registration now captures only role, full name, email, password, and confirm password.
+  - College details, university roll number, and student ID card file upload are completely decoupled from initial onboarding, eliminating verification disparity between Google OAuth and email/password accounts.
+  - Successful registration immediately dispatches and saves application JWT tokens to both cookie and `localStorage` (`verigig_auth_token`), granting instant access to the application.
+* **Unified Profile Verification & Editing (`EditProfileDrawer.tsx` & `StudentProfile.tsx`):**
+  - Moved student college details, university roll number, and student ID card document upload into the student profile editor drawer.
+  - Implemented an interactive graduation year slider spanning the 2000s series (2000–2035) with class badge readouts and instant selector.
+  - Embedded a canonical, curated catalog of 90+ alphabetically organized technical and creative skills/tools (`PLATFORM_SKILLS` in `frontend/src/data/skills.ts`), blocking arbitrary inputs like "A B C".
+  - Updated backend profile validation schema (`profiles.schema.ts`) and profile query service (`profiles.service.ts`) to permit graduation years across 2000–2035, auto-provision missing student profile records on request, and accept roll numbers.
+  - Multi-part document upload via `verificationApi.submitRequest` allows both Google OAuth and email-authenticated students to submit ID cards for admin verification.
+* **Defensive Dynamic Gig Page Hydration (`GigDetails.tsx` & `PostGigWizard.tsx`):**
+  - Resolved blank page crashes on `/app/gig/:id` and `/gigs/:id` by adding asynchronous backend hydration (`gigsApi.getGigById(id)`) and defensive null-safety guards across all gig fields (`employerCompany`, `milestones`, `expectedDeliverables`, `requiredSkills`).
+  - Updated `PostGigWizard.tsx` so MSME publishing triggers backend persistence, maps the returned backend database UUID, adds the gig to context, and navigates directly to the dedicated gig view.

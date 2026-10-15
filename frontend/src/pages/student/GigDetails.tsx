@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   Clock, 
@@ -7,36 +7,176 @@ import {
   FileCheck, 
   ShieldCheck, 
   Send, 
-  ChevronRight,
-  ArrowUpRight
+  ChevronRight, 
+  ArrowUpRight,
+  Loader2,
+  Building2,
+  Sparkles
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
-import { applicationsApi } from '../../api/endpoints';
+import { applicationsApi, gigsApi } from '../../api/endpoints';
+import { MicroGig } from '../../types';
 
 export const GigDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { gigs, currentUser, submitProposal, proposals } = useMarketplace();
+  const { gigs, currentUser, submitProposal, proposals, addOrUpdateGig } = useMarketplace();
 
-  const gig = gigs.find(g => g.id === id);
+  // Find gig in local context
+  const localGig = gigs.find(g => g.id === id);
+
+  // Fallback state for gigs fetched from database by ID
+  const [fetchedGig, setFetchedGig] = useState<MicroGig | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(!localGig);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Proposal Drawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [coverNote, setCoverNote] = useState('');
-  const [bidAmount, setBidAmount] = useState<number>(gig?.totalBudget || 5000);
+  const [bidAmount, setBidAmount] = useState<number>(localGig?.totalBudget || 5000);
   const [deliveryDays, setDeliveryDays] = useState<number>(7);
   const [portfolioLink, setPortfolioLink] = useState('https://github.com/aaravsharma/project-demo');
   const [submitted, setSubmitted] = useState(false);
 
-  const existingProposal = proposals.find(p => p.gigId === id && p.studentId === currentUser.id);
+  // Fetch gig from backend API if not already loaded in context
+  useEffect(() => {
+    if (!localGig && id) {
+      let active = true;
+      setIsLoading(true);
+      setFetchError(null);
+
+      gigsApi.getGigById(id)
+        .then((res: any) => {
+          if (!active) return;
+          if (res && res.gig) {
+            const raw = res.gig;
+            const normalized: MicroGig = {
+              id: raw.id,
+              title: raw.title || 'Micro-Gig Listing',
+              employerId: raw.employerId || 'emp-sme',
+              employerName: raw.employerName || 'Verified SME Partner',
+              employerCompany: raw.employerCompany || raw.employerName || 'SME Business',
+              employerVerified: Boolean(raw.employerVerified ?? true),
+              category: raw.category || 'Web Dev',
+              totalBudget: Number(raw.totalBudget || 0),
+              paymentType: raw.paymentType || 'milestone',
+              targetDuration: raw.targetDuration || '1 week',
+              locationScope: raw.workMode || raw.locationScope || 'Remote',
+              campusProximity: raw.campusProximity || 'Within 5 km radius',
+              description: raw.description || 'Scope details provided by business partner.',
+              expectedDeliverables: Array.isArray(raw.expectedDeliverables) && raw.expectedDeliverables.length > 0
+                ? raw.expectedDeliverables
+                : ['Deliver according to agreed project criteria'],
+              requiredSkills: Array.isArray(raw.requiredSkills) ? raw.requiredSkills : [],
+              preferredColleges: Array.isArray(raw.preferredColleges) && raw.preferredColleges.length > 0
+                ? raw.preferredColleges
+                : ['PCTE Group of Institutes', 'All Regional Campuses'],
+              status: raw.status || 'open',
+              applicantsCount: Number(raw.applicantsCount || 0),
+              createdAt: raw.createdAt ? new Date(raw.createdAt).toLocaleDateString() : 'Recently',
+              milestones: Array.isArray(raw.milestones) && raw.milestones.length > 0
+                ? raw.milestones.map((ms: any, idx: number) => ({
+                    id: ms.id || `ms-${idx}`,
+                    title: ms.title || `Milestone ${idx + 1}`,
+                    description: ms.description || '',
+                    amount: Number(ms.amount || 0),
+                    percentage: Number(ms.percentage || Math.round((ms.amount / (raw.totalBudget || 1)) * 100)),
+                    status: ms.status || (idx === 0 ? 'active' : 'locked'),
+                    deadline: ms.durationDays ? `${ms.durationDays} days` : '1 week',
+                  }))
+                : [
+                    {
+                      id: `ms-${raw.id}-1`,
+                      title: 'Milestone 1: Project Deliverables',
+                      description: 'Complete task criteria according to scoped specifications.',
+                      amount: Number(raw.totalBudget || 0),
+                      percentage: 100,
+                      status: 'active',
+                      deadline: '1 week',
+                    }
+                  ],
+            };
+
+            setFetchedGig(normalized);
+            addOrUpdateGig(normalized);
+            setBidAmount(normalized.totalBudget || 5000);
+          } else {
+            setFetchError('Gig details could not be retrieved.');
+          }
+        })
+        .catch((err) => {
+          if (!active) return;
+          console.warn('API getGigById error:', err);
+          setFetchError(err.message || 'Micro-gig not found.');
+        })
+        .finally(() => {
+          if (active) setIsLoading(false);
+        });
+
+      return () => {
+        active = false;
+      };
+    } else if (localGig) {
+      setIsLoading(false);
+      setBidAmount(localGig.totalBudget || 5000);
+    }
+  }, [id, localGig, addOrUpdateGig]);
+
+  const gig = localGig || fetchedGig;
+  const existingProposal = gig ? proposals.find(p => p.gigId === gig.id && p.studentId === currentUser.id) : undefined;
+
+  // Defensive values
+  const employerCompany = gig?.employerCompany || gig?.employerName || 'SME Business';
+  const employerName = gig?.employerName || 'Verified SME Partner';
+  const employerInitial = (employerCompany.replace(/[^a-zA-Z]/g, '').slice(0, 2) || 'SM').toUpperCase();
+  const deliverables = Array.isArray(gig?.expectedDeliverables) && gig.expectedDeliverables.length > 0
+    ? gig.expectedDeliverables
+    : ['Complete work according to agreed scope specifications'];
+  const requiredSkills = Array.isArray(gig?.requiredSkills) ? gig.requiredSkills : [];
+  const preferredColleges = Array.isArray(gig?.preferredColleges) && gig.preferredColleges.length > 0
+    ? gig.preferredColleges
+    : ['PCTE Group of Institutes', 'All Regional Campuses'];
+  const milestones = Array.isArray(gig?.milestones) && gig.milestones.length > 0
+    ? gig.milestones
+    : [
+        {
+          id: `ms-${gig?.id || '1'}`,
+          title: 'Milestone 1: Production Deliverable',
+          description: gig?.description || 'Complete work criteria',
+          amount: gig?.totalBudget || 3000,
+          percentage: 100,
+          status: 'active' as const,
+          deadline: gig?.targetDuration || '1 week'
+        }
+      ];
+  const totalBudget = typeof gig?.totalBudget === 'number' ? gig.totalBudget : 0;
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto py-24 px-4 text-center space-y-4">
+        <Loader2 className="w-10 h-10 text-purple-600 animate-spin mx-auto" />
+        <h3 className="text-lg font-black text-slate-800">Loading Micro-Gig Details...</h3>
+        <p className="text-xs text-slate-500">Retrieving scope requirements and milestone ledger.</p>
+      </div>
+    );
+  }
 
   if (!gig) {
     return (
-      <div className="max-w-4xl mx-auto py-20 px-4 text-center">
-        <h2 className="text-xl font-black text-slate-900">Micro-Gig not found</h2>
-        <Link to="/app/student/explore" className="text-purple-700 text-xs font-bold mt-3 inline-block">
-          Return to Explore ↗
+      <div className="max-w-4xl mx-auto py-24 px-4 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-500 mx-auto flex items-center justify-center font-black">
+          ?
+        </div>
+        <h2 className="text-2xl font-black text-slate-900">Micro-Gig Not Found</h2>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto">
+          {fetchError || 'This gig listing may have ended, was completed, or the ID is invalid.'}
+        </p>
+        <Link 
+          to="/app/student/explore" 
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#101014] text-white text-xs font-black shadow-md hover:bg-slate-800 transition-all"
+        >
+          <span>Explore Available Gigs ↗</span>
         </Link>
       </div>
     );
@@ -104,7 +244,7 @@ export const GigDetails: React.FC = () => {
             {gig.title}
           </h1>
           <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <span>Posted by <strong className="text-slate-900">{gig.employerName}</strong> ({gig.employerCompany})</span>
+            <span>Posted by <strong className="text-slate-900">{employerName}</strong> ({employerCompany})</span>
             {gig.employerVerified && (
               <TrustBadge type="sme" size="sm" text="Verified SME Partner" />
             )}
@@ -113,7 +253,7 @@ export const GigDetails: React.FC = () => {
 
         <div className="text-left md:text-right shrink-0">
           <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider">Total Escrow Budget</span>
-          <span className="text-3xl sm:text-4xl font-black text-[#101014] block font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
+          <span className="text-3xl sm:text-4xl font-black text-[#101014] block font-mono tabular-nums">₹{totalBudget.toLocaleString()}</span>
           <span className="text-[11px] text-slate-500 font-medium block">{gig.paymentType === 'milestone' ? 'Split into Milestones' : 'Single Payout'}</span>
           
           <div className="mt-4">
@@ -163,7 +303,7 @@ export const GigDetails: React.FC = () => {
               <span>Concrete Deliverables Expected</span>
             </h2>
             <ul className="space-y-3">
-              {gig.expectedDeliverables.map((deliv, idx) => (
+              {deliverables.map((deliv, idx) => (
                 <li key={idx} className="flex items-start gap-3 text-xs text-slate-700 font-medium">
                   <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                   <span>{deliv}</span>
@@ -181,11 +321,15 @@ export const GigDetails: React.FC = () => {
                   Required Competencies
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {gig.requiredSkills.map((skill, idx) => (
-                    <span key={idx} className="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-800 text-xs font-bold">
-                      {skill}
-                    </span>
-                  ))}
+                  {requiredSkills.length > 0 ? (
+                    requiredSkills.map((skill, idx) => (
+                      <span key={idx} className="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-800 text-xs font-bold">
+                        {skill}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-slate-500 italic">No specific tool prerequisites listed.</span>
+                  )}
                 </div>
               </div>
 
@@ -194,7 +338,7 @@ export const GigDetails: React.FC = () => {
                   Target Student Campuses
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {gig.preferredColleges.map((col, idx) => (
+                  {preferredColleges.map((col, idx) => (
                     <span key={idx} className="px-3.5 py-1.5 rounded-full bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold">
                       {col}
                     </span>
@@ -212,13 +356,13 @@ export const GigDetails: React.FC = () => {
           <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-black text-[#101014]">Escrow Milestones</h2>
-              <span className="text-xs text-slate-600 font-bold">{gig.milestones.length} Defined</span>
+              <span className="text-xs text-slate-600 font-bold">{milestones.length} Defined</span>
             </div>
 
             <div className="space-y-4">
-              {gig.milestones.map((ms, index) => (
+              {milestones.map((ms, index) => (
                 <div 
-                  key={ms.id}
+                  key={ms.id || index}
                   className={`p-5 rounded-2xl border transition-all ${
                     ms.status === 'completed'
                       ? 'bg-emerald-50 border-emerald-300'
@@ -234,19 +378,21 @@ export const GigDetails: React.FC = () => {
                       </span>
                       <h4 className="text-xs font-black text-[#101014]">{ms.title}</h4>
                     </div>
-                    <span className="text-xs font-black text-[#101014] font-mono tabular-nums shrink-0">₹{ms.amount.toLocaleString()}</span>
+                    <span className="text-xs font-black text-[#101014] font-mono tabular-nums shrink-0">₹{(ms.amount || 0).toLocaleString()}</span>
                   </div>
                   
-                  <p className="text-xs text-slate-600 mt-2 pl-8 leading-relaxed font-normal">
-                    {ms.description}
-                  </p>
+                  {ms.description && (
+                    <p className="text-xs text-slate-600 mt-2 pl-8 leading-relaxed font-normal">
+                      {ms.description}
+                    </p>
+                  )}
 
                   <div className="flex items-center justify-between mt-3 pl-8 pt-2 border-t border-slate-200 text-[10px] font-bold">
                     <span className="text-slate-500 flex items-center gap-1">
-                      <Clock size={11} /> Due: {ms.deadline}
+                      <Clock size={11} /> Due: {ms.deadline || gig.targetDuration}
                     </span>
                     <span className="capitalize text-[#101014]">
-                      {ms.status.replace('_', ' ')}
+                      {String(ms.status || 'open').replace('_', ' ')}
                     </span>
                   </div>
                 </div>
@@ -265,11 +411,11 @@ export const GigDetails: React.FC = () => {
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">About the Business</h3>
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-slate-100 text-slate-900 flex items-center justify-center font-black text-sm">
-                {gig.employerCompany.slice(0, 2).toUpperCase()}
+                {employerInitial}
               </div>
               <div>
-                <h4 className="text-sm font-black text-[#101014]">{gig.employerCompany}</h4>
-                <p className="text-xs text-slate-500 font-medium">Founder: {gig.employerName}</p>
+                <h4 className="text-sm font-black text-[#101014]">{employerCompany}</h4>
+                <p className="text-xs text-slate-500 font-medium">Representative: {employerName}</p>
               </div>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -287,9 +433,9 @@ export const GigDetails: React.FC = () => {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsDrawerOpen(false)} />
 
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-lg bg-white border-l border-purple-100 shadow-2xl p-8 flex flex-col justify-between overflow-y-auto">
+            <div className="w-screen max-w-lg bg-white border-l border-purple-100 shadow-2xl p-8 flex flex-col justify-between overflow-y-auto text-left">
               
-              <div className="space-y-6 text-left">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-purple-100">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Proposal Submission</span>
@@ -308,7 +454,7 @@ export const GigDetails: React.FC = () => {
                     <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
                       <CheckCircle2 size={36} />
                     </div>
-                    <h4 className="text-xl font-black text-[#121214]">Proposal Sent to {gig.employerCompany}!</h4>
+                    <h4 className="text-xl font-black text-[#121214]">Proposal Sent to {employerCompany}!</h4>
                     <p className="text-xs text-slate-600 max-w-sm mx-auto">
                       The employer has received your proposed breakdown and verified student badge.
                     </p>
@@ -342,7 +488,7 @@ export const GigDetails: React.FC = () => {
                           onChange={(e) => setBidAmount(Number(e.target.value))}
                           className="w-full px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214] font-bold"
                         />
-                        <span className="text-[11px] text-slate-400 font-medium">Budget: ₹{gig.totalBudget.toLocaleString()}</span>
+                        <span className="text-[11px] text-slate-400 font-medium">Budget: ₹{totalBudget.toLocaleString()}</span>
                       </div>
 
                       <div>

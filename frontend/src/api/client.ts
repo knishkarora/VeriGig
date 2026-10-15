@@ -34,6 +34,18 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers.set('Content-Type', 'application/json');
   }
 
+  // Inject Authorization Bearer token if present in localStorage
+  if (!headers.has('Authorization')) {
+    try {
+      const storedToken = localStorage.getItem('verigig_auth_token');
+      if (storedToken) {
+        headers.set('Authorization', `Bearer ${storedToken}`);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   const response = await fetch(url, {
     ...options,
     headers,

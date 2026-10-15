@@ -6,11 +6,27 @@ import { UpdateStudentProfileInput, UpdateBusinessProfileInput } from './profile
 export class ProfilesService {
   // Student Profiles
   async getStudentProfileByUserId(userId: string) {
-    const profile = await db.query.studentProfiles.findFirst({
+    let profile = await db.query.studentProfiles.findFirst({
       where: eq(studentProfiles.userId, userId),
     });
 
     if (!profile) {
+      const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+      if (user) {
+        const [created] = await db.insert(studentProfiles).values({
+          userId: user.id,
+          fullName: user.email.split('@')[0],
+          collegeName: '',
+          degree: '',
+          graduationYear: new Date().getFullYear(),
+          skills: [],
+          location: 'Punjab, India',
+          workModePreference: 'both',
+          availabilityStatus: 'available_now',
+        }).returning();
+        return created;
+      }
+
       const err = new Error('Student profile not found');
       (err as any).statusCode = 404;
       throw err;
@@ -51,12 +67,19 @@ export class ProfilesService {
   async updateStudentProfile(userId: string, input: UpdateStudentProfileInput) {
     const existing = await this.getStudentProfileByUserId(userId);
 
+    const updatePayload: any = {
+      ...input,
+      updatedAt: new Date(),
+    };
+
+    if (input.rollNumber !== undefined) {
+      updatePayload.rollNumberEncrypted = input.rollNumber;
+      delete updatePayload.rollNumber;
+    }
+
     const [updated] = await db
       .update(studentProfiles)
-      .set({
-        ...input,
-        updatedAt: new Date(),
-      })
+      .set(updatePayload)
       .where(eq(studentProfiles.id, existing.id))
       .returning();
 

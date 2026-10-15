@@ -19,6 +19,7 @@ export const PostGigWizard: React.FC = () => {
   const { postGig, currentUser } = useMarketplace();
 
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
 
   // Step 1: Scope
   const [title, setTitle] = useState('');
@@ -107,42 +108,70 @@ export const PostGigWizard: React.FC = () => {
     }
   };
 
-  const handlePublish = () => {
-    postGig({
-      title,
-      category,
-      totalBudget,
-      paymentType: 'milestone',
-      targetDuration,
-      locationScope,
-      campusProximity: 'Within 3 km of PCTE Campus',
-      description,
-      expectedDeliverables: milestones.map(m => m.title),
-      requiredSkills,
-      preferredColleges,
-      milestones,
-    });
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    let publishedGigId = '';
 
-    // Also persist to API if backend reachable
-    gigsApi.createGig({
-      title,
-      category,
-      totalBudget,
-      paymentType: 'milestone',
-      targetDuration,
-      workMode: locationScope,
-      description: description || 'Scoped task with defined milestones for college student contractors.',
-      expectedDeliverables: milestones.map(m => m.title),
-      requiredSkills,
-      preferredColleges,
-      milestones: milestones.map(m => ({
-        title: m.title,
-        description: m.description || m.title,
-        amount: m.amount,
-      })),
-    }).catch(err => console.warn('API gig creation fallback:', err));
+    try {
+      const res: any = await gigsApi.createGig({
+        title,
+        category,
+        totalBudget,
+        paymentType: 'milestone',
+        targetDuration,
+        workMode: locationScope,
+        description: description || 'Scoped task with defined milestones for college student contractors.',
+        expectedDeliverables: milestones.map(m => m.title),
+        requiredSkills,
+        preferredColleges,
+        milestones: milestones.map(m => ({
+          title: m.title,
+          description: m.description || m.title,
+          amount: m.amount,
+        })),
+      });
 
-    navigate(`/app/employer/dashboard`);
+      if (res && res.gig) {
+        publishedGigId = res.gig.id;
+        postGig({
+          id: res.gig.id,
+          title,
+          category,
+          totalBudget,
+          paymentType: 'milestone',
+          targetDuration,
+          locationScope,
+          campusProximity: 'Within 3 km of PCTE Campus',
+          description,
+          expectedDeliverables: milestones.map(m => m.title),
+          requiredSkills,
+          preferredColleges,
+          milestones,
+        });
+      }
+    } catch (err) {
+      console.warn('API gig creation fallback:', err);
+    }
+
+    if (!publishedGigId) {
+      publishedGigId = postGig({
+        title,
+        category,
+        totalBudget,
+        paymentType: 'milestone',
+        targetDuration,
+        locationScope,
+        campusProximity: 'Within 3 km of PCTE Campus',
+        description,
+        expectedDeliverables: milestones.map(m => m.title),
+        requiredSkills,
+        preferredColleges,
+        milestones,
+      });
+    }
+
+    setIsPublishing(false);
+    navigate(`/app/student/gig/${publishedGigId}`);
   };
 
   return (
@@ -496,9 +525,10 @@ export const PostGigWizard: React.FC = () => {
             <button
               type="button"
               onClick={handlePublish}
-              className="inline-flex items-center gap-2 pl-6 pr-2 py-2 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all group"
+              disabled={isPublishing}
+              className="inline-flex items-center gap-2 pl-6 pr-2 py-2 rounded-full bg-[#121214] hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-black shadow-md transition-all group"
             >
-              <span>Fund Escrow & Publish Listing</span>
+              <span>{isPublishing ? 'Publishing & Syncing...' : 'Fund Escrow & Publish Listing'}</span>
               <div className="w-8 h-8 rounded-full bg-[#D4F851] text-[#121214] flex items-center justify-center font-bold">
                 <Sparkles size={15} />
               </div>

@@ -23,7 +23,6 @@ import { toMarketplaceUser } from '../auth/user';
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentRole, loginUser, isAuthInitializing, authError } = useMarketplace();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [registerRole, setRegisterRole] = useState<'student' | 'employer'>('student');
@@ -38,10 +37,7 @@ export const AuthPage: React.FC = () => {
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regOrg, setRegOrg] = useState('');
-  const [regIdentifier, setRegIdentifier] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [regSuccess, setRegSuccess] = useState(false);
 
   // Google OAuth guidance modal
@@ -80,6 +76,13 @@ export const AuthPage: React.FC = () => {
       });
 
       if (res && res.user) {
+        if (res.token) {
+          try {
+            localStorage.setItem('verigig_auth_token', res.token);
+          } catch {
+            // ignore
+          }
+        }
         const liveUser = toMarketplaceUser(res.user);
 
         loginUser(liveUser);
@@ -103,13 +106,8 @@ export const AuthPage: React.FC = () => {
     e.preventDefault();
     setErrorMessage(null);
 
-    // Mandatory Document Validation (cannot be skipped)
-    if (!selectedFile && !uploadedFileName) {
-      setErrorMessage(
-        registerRole === 'student'
-          ? 'College ID card upload is strictly required for student institutional verification.'
-          : 'GST or Business registration proof is strictly required for SME verification.'
-      );
+    if (regPassword !== regConfirmPassword) {
+      setErrorMessage('Passwords do not match. Please verify and confirm your password.');
       return;
     }
 
@@ -127,22 +125,14 @@ export const AuthPage: React.FC = () => {
         password: regPassword,
         role: registerRole,
         fullName: regName.trim(),
-        collegeName: registerRole === 'student' ? regOrg.trim() : undefined,
-        companyName: registerRole === 'employer' ? regOrg.trim() : undefined,
         dpdpaConsent: true,
       });
 
-      // 2. Upload verification document if file is selected
-      if (selectedFile) {
+      if (regRes && regRes.token) {
         try {
-          const formData = new FormData();
-          formData.append('institutionOrBusiness', regOrg.trim());
-          formData.append('docIdentifier', regIdentifier.trim());
-          formData.append('file', selectedFile);
-
-          await verificationApi.submitRequest(formData);
-        } catch (uploadErr) {
-          console.warn('Document upload queued locally:', uploadErr);
+          localStorage.setItem('verigig_auth_token', regRes.token);
+        } catch {
+          // ignore
         }
       }
 
@@ -154,7 +144,7 @@ export const AuthPage: React.FC = () => {
         loginUser(liveUser);
         if (registerRole === 'student') navigate('/app/student/dashboard');
         else navigate('/app/employer/dashboard');
-      }, 1200);
+      }, 1000);
 
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -178,15 +168,6 @@ export const AuthPage: React.FC = () => {
       }
     } else {
       setShowGoogleGuide(true);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setUploadedFileName(file.name);
-      setErrorMessage(null);
     }
   };
 
@@ -442,74 +423,27 @@ export const AuthPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {registerRole === 'student' ? 'College / University Name' : 'Business / Firm Name'} <span className="text-red-500">*</span>
+                  Confirm Password <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="text"
+                  type="password"
                   required
-                  value={regOrg}
-                  onChange={(e) => setRegOrg(e.target.value)}
-                  placeholder={registerRole === 'student' ? 'PCTE Group of Institutes' : 'Punjab AgriTech Tools'}
+                  minLength={8}
+                  value={regConfirmPassword}
+                  onChange={(e) => setRegConfirmPassword(e.target.value)}
+                  placeholder="Re-enter password"
                   className="w-full px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214]"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {registerRole === 'student' ? 'Student Roll Number' : 'GSTIN / Udyam Registration #'} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={regIdentifier}
-                  onChange={(e) => setRegIdentifier(e.target.value)}
-                  placeholder={registerRole === 'student' ? '2203102' : '03AABCL1234F1Z8'}
-                  className="w-full px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-[#121214]"
-                />
-              </div>
-
-              {/* Document Upload (Mandatory) */}
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">
-                  {registerRole === 'student' ? 'Upload College ID Card (Photo/PDF)' : 'Upload GST Certificate / Business Proof'} <span className="text-red-500">* (Mandatory)</span>
-                </label>
-                
-                {/* Hidden Native File Input */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/jpeg,image/png,image/webp,application/pdf"
-                  className="hidden"
-                />
-
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`p-5 border-2 border-dashed rounded-3xl text-center cursor-pointer transition-colors ${
-                    uploadedFileName
-                      ? 'border-emerald-300 bg-emerald-50/50'
-                      : 'border-purple-200 hover:border-purple-400 bg-purple-50/50'
-                  }`}
-                >
-                  {uploadedFileName ? (
-                    <div className="flex items-center justify-center gap-2 text-emerald-800 text-xs font-bold">
-                      <FileCheck size={18} className="text-emerald-600" />
-                      <span>{uploadedFileName} (Attached for Verification)</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      <Upload size={20} className="mx-auto text-purple-600" />
-                      <p className="text-xs text-slate-800 font-bold">Click to browse and attach document file</p>
-                      <p className="text-[10px] text-slate-500">Supports JPG, PNG, PDF up to 5MB (Stored privately)</p>
-                    </div>
-                  )}
-                </div>
+              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/80 text-xs text-purple-900 font-medium">
+                💡 <span className="font-bold">Next Step:</span> Academic credentials, college ID card, and roll number can be added or updated directly from your profile after registration.
               </div>
 
               {regSuccess && (
                 <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-emerald-600" />
-                  <span>Account successfully written to PostgreSQL! Loading dashboard...</span>
+                  <span>Account successfully created! Loading dashboard...</span>
                 </div>
               )}
 
@@ -521,10 +455,10 @@ export const AuthPage: React.FC = () => {
                 {isSubmitting ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></span>
-                    <span>Creating account in Database...</span>
+                    <span>Creating account...</span>
                   </>
                 ) : (
-                  <span>Complete Registration & Submit to Database</span>
+                  <span>Create Account & Sign In</span>
                 )}
               </button>
 

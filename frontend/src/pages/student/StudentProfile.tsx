@@ -25,8 +25,20 @@ export const StudentProfile: React.FC = () => {
               <h1 className="text-3xl font-black text-[#121214]">{currentUser.name}</h1>
               {currentUser.isVerified ? <TrustBadge type="student" text="Verified student" size="md" /> : <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full">Verification pending</span>}
             </div>
-            <p className="text-xs text-slate-600 font-bold flex items-center gap-2"><GraduationCap size={16} className="text-purple-700" /><span>{currentUser.collegeOrCompany || 'College not added yet'}{currentUser.degree ? ` • ${currentUser.degree}` : ''}</span></p>
-            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium pt-1">
+            <p className="text-xs text-slate-600 font-bold flex items-center gap-2">
+              <GraduationCap size={16} className="text-purple-700" />
+              <span>
+                {currentUser.collegeOrCompany || 'College not added yet'}
+                {currentUser.degree ? ` • ${currentUser.degree}` : ''}
+                {currentUser.graduationYear ? ` (Class of ${currentUser.graduationYear})` : ''}
+              </span>
+            </p>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium pt-1">
+              {currentUser.rollNumber && (
+                <span className="font-mono bg-purple-50 text-purple-900 border border-purple-200 px-2.5 py-0.5 rounded-full font-bold">
+                  Roll: {currentUser.rollNumber}
+                </span>
+              )}
               {currentUser.location && <span className="flex items-center gap-1"><MapPin size={13} /> {currentUser.location}</span>}
               <span className="flex items-center gap-1"><Mail size={13} /> {currentUser.email}</span>
             </div>
@@ -59,8 +71,32 @@ export const StudentProfile: React.FC = () => {
       <EditProfileDrawer
         isOpen={isEditDrawerOpen}
         onClose={() => setIsEditDrawerOpen(false)}
-        initialData={{ fullName: currentUser.name, bio: currentUser.bio, collegeName: currentUser.collegeOrCompany, degree: currentUser.degree, graduationYear: currentUser.graduationYear, skills, portfolioLinks: portfolioItems, availabilityStatus: currentUser.availabilityStatus }}
-        onProfileUpdated={(profile) => loginUser({ ...currentUser, name: profile.fullName || currentUser.name, collegeOrCompany: profile.collegeName || currentUser.collegeOrCompany, bio: profile.bio || undefined, degree: profile.degree || undefined, graduationYear: profile.graduationYear || undefined, skills: profile.skills || [], availabilityStatus: profile.availabilityStatus, portfolioLinks: profile.portfolioLinks || portfolioItems })}
+        initialData={{
+          fullName: currentUser.name,
+          bio: currentUser.bio,
+          collegeName: currentUser.collegeOrCompany,
+          rollNumber: currentUser.rollNumber,
+          degree: currentUser.degree,
+          graduationYear: currentUser.graduationYear,
+          skills,
+          portfolioLinks: portfolioItems,
+          availabilityStatus: currentUser.availabilityStatus,
+          isVerified: currentUser.isVerified,
+        }}
+        onProfileUpdated={(profile) =>
+          loginUser({
+            ...currentUser,
+            name: profile.fullName || currentUser.name,
+            collegeOrCompany: profile.collegeName || currentUser.collegeOrCompany,
+            rollNumber: profile.rollNumber !== undefined ? profile.rollNumber : currentUser.rollNumber,
+            bio: profile.bio || undefined,
+            degree: profile.degree || undefined,
+            graduationYear: profile.graduationYear || undefined,
+            skills: profile.skills || [],
+            availabilityStatus: profile.availabilityStatus,
+            portfolioLinks: profile.portfolioLinks || portfolioItems,
+          })
+        }
       />
     </div>
   );

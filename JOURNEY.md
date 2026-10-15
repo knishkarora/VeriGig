@@ -1,5 +1,18 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-15] Milestone: Streamlined Onboarding, Profile Verification & Dynamic Micro-Gig Hydration
+
+* **Key Changes:**
+  - Removed college details, roll number, and student ID card upload from the sign-up page (`AuthPage.tsx`); added password confirmation and automatic token persistence so both email and Google OAuth logins start with an identical minimal friction flow.
+  - Relocated academic details and verification document upload into the student profile edit drawer (`EditProfileDrawer.tsx`), enabling equal verification access for Google OAuth and email users.
+  - Implemented an interactive Graduation Year slider spanning the 2000s series (2000–2035) with class badge readouts and dropdown select.
+  - Replaced arbitrary free-text skill entry with a canonical, alphabetical catalog of 90+ tech and creative skills (`PLATFORM_SKILLS` in `frontend/src/data/skills.ts`).
+  - Fixed infinite loader bug on profile save by broadening Zod graduation year range in `profiles.schema.ts`, auto-provisioning missing student profile records on request in `profiles.service.ts`, injecting Bearer tokens into API requests in `client.ts`, and adding clear error/success feedback.
+  - Resolved blank page crashes on gig details (`GigDetails.tsx`) by providing defensive checks against undefined employer metadata and fetching from the backend API if a gig is accessed via direct URL or database ID.
+  - Wired `PostGigWizard.tsx` to asynchronously await backend gig creation, retrieve the database UUID, and navigate directly to the published gig page.
+* **Decisions Made:** [[decision]] — Streamlined Onboarding, Profile Verification & Dynamic Micro-Gig Hydration.
+* **Verification:** Frontend production build (`npm run build`) compiled cleanly in 5.3s with 0 errors; backend build (`tsc`) passed with 0 errors.
+
 ## [2026-10-15] Milestone: Auth Session Repair and Profile De-Seeding
 
 * **Key Changes:** Unified Google and password authentication around backend account records; issued application session cookies during registration, login, refresh, and Google continuation; corrected verification/profile API paths; replaced hardcoded student and employer profile content with saved account data and explicit empty states.

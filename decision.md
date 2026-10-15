@@ -1,6 +1,23 @@
 # Architectural Decisions (decision.md)
 
-## [2026-10-15] Decision: Backend-Owned Google Account Provisioning
+## [2026-10-15] Decision: Streamlined Onboarding, Profile Verification & Dynamic Micro-Gig Hydration
+
+* **Context & Scope:** 
+  1. The registration flow previously required academic institution credentials, university roll numbers, and physical ID document uploads upfront. This caused significant friction and created a disparity where users authenticating via Google OAuth bypassed verification without a path to upload ID documents in their profile.
+  2. The student profile drawer featured an unbounded numeric graduation year counter, lacked canonical skills enforcement (allowing arbitrary text), suffered from cross-origin session token omission during profile updates, and lacked document upload inputs.
+  3. Clicking on database-created micro-gigs from the Explore feed caused runtime rendering errors due to unhandled missing entity fields and unhydrated backend routes.
+* **Choice Made:** 
+  1. **Friction-Free Registration:** Shifted institutional verification and roll number inputs from the sign-up form to the profile drawer. Registration now strictly requires role, name, email, password, and confirm password.
+  2. **Canonical Skills Catalog & 2000s Year Slider:** Built a curated, alphabetically sorted catalog of 90+ verified tech and creative skills (`PLATFORM_SKILLS`), preventing arbitrary strings. Replaced the numeric input with a smooth graduation year slider (spanning years 2000 through 2035) with real-time class badge readouts and dropdown jumps.
+  3. **In-Profile Verification & Resilient Persistence:** Added roll number input and student ID card upload directly to `EditProfileDrawer.tsx`, with Bearer token injection in `client.ts` to ensure cross-origin cookie resiliency. Profile updates immediately update local state and local storage while gracefully handling backend network conditions.
+  4. **Defensive Dynamic Gig Hydration:** Hardened `GigDetails.tsx` with fallbacks for all metadata fields, implemented asynchronous backend fetching by ID (`gigsApi.getGigById`), and registered route aliases (`/app/student/gig/:id`, `/app/gig/:id`, `/gigs/:id`, `/app/explore`, `/explore`) ensuring persistent accessible URLs for all posted gigs.
+* **Rationale (Why over What):**
+  - Moving KYC to the profile creates equal onboarding parity between email and Google OAuth logins.
+  - Curated canonical skills ensure high-fidelity candidate matching and prevent garbage taxonomy.
+  - Defensive fallback hydration in `GigDetails` prevents white/blank screens even when database relations are incomplete.
+* **Tradeoffs Accepted:**
+  - Allowing registration without immediate ID upload means unverified students can browse and explore immediately, while application submission prompts them to complete profile verification.
+* **Immutability Status:** Settled & Immutable.
 
 * **Context & Scope:** Google OAuth completed in the browser but did not create a VeriGig backend session or profile, leaving users on the auth route and mixing provider metadata with seeded demo data.
 * **Choice Made:** Verify each Supabase access token in Fastify against Supabase Auth, then look up or provision the VeriGig account by verified email and issue the existing application JWT/refresh-token session.

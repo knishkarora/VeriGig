@@ -2,12 +2,13 @@ import { z } from 'zod';
 
 export const updateStudentProfileSchema = z.object({
   fullName: z.string().min(2).optional(),
-  collegeName: z.string().min(2).optional(),
-  degree: z.string().min(2).optional(),
-  graduationYear: z.number().int().min(2024).max(2032).optional(),
+  collegeName: z.string().optional(),
+  rollNumber: z.string().optional(),
+  degree: z.string().optional(),
+  graduationYear: z.number().int().min(2000).max(2035).optional(),
   bio: z.string().max(1000).optional(),
   skills: z.array(z.string()).optional(),
-  location: z.string().min(2).optional(),
+  location: z.string().optional(),
   workModePreference: z.enum(['remote', 'on_site', 'both']).optional(),
   portfolioLinks: z.array(
     z.object({
@@ -15,7 +16,7 @@ export const updateStudentProfileSchema = z.object({
       url: z.string().url('Invalid portfolio URL'),
     })
   ).optional(),
-  availabilityStatus: z.enum(['available_now', 'busy', 'exam_break']).optional(),
+  availabilityStatus: z.enum(['available_now', 'busy', 'exam_break']).optional().or(z.literal('')),
 });
 
 export const updateBusinessProfileSchema = z.object({
