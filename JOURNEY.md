@@ -1,5 +1,11 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-15] Milestone: Auth Session Repair and Profile De-Seeding
+
+* **Key Changes:** Unified Google and password authentication around backend account records; issued application session cookies during registration, login, refresh, and Google continuation; corrected verification/profile API paths; replaced hardcoded student and employer profile content with saved account data and explicit empty states.
+* **Decisions Made:** [[decision]] — Backend-Owned Google Account Provisioning.
+* **Verification:** Backend TypeScript build and frontend production build completed successfully; frontend lint completes with pre-existing project warnings only.
+
 ## [2026-10-14] Milestone 19: Frontend REST API Integration, Missing Views & E2E Flow Completion (Phase 10 Complete)
 * Built unified REST API client layer in `frontend/src/api`:
   - `client.ts`: Custom fetch client with credentials support for HTTP-only JWT refresh cookie sessions, structured error typing (`ApiClientError`), and base URL resolution defaulting to `http://localhost:4000/api/v1`.

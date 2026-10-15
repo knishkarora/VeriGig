@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   User, 
@@ -20,6 +20,7 @@ import {
 } from '../data/mockData';
 import { gigsApi, authApi } from '../api/endpoints';
 import { supabase, OAUTH_PENDING_ROLE_KEY } from '../api/supabase';
+import { toMarketplaceUser } from '../auth/user';
 
 interface MarketplaceContextType {
   currentRole: UserRole;
@@ -27,6 +28,8 @@ interface MarketplaceContextType {
   switchRole: (role: UserRole) => void;
   logout: () => void;
   loginUser: (userData: User) => void;
+  isAuthInitializing: boolean;
+  authError: string | null;
   gigs: MicroGig[];
   proposals: Proposal[];
   verifications: VerificationRequest[];
@@ -65,8 +68,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       const savedUser = localStorage.getItem('verigig_session_user');
       if (savedUser) return JSON.parse(savedUser);
-      const savedRole = localStorage.getItem('verigig_session_role') as UserRole;
-      return mockUsers[savedRole] || mockUsers.guest;
+      return mockUsers.guest;
     } catch {
       return mockUsers.guest;
     }
@@ -77,6 +79,9 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [verifications, setVerifications] = useState<VerificationRequest[]>(initialVerifications);
   const [disputes, setDisputes] = useState<Dispute[]>(initialDisputes);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+  const [isAuthInitializing, setIsAuthInitializing] = useState(Boolean(supabase));
+  const [authError, setAuthError] = useState<string | null>(null);
+  const handledSupabaseTokens = useRef(new Set<string>());
 
   // Sync live gigs from backend if Fastify server is reachable
   useEffect(() => {
@@ -120,51 +125,48 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return () => { active = false; };
   }, []);
 
-  // Global Supabase Auth Session Synchronization (Google OAuth persistence)
+  // Global Supabase session synchronization. The backend validates the Supabase
+  // access token and owns the VeriGig account/session, so OAuth and email use
+  // the same profile record and authorization model.
   useEffect(() => {
     if (!supabase) return;
     const client = supabase;
 
     let isMounted = true;
 
-    const handleUserSession = (session: any) => {
+    const handleUserSession = async (session: any) => {
       if (!session?.user || !isMounted) return;
 
-      // Determine intended role: pending OAuth role > saved role > default 'student'
+      if (handledSupabaseTokens.current.has(session.access_token)) return;
+      handledSupabaseTokens.current.add(session.access_token);
+      setIsAuthInitializing(true);
+      setAuthError(null);
+
       const pendingRole = localStorage.getItem(OAUTH_PENDING_ROLE_KEY) as UserRole | null;
-      if (pendingRole) {
-        localStorage.removeItem(OAUTH_PENDING_ROLE_KEY);
-      }
-      const savedRole = localStorage.getItem('verigig_session_role') as UserRole | null;
-      const assignedRole: UserRole = pendingRole || (savedRole && savedRole !== 'guest' ? savedRole : 'student');
-
       const meta = session.user.user_metadata || {};
-      const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
-      const avatarUrl = meta.avatar_url || meta.picture || (assignedRole === 'student'
-        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
-        : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
-
-      const liveUser: User = {
-        id: session.user.id,
-        name: fullName,
-        email: session.user.email || 'user@campusgigs.internal',
-        role: assignedRole,
-        collegeOrCompany: assignedRole === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
-        isVerified: true,
-        verificationBadgeText: assignedRole === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
-        rating: 5.0,
-        completedGigs: 0,
-        avatar: avatarUrl,
-        balance: 0,
-      };
-
-      setCurrentRole(assignedRole);
-      setCurrentUser(liveUser);
       try {
-        localStorage.setItem('verigig_session_role', assignedRole);
+        const result = await authApi.continueWithGoogle({
+          accessToken: session.access_token,
+          requestedRole: pendingRole === 'employer' ? 'employer' : 'student',
+        });
+        if (!isMounted) return;
+
+        const liveUser = toMarketplaceUser(result.user, {
+          fullName: meta.full_name || meta.name,
+          avatarUrl: meta.avatar_url || meta.picture,
+        });
+        setCurrentRole(liveUser.role);
+        setCurrentUser(liveUser);
+        localStorage.removeItem(OAUTH_PENDING_ROLE_KEY);
+        localStorage.setItem('verigig_session_role', liveUser.role);
         localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
+        setAuthError(null);
       } catch {
-        // ignore
+        if (isMounted) {
+          setAuthError('Google verified your identity, but VeriGig could not finish creating your account. Please try again or contact support.');
+        }
+      } finally {
+        if (isMounted) setIsAuthInitializing(false);
       }
 
       // Clean URL params (e.g. ?code=...) without reloading
@@ -180,17 +182,20 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (searchParams.has('code')) {
           const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
           if (!error && data?.session) {
-            handleUserSession(data.session);
+            await handleUserSession(data.session);
             return;
           }
         }
 
         const { data: { session } } = await client.auth.getSession();
         if (session?.user) {
-          handleUserSession(session);
+          await handleUserSession(session);
         }
       } catch (err) {
         console.warn('Supabase global session sync error:', err);
+        if (isMounted) setAuthError('We could not complete the Google sign-in. Please try again.');
+      } finally {
+        if (isMounted) setIsAuthInitializing(false);
       }
     };
 
@@ -198,12 +203,13 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user && isMounted) {
-        handleUserSession(session);
+        void handleUserSession(session);
       } else if (event === 'SIGNED_OUT' && isMounted) {
         setCurrentRole('guest');
         setCurrentUser(mockUsers.guest);
         localStorage.removeItem('verigig_session_role');
         localStorage.removeItem('verigig_session_user');
+        setIsAuthInitializing(false);
       }
     });
 
@@ -311,7 +317,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       studentId: currentUser.id,
       studentName: currentUser.name,
       studentCollege: currentUser.collegeOrCompany,
-      studentAvatar: currentUser.avatar,
+      studentAvatar: currentUser.avatar || '',
       studentGpa: currentUser.gpa || '8.8 GPA',
       matchScore: 95,
       coverNote,
@@ -510,6 +516,8 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       switchRole,
       logout,
       loginUser,
+      isAuthInitializing,
+      authError,
       gigs,
       proposals,
       verifications,

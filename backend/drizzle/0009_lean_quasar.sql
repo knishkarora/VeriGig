@@ -1,0 +1,1 @@
+ALTER TABLE "student_profiles" ALTER COLUMN "rating_avg" SET DEFAULT '0.00';

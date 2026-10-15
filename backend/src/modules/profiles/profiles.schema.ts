@@ -2,10 +2,11 @@ import { z } from 'zod';
 
 export const updateStudentProfileSchema = z.object({
   fullName: z.string().min(2).optional(),
+  collegeName: z.string().min(2).optional(),
   degree: z.string().min(2).optional(),
   graduationYear: z.number().int().min(2024).max(2032).optional(),
   bio: z.string().max(1000).optional(),
-  skills: z.array(z.string()).min(1, 'At least one skill required').optional(),
+  skills: z.array(z.string()).optional(),
   location: z.string().min(2).optional(),
   workModePreference: z.enum(['remote', 'on_site', 'both']).optional(),
   portfolioLinks: z.array(

@@ -15,8 +15,8 @@ export const registerSchema = z.object({
   // Employer-specific fields
   companyName: z.string().optional(),
   businessType: z.string().optional(),
-  city: z.string().default('Ludhiana'),
-  state: z.string().default('Punjab'),
+  city: z.string().min(2).optional(),
+  state: z.string().min(2).optional(),
   
   // DPDPA Consent
   dpdpaConsent: z.boolean().refine(val => val === true, {
@@ -29,5 +29,11 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const googleOAuthSchema = z.object({
+  accessToken: z.string().min(1, 'Google access token is required'),
+  requestedRole: z.enum(['student', 'employer']),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type GoogleOAuthInput = z.infer<typeof googleOAuthSchema>;

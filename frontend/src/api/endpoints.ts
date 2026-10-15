@@ -16,18 +16,17 @@ export const authApi = {
   }) => api.post<{ message: string; user: any; token: string }>('/auth/register', data),
   login: (data: { email: string; password: string }) =>
     api.post<{ message: string; user: any; token: string }>('/auth/login', data),
+  continueWithGoogle: (data: { accessToken: string; requestedRole: 'student' | 'employer' }) =>
+    api.post<{ message: string; user: any; token: string }>('/auth/google', data),
   logout: () => api.post<{ message: string }>('/auth/logout'),
   getCurrentUser: () => api.get<{ user: any }>('/auth/me'),
 };
 
 export const profilesApi = {
-  getStudentProfile: (userId: string) => api.get<any>(`/profiles/student/${userId}`),
-  updateStudentProfile: (data: any) => api.patch<any>('/profiles/student', data),
-  getBusinessProfile: (userId: string) => api.get<any>(`/profiles/business/${userId}`),
-  updateBusinessProfile: (data: any) => api.patch<any>('/profiles/business', data),
-  recordConsent: (data: { consentType: string; isGranted: boolean; policyVersion: string }) =>
-    api.post('/profiles/consent', data),
-  deleteAccount: () => api.delete('/profiles/me'),
+  getStudentProfile: () => api.get<any>('/profiles/students/me'),
+  updateStudentProfile: (data: any) => api.put<any>('/profiles/students/me', data),
+  getBusinessProfile: () => api.get<any>('/profiles/employers/me'),
+  updateBusinessProfile: (data: any) => api.put<any>('/profiles/employers/me', data),
 };
 
 // ==========================================
@@ -35,7 +34,7 @@ export const profilesApi = {
 // ==========================================
 
 export const verificationApi = {
-  submitRequest: (formData: FormData) => api.post<any>('/verifications/request', formData),
+  submitRequest: (formData: FormData) => api.post<any>('/verifications/submit', formData),
   getAdminQueue: (status?: string) => api.get<any>(`/verifications/admin/queue${status ? `?status=${status}` : ''}`),
   decideVerification: (id: string, data: { status: 'approved' | 'rejected'; rejectionReason?: string }) =>
     api.post(`/verifications/admin/${id}/decision`, data),

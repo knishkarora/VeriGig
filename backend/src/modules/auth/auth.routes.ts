@@ -1,6 +1,17 @@
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from 'fastify';
 import { AuthService } from './auth.service.js';
-import { registerSchema, loginSchema } from './auth.schema.js';
+import { registerSchema, loginSchema, googleOAuthSchema } from './auth.schema.js';
+
+function setSessionCookies(reply: FastifyReply, token: string, refreshToken: string) {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path: '/api/v1',
+  };
+  reply.setCookie('token', token, { ...cookieOptions, maxAge: 15 * 60 });
+  reply.setCookie('refreshToken', refreshToken, { ...cookieOptions, path: '/api/v1/auth', maxAge: 7 * 24 * 60 * 60 });
+}
 
 export async function authRoutes(app: FastifyInstance, _opts: FastifyPluginOptions) {
   const authService = new AuthService();
@@ -14,14 +25,15 @@ export async function authRoutes(app: FastifyInstance, _opts: FastifyPluginOptio
 
     // Issue access token
     const token = app.jwt.sign({
-      id: result.id,
-      email: result.email,
-      role: result.role,
+      id: result.user.id,
+      email: result.user.email,
+      role: result.user.role,
     });
+    setSessionCookies(reply, token, result.refreshToken);
 
     return reply.status(201).send({
       message: 'Account created successfully',
-      user: result,
+      user: result.user,
       token,
     });
   });
@@ -40,20 +52,22 @@ export async function authRoutes(app: FastifyInstance, _opts: FastifyPluginOptio
       role: result.user.role,
     });
 
-    // Set secure HTTP-only refresh cookie
-    reply.setCookie('refreshToken', result.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/api/v1/auth',
-      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-    });
+    setSessionCookies(reply, token, result.refreshToken);
 
     return reply.send({
       message: 'Logged in successfully',
       user: result.user,
       token,
     });
+  });
+
+  // POST /api/v1/auth/google
+  app.post('/google', async (req: FastifyRequest, reply: FastifyReply) => {
+    const parsed = googleOAuthSchema.parse(req.body);
+    const result = await authService.loginWithGoogle(parsed, req.ip);
+    const token = app.jwt.sign({ id: result.user.id, email: result.user.email, role: result.user.role });
+    setSessionCookies(reply, token, result.refreshToken);
+    return reply.send({ message: 'Google sign-in completed', user: result.user, token });
   });
 
   // POST /api/v1/auth/refresh
@@ -76,13 +90,7 @@ export async function authRoutes(app: FastifyInstance, _opts: FastifyPluginOptio
       role: result.user.role,
     });
 
-    reply.setCookie('refreshToken', result.newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/api/v1/auth',
-      maxAge: 7 * 24 * 60 * 60,
-    });
+    setSessionCookies(reply, token, result.newRefreshToken);
 
     return reply.send({
       user: result.user,
@@ -96,6 +104,7 @@ export async function authRoutes(app: FastifyInstance, _opts: FastifyPluginOptio
     await authService.logout(refreshToken);
 
     reply.clearCookie('refreshToken', { path: '/api/v1/auth' });
+    reply.clearCookie('token', { path: '/api/v1' });
     return reply.send({ message: 'Logged out successfully' });
   });
 

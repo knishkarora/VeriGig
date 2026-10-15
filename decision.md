@@ -1,5 +1,13 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-15] Decision: Backend-Owned Google Account Provisioning
+
+* **Context & Scope:** Google OAuth completed in the browser but did not create a VeriGig backend session or profile, leaving users on the auth route and mixing provider metadata with seeded demo data.
+* **Choice Made:** Verify each Supabase access token in Fastify against Supabase Auth, then look up or provision the VeriGig account by verified email and issue the existing application JWT/refresh-token session.
+* **Rationale (Why over What):** This makes email and Google login share one authorization and profile source of truth. It also ensures an existing account retains its assigned role instead of allowing a browser-stored role to redefine it. A frontend-only session was rejected because protected marketplace APIs could not trust it.
+* **Tradeoffs Accepted:** The backend requires `SUPABASE_URL` plus a server-side Supabase service-role or anon key for the token-verification call. This is a small deployment configuration cost in exchange for reliable, server-enforced identity.
+* **Immutability Status:** Settled & Immutable (prevents re-litigating settled arguments in the future).
+
 ## [2026-10-14] Decision: Frontend-Backend REST API Integration, Missing UI Modals & Parity Completion (Phase 10)
 
 * **Context & Scope:** 

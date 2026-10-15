@@ -26,7 +26,7 @@ export const studentProfiles = pgTable('student_profiles', {
   workModePreference: varchar('work_mode_preference', { length: 50 }).default('both').notNull(), // 'remote', 'on_site', 'both'
   portfolioLinks: jsonb('portfolio_links').$type<{ label: string; url: string }[]>().default([]).notNull(),
   availabilityStatus: varchar('availability_status', { length: 50 }).default('available_now').notNull(),
-  ratingAvg: numeric('rating_avg', { precision: 3, scale: 2 }).default('5.00').notNull(),
+  ratingAvg: numeric('rating_avg', { precision: 3, scale: 2 }).default('0.00').notNull(),
   completedGigsCount: integer('completed_gigs_count').default(0).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

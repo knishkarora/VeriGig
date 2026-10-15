@@ -8,19 +8,18 @@ import {
   PlusCircle, 
   ArrowUpRight,
   Wallet,
-  Sparkles,
   MessageSquare,
   LogOut,
   User as UserIcon,
   ShieldCheck
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
-import { UserRole } from '../../types';
 import { NotificationDrawer } from './NotificationDrawer';
 import { ChatModal } from '../messaging/ChatModal';
 
 export const Navbar: React.FC = () => {
-  const { currentRole, currentUser, switchRole, logout, unreadNotifCount } = useMarketplace();
+  const { currentRole, currentUser, logout, unreadNotifCount } = useMarketplace();
+  const userInitials = currentUser.name.split(' ').filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -210,11 +209,11 @@ export const Navbar: React.FC = () => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-800 hover:bg-slate-100 transition-all shadow-sm"
                 >
-                  <img
-                    src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'}
-                    alt={currentUser.name}
-                    className="w-6 h-6 rounded-full object-cover border border-slate-300"
-                  />
+                  {currentUser.avatar ? (
+                    <img src={currentUser.avatar} alt={currentUser.name} className="w-6 h-6 rounded-full object-cover border border-slate-300" />
+                  ) : (
+                    <span className="w-6 h-6 rounded-full bg-purple-100 border border-purple-200 text-[9px] font-black text-purple-800 flex items-center justify-center">{userInitials}</span>
+                  )}
                   <span className="font-bold text-[#101014] max-w-[100px] truncate">
                     {currentUser.name.split(' ')[0]}
                   </span>
@@ -231,7 +230,7 @@ export const Navbar: React.FC = () => {
                       <div className="text-[11px] text-slate-500 font-medium truncate">{currentUser.email}</div>
                       <div className="text-[10px] font-bold text-purple-700 mt-1 flex items-center gap-1">
                         <ShieldCheck size={12} />
-                        <span>{currentUser.collegeOrCompany || 'Verified Campus Account'}</span>
+                        <span>{currentUser.collegeOrCompany || 'Profile setup pending'}</span>
                       </div>
                     </div>
 

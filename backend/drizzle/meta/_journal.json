@@ -64,6 +64,13 @@
       "when": 1791973403176,
       "tag": "0008_legal_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792060868813,
+      "tag": "0009_lean_quasar",
+      "breakpoints": true
     }
   ]
 }

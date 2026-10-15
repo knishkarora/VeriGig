@@ -3,9 +3,19 @@ import crypto from 'crypto';
 import { eq } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { users, sessions, consents, studentProfiles, businessProfiles, auditEvents } from '../../db/schema/index.js';
-import { RegisterInput, LoginInput } from './auth.schema.js';
+import { config } from '../../config/env.js';
+import { RegisterInput, LoginInput, GoogleOAuthInput } from './auth.schema.js';
 
 export class AuthService {
+  private async createRefreshSession(userId: string) {
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await db.insert(sessions).values({ userId, refreshTokenHash, expiresAt });
+    return refreshToken;
+  }
+
   async register(input: RegisterInput, ipAddress?: string) {
     // 1. Check if user already exists
     const existing = await db.query.users.findFirst({
@@ -47,21 +57,21 @@ export class AuthService {
       await db.insert(studentProfiles).values({
         userId: newUser.id,
         fullName: input.fullName,
-        collegeName: input.collegeName || 'PCTE Group of Institutes',
-        degree: input.degree || 'B.Tech Computer Science',
-        graduationYear: input.graduationYear || 2027,
-        skills: input.skills || ['React.js', 'TypeScript', 'Tailwind CSS'],
-        location: `${input.city}, ${input.state}`,
+        collegeName: input.collegeName || '',
+        degree: input.degree || '',
+        graduationYear: input.graduationYear || 0,
+        skills: input.skills || [],
+        location: input.city && input.state ? `${input.city}, ${input.state}` : '',
         workModePreference: 'both',
-        availabilityStatus: 'available_now',
+        availabilityStatus: '',
       });
     } else if (input.role === 'employer') {
       await db.insert(businessProfiles).values({
         userId: newUser.id,
-        companyName: input.companyName || input.fullName,
-        businessType: input.businessType || 'Local SME Enterprise',
-        city: input.city,
-        state: input.state,
+        companyName: input.companyName || '',
+        businessType: input.businessType || '',
+        city: input.city || '',
+        state: input.state || '',
         verifiedBadge: false,
       });
     }
@@ -76,12 +86,7 @@ export class AuthService {
       ipAddress,
     });
 
-    return {
-      id: newUser.id,
-      email: newUser.email,
-      role: newUser.role,
-      status: newUser.status,
-    };
+    return { user: await this.getCurrentUser(newUser.id), refreshToken: await this.createRefreshSession(newUser.id) };
   }
 
   async login(input: LoginInput, ipAddress?: string) {
@@ -112,15 +117,7 @@ export class AuthService {
     }
 
     // 4. Create cryptographically secure refresh token
-    const refreshToken = crypto.randomBytes(40).toString('hex');
-    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-    await db.insert(sessions).values({
-      userId: user.id,
-      refreshTokenHash,
-      expiresAt,
-    });
+    const refreshToken = await this.createRefreshSession(user.id);
 
     // 5. Log login audit
     await db.insert(auditEvents).values({
@@ -133,14 +130,70 @@ export class AuthService {
     });
 
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      },
+      user: await this.getCurrentUser(user.id),
       refreshToken,
     };
+  }
+
+  async loginWithGoogle(input: GoogleOAuthInput, ipAddress?: string) {
+    const apiKey = config.SUPABASE_SERVICE_ROLE_KEY || config.SUPABASE_ANON_KEY;
+    if (!config.SUPABASE_URL || !apiKey) {
+      const err = new Error('Google sign-in is not fully configured on the server');
+      (err as any).statusCode = 503;
+      throw err;
+    }
+
+    const response = await fetch(`${config.SUPABASE_URL.replace(/\/+$/, '')}/auth/v1/user`, {
+      headers: { apikey: apiKey, Authorization: `Bearer ${input.accessToken}` },
+    });
+    if (!response.ok) {
+      const err = new Error('Your Google session could not be verified');
+      (err as any).statusCode = 401;
+      throw err;
+    }
+
+    const googleUser: any = await response.json();
+    const isGoogleIdentity = googleUser.identities?.some((identity: any) => identity.provider === 'google');
+    if (!isGoogleIdentity || !googleUser.email || !googleUser.email_confirmed_at) {
+      const err = new Error('A verified Google email identity is required');
+      (err as any).statusCode = 401;
+      throw err;
+    }
+
+    let user = await db.query.users.findFirst({ where: eq(users.email, googleUser.email.toLowerCase()) });
+    if (!user) {
+      const metadata = googleUser.user_metadata || {};
+      const name = String(metadata.full_name || metadata.name || googleUser.email.split('@')[0]);
+      const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
+      [user] = await db.insert(users).values({
+        email: googleUser.email.toLowerCase(),
+        passwordHash,
+        role: input.requestedRole,
+        status: 'active',
+        emailVerified: Boolean(googleUser.email_confirmed_at),
+      }).returning();
+
+      if (user.role === 'student') {
+        await db.insert(studentProfiles).values({
+          userId: user.id, fullName: name, collegeName: '', degree: '', graduationYear: 0,
+          skills: [], location: '', workModePreference: 'both', availabilityStatus: '',
+        });
+      } else {
+        await db.insert(businessProfiles).values({
+          userId: user.id, companyName: '', businessType: '', city: '', state: '', verifiedBadge: false,
+        });
+      }
+      await db.insert(auditEvents).values({
+        actorId: user.id, eventType: 'user_registered_google', entityType: 'user', entityId: user.id,
+        payload: { provider: 'google' }, ipAddress,
+      });
+    }
+
+    await db.insert(auditEvents).values({
+      actorId: user.id, eventType: 'user_logged_in_google', entityType: 'user', entityId: user.id,
+      payload: { provider: 'google' }, ipAddress,
+    });
+    return { user: await this.getCurrentUser(user.id), refreshToken: await this.createRefreshSession(user.id) };
   }
 
   async refreshSession(refreshToken: string) {

@@ -50,3 +50,4 @@
 - [x] Phase 9: Ratings, verified completion proof & in-app messaging.
 - [x] Phase 10: Frontend API connection & end-to-end judge demonstration.
 - [x] Google OAuth & Supabase URL callback resolution: added automated OAuth session detection in `AuthPage.tsx`, loading states, context synchronization, and dynamic role parameter handling.
+- [x] Unified email/Google account sessions and profile truthfulness: Google identities are verified and provisioned through the Fastify backend, auth cookies are issued for registration as well as login, and new profiles no longer receive seeded avatar, portfolio, skills, academic, or business data.

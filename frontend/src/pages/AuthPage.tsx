@@ -16,13 +16,13 @@ import {
   Loader2
 } from 'lucide-react';
 import { useMarketplace } from '../context/MarketplaceContext';
-import { UserRole, User as UserType } from '../types';
 import { authApi, verificationApi } from '../api/endpoints';
-import { isSupabaseConfigured, signInWithGoogle, supabase } from '../api/supabase';
+import { isSupabaseConfigured, signInWithGoogle } from '../api/supabase';
+import { toMarketplaceUser } from '../auth/user';
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentRole, loginUser } = useMarketplace();
+  const { currentRole, loginUser, isAuthInitializing, authError } = useMarketplace();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -46,7 +46,6 @@ export const AuthPage: React.FC = () => {
 
   // Google OAuth guidance modal
   const [showGoogleGuide, setShowGoogleGuide] = useState(false);
-  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
   // Check if browser is currently returning from Google OAuth redirect
   const isReturningFromOAuth = 
@@ -81,19 +80,7 @@ export const AuthPage: React.FC = () => {
       });
 
       if (res && res.user) {
-        const liveUser: UserType = {
-          id: res.user.id,
-          name: res.user.fullName || res.user.email.split('@')[0],
-          email: res.user.email,
-          role: res.user.role,
-          collegeOrCompany: res.user.collegeName || res.user.companyName || 'Verified Account',
-          isVerified: res.user.status === 'verified',
-          verificationBadgeText: res.user.role === 'student' ? 'Verified Student' : 'Verified SME',
-          rating: 5.0,
-          completedGigs: 0,
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
-          balance: 0,
-        };
+        const liveUser = toMarketplaceUser(res.user);
 
         loginUser(liveUser);
 
@@ -161,21 +148,7 @@ export const AuthPage: React.FC = () => {
 
       setRegSuccess(true);
 
-      const liveUser: UserType = {
-        id: regRes.user?.id || `user-${Date.now()}`,
-        name: regName.trim(),
-        email: regEmail.trim(),
-        role: registerRole,
-        collegeOrCompany: regOrg.trim(),
-        isVerified: false,
-        verificationBadgeText: 'Pending Institutional Verification',
-        rating: 5.0,
-        completedGigs: 0,
-        avatar: registerRole === 'student'
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
-          : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80',
-        balance: 0,
-      };
+      const liveUser = toMarketplaceUser(regRes.user);
 
       setTimeout(() => {
         loginUser(liveUser);
@@ -217,7 +190,7 @@ export const AuthPage: React.FC = () => {
     }
   };
 
-  if (isReturningFromOAuth || isProcessingOAuth) {
+  if (isReturningFromOAuth && isAuthInitializing) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md p-8 sm:p-10 rounded-[2.5rem] bg-white border border-purple-100 shadow-xl text-center space-y-4">
@@ -327,6 +300,13 @@ export const AuthPage: React.FC = () => {
             <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-start gap-2 text-left">
               <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {authError && (
+            <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-start gap-2 text-left">
+              <AlertCircle size={16} className="text-red-600 shrink-0 mt-0.5" />
+              <span>{authError}</span>
             </div>
           )}
 
@@ -582,13 +562,19 @@ export const AuthPage: React.FC = () => {
               <div>VITE_SUPABASE_ANON_KEY = [your-anon-public-key]</div>
             </div>
 
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 font-mono">
+              <div className="text-purple-700 font-bold">2. In Render (Backend Environment):</div>
+              <div>SUPABASE_URL = https://[your-project-ref].supabase.co</div>
+              <div>SUPABASE_SERVICE_ROLE_KEY = [server-only key]</div>
+            </div>
+
             <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200 text-xs space-y-1.5">
-              <div className="text-purple-900 font-bold">2. In Supabase Dashboard:</div>
+              <div className="text-purple-900 font-bold">3. In Supabase Dashboard:</div>
               <div className="text-slate-600">Go to <strong>Authentication</strong> → <strong>Providers</strong> → enable <strong>Google</strong> (paste Client ID & Secret from Google Cloud Console).</div>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs space-y-1.5">
-              <div className="text-amber-900 font-bold">3. Supabase URL Configuration (Prevents Blank localhost:3000):</div>
+              <div className="text-amber-900 font-bold">4. Supabase URL Configuration (Prevents Blank localhost:3000):</div>
               <div className="text-slate-700">
                 Go to <strong>Authentication</strong> → <strong>URL Configuration</strong>:
               </div>

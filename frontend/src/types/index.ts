@@ -10,13 +10,17 @@ export interface User {
   verificationBadgeText?: string;
   rating: number;
   completedGigs: number;
-  avatar: string;
+  avatar?: string;
   balance: number;
   bio?: string;
   skills?: string[];
   rollNumber?: string;
   gpa?: string;
   location?: string;
+  degree?: string;
+  graduationYear?: number;
+  portfolioLinks?: { label: string; url: string }[];
+  availabilityStatus?: string;
 }
 
 export type MilestoneStatus = 'locked' | 'active' | 'under_review' | 'completed' | 'in_revision';

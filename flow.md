@@ -116,16 +116,26 @@ JSON HTTP Response
 ## 7. Modified Scope: Google OAuth Callback & Supabase URL Alignment
 * **Execution Flow Trigger:** User clicks "Continue with Google" on `AuthPage.tsx`.
 * **Execution Path:**
-  1. `signInWithGoogle(role)` executes with dynamic `redirectTo` set to `${window.location.origin}/auth?provider=google&role=${role}`.
-  2. Browser navigates to Google Accounts OAuth consent screen.
-  3. Upon consent, Google redirects to Supabase Auth (`https://<project-ref>.supabase.co/auth/v1/callback`).
-  4. Supabase validates the target URL against its **Site URL** and **Redirect URLs** whitelist:
-     - *Issue identified:* Supabase defaulted to `http://localhost:3000` because `http://localhost:5173/**` was not configured in the Supabase Redirect URL allowlist, causing redirected tokens to land on a dead port 3000.
-     - *Resolution:* Configured Supabase dashboard requirements and added in-app guidance modal detailing exact Site URL (`http://localhost:5173`) and Redirect URLs (`http://localhost:5173/**`, `http://localhost:5173/auth`).
-  5. Browser returns to `AuthPage.tsx` with session tokens in URL hash (`#access_token=...`) and role parameter.
-  6. `AuthPage.tsx` active `useEffect` listener detects the OAuth return via `supabase.auth.getSession()` and `supabase.auth.onAuthStateChange()`.
-  7. Renders high-fidelity `isProcessingOAuth` loading view ("Authenticating with Google...").
-  8. Synchronizes authenticated user into `MarketplaceContext` via `loginUser()`, storing active role and session tokens in `localStorage`.
-  9. Cleanly strips token fragments from browser address bar via `window.history.replaceState`.
-  10. Routes user smoothly to role-specific dashboard (`/app/student/dashboard` or `/app/employer/dashboard`).
+  1. `signInWithGoogle(role)` persists intended role to `localStorage` under `OAUTH_PENDING_ROLE_KEY` prior to redirection, ensuring zero loss of chosen role across the PKCE handshake.
+  2. Browser navigates to Google Accounts OAuth consent screen with clean redirect URL (`${window.location.origin}/auth`).
+  3. Upon consent, Google redirects to Supabase Auth (`https://<project-ref>.supabase.co/auth/v1/callback`), which redirects back to `${window.location.origin}/auth?code=...`.
+  4. Single Authoritative Handler (`MarketplaceContext`):
+     - Exclusively exchanges the single-use PKCE `code` for an active session via `supabase.auth.exchangeCodeForSession(window.location.href)`.
+     - Passes the Supabase access token and pending first-time role to the Fastify Google continuation endpoint for verified account lookup/provisioning.
+     - Commits only the backend-returned account profile to `localStorage` (`verigig_session_role` & `verigig_session_user`) and updates `currentRole` & `currentUser`.
+     - Strips `?code=` from browser URL via `window.history.replaceState`.
+  5. Reactive View Layer (`AuthPage`):
+     - Displays sleek loading view while `isReturningFromOAuth` is active ("Authenticating with Google... Setting up your workspace").
+     - Observes `currentRole` transitioning from `guest` to `student` or `employer`.
+     - Immediately routes user to `/app/student/dashboard` or `/app/employer/dashboard` with zero duplicate token redemption conflicts.
+
+## 8. Modified Scope: Unified Account Session and Empty-Profile Provisioning
+* **Entry points:** Email registration/login (`POST /api/v1/auth/register`, `POST /api/v1/auth/login`) and Google return (`MarketplaceContext` -> `POST /api/v1/auth/google`).
+* **Execution sequence:**
+  1. Google returns a Supabase PKCE session to `/auth`; `MarketplaceContext` exchanges the callback code once.
+  2. The context sends the Supabase access token and requested first-time role to `AuthService.loginWithGoogle`.
+  3. The backend verifies the token against Supabase's `/auth/v1/user` endpoint, then looks up the VeriGig user by verified email.
+  4. Existing accounts retain their stored role. New accounts receive an intentionally sparse role profile, with no fabricated education, business, skills, location, ratings, or avatar.
+  5. The backend issues the same application JWT and refresh-token cookies used by password login. The frontend maps the returned profile record directly into its session and navigates by the persisted role.
+* **Boundary safeguards:** The browser never trusts Google user metadata as a VeriGig role or profile record. Google avatar metadata is display-only for that active OAuth session; email registrations use initials until an avatar feature is explicitly added.
 

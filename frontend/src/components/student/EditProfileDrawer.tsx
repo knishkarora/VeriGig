@@ -2,14 +2,10 @@ import React, { useState } from 'react';
 import { 
   X, 
   User, 
-  GraduationCap, 
   Sparkles, 
   ShieldCheck, 
-  Trash2, 
   CheckCircle2, 
-  Lock,
   Plus,
-  Trash
 } from 'lucide-react';
 import { profilesApi } from '../../api/endpoints';
 
@@ -38,11 +34,10 @@ export const EditProfileDrawer: React.FC<EditProfileDrawerProps> = ({
   const [fullName, setFullName] = useState(initialData.fullName || '');
   const [bio, setBio] = useState(initialData.bio || '');
   const [collegeName, setCollegeName] = useState(initialData.collegeName || '');
-  const [degree, setDegree] = useState(initialData.degree || 'B.Tech Computer Science');
-  const [graduationYear, setGraduationYear] = useState(initialData.graduationYear || 2026);
+  const [graduationYear, setGraduationYear] = useState<number | ''>(initialData.graduationYear || '');
   const [skills, setSkills] = useState<string[]>(initialData.skills || []);
   const [newSkill, setNewSkill] = useState('');
-  const [availabilityStatus, setAvailabilityStatus] = useState(initialData.availabilityStatus || 'immediate');
+  const [availabilityStatus, setAvailabilityStatus] = useState(initialData.availabilityStatus || '');
   
   // DPDPA Consent States
   const [dpdpaMarketing, setDpdpaMarketing] = useState(true);
@@ -73,33 +68,22 @@ export const EditProfileDrawer: React.FC<EditProfileDrawerProps> = ({
     const payload = {
       fullName,
       bio,
-      collegeName,
-      degree,
-      graduationYear: Number(graduationYear),
       skills,
-      availabilityStatus,
+      ...(collegeName ? { collegeName } : {}),
+      ...(graduationYear ? { graduationYear } : {}),
+      ...(availabilityStatus ? { availabilityStatus } : {}),
     };
 
     try {
-      await profilesApi.updateStudentProfile(payload);
-      // Record DPDPA consent changes
-      await profilesApi.recordConsent({
-        consentType: 'matching_algorithm_processing',
-        isGranted: dpdpaMatching,
-        policyVersion: '1.0',
-      });
+      const result = await profilesApi.updateStudentProfile(payload);
       setFeedbackMsg('Profile and privacy preferences updated successfully!');
       setTimeout(() => {
-        onProfileUpdated(payload);
+        onProfileUpdated(result.profile || payload);
         onClose();
       }, 1200);
     } catch (err: any) {
-      console.warn('API update fallback:', err);
-      setFeedbackMsg('Profile updated locally!');
-      setTimeout(() => {
-        onProfileUpdated(payload);
-        onClose();
-      }, 1200);
+      console.warn('Profile update failed:', err);
+      setFeedbackMsg(err.message || 'Profile could not be saved. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -179,7 +163,8 @@ export const EditProfileDrawer: React.FC<EditProfileDrawerProps> = ({
                 <input
                   type="number"
                   value={graduationYear}
-                  onChange={(e) => setGraduationYear(Number(e.target.value))}
+                  onChange={(e) => setGraduationYear(e.target.value ? Number(e.target.value) : '')}
+                  placeholder="Optional"
                   className="w-full bg-[#1E293B] border border-white/10 rounded-2xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D4F851]"
                 />
               </div>
@@ -192,10 +177,10 @@ export const EditProfileDrawer: React.FC<EditProfileDrawerProps> = ({
                 onChange={(e) => setAvailabilityStatus(e.target.value)}
                 className="w-full bg-[#1E293B] border border-white/10 rounded-2xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#D4F851]"
               >
-                <option value="immediate">🟢 Available immediately (10-15 hrs/wk)</option>
-                <option value="next_week">🟡 Available next week</option>
-                <option value="part_time">🔵 Weekends only</option>
-                <option value="unavailable">⚪ Currently busy with college exams</option>
+                <option value="">Choose availability (optional)</option>
+                <option value="available_now">🟢 Available immediately (10-15 hrs/wk)</option>
+                <option value="busy">🔵 Limited availability</option>
+                <option value="exam_break">⚪ Currently busy with college exams</option>
               </select>
             </div>
           </div>
@@ -274,28 +259,6 @@ export const EditProfileDrawer: React.FC<EditProfileDrawerProps> = ({
               </label>
             </div>
 
-            <div className="flex items-center justify-between pt-1 text-xs">
-              <button
-                type="button"
-                onClick={() => alert('DPDPA Section 11 Data Export: Your verified identity audit log and contract dossier export will be sent to your registered email.')}
-                className="text-[#D4F851] hover:underline"
-              >
-                Request Personal Data Export (.json)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Are you sure you want to request account deletion under DPDPA Right to Erasure? Your unreleased escrow and active contracts must be settled first.')) {
-                    profilesApi.deleteAccount();
-                    alert('Deletion request queued for administrative compliance verification.');
-                  }
-                }}
-                className="text-red-400 hover:text-red-300 flex items-center space-x-1"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete Account</span>
-              </button>
-            </div>
           </div>
 
           {/* Footer Actions */}
