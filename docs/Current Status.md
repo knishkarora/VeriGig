@@ -49,3 +49,4 @@
 - [x] Phase 8: Dispute resolution, governance & immutable audit logs.
 - [x] Phase 9: Ratings, verified completion proof & in-app messaging.
 - [x] Phase 10: Frontend API connection & end-to-end judge demonstration.
+- [x] Google OAuth & Supabase URL callback resolution: added automated OAuth session detection in `AuthPage.tsx`, loading states, context synchronization, and dynamic role parameter handling.

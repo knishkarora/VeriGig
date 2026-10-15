@@ -196,3 +196,23 @@
   - No live network requests or persistent backend databases in this iteration.
 
 * **Immutability Status:** Settled & Immutable.
+
+## [2026-10-15] Decision: Client-Side Google OAuth Handshake & Supabase Whitelist Architecture
+
+* **Context & Scope:** 
+  During Google OAuth authentication on the `/auth` page, completing Google account authorization redirected users to a blank `http://localhost:3000/#access_token=...` screen with serialized credentials in the URL fragment instead of logging the user into their respective role workspace.
+
+* **Choice Made:** 
+  - Maintained dynamic frontend origin resolution (`${window.location.origin}/auth?provider=google&role=${role}`) with client-side session extraction via `@supabase/supabase-js`.
+  - Added an active `useEffect` listener on `AuthPage.tsx` using `supabase.auth.getSession()` and `supabase.auth.onAuthStateChange()`.
+  - Automatically mapped authenticated OAuth profile data (`full_name`, `email`, `picture`) into `MarketplaceContext` via `loginUser()` and redirected to role-specific dashboards.
+  - Documented explicit Supabase URL configuration settings required to prevent the fallback to Supabase's default Site URL (`http://localhost:3000`).
+
+* **Rationale (Why over What):**
+  - Supabase Auth strictly validates the requested `redirectTo` parameter against the project's configured **Site URL** and **Redirect URLs** allowlist. When Vite runs on `http://localhost:5173` without `http://localhost:5173/**` registered in Supabase, Supabase silently falls back to its default Site URL (`http://localhost:3000`). Because nothing listens on port 3000 in Vite's default dev environment, the browser encounters an unreachable/blank screen.
+  - Adding the client-side session listener ensures that upon return from Google's consent screen, tokens are immediately ingested, persisted to state, stripped from the browser URL address bar via `window.history.replaceState`, and transitioned to `/app/student/dashboard` or `/app/employer/dashboard` without requiring a custom OAuth proxy server.
+
+* **Tradeoffs Accepted:**
+  - Users must configure their local dev URL (`http://localhost:5173/**`) and production domain in their Supabase Dashboard's URL Configuration. This is standard OAuth protocol security behavior to prevent open redirect vulnerabilities.
+
+* **Immutability Status:** Settled & Immutable.

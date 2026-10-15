@@ -113,3 +113,19 @@ JSON HTTP Response
   - `GigExplore.tsx`: Added quick-toggle filter pills for "Beginner-ready", "Verified SME only", and "Remote only".
   - `AdminDisputes.tsx` & `AdminVerifications.tsx`: Connected to backend dispute resolution and verification decision endpoints.
 
+## 7. Modified Scope: Google OAuth Callback & Supabase URL Alignment
+* **Execution Flow Trigger:** User clicks "Continue with Google" on `AuthPage.tsx`.
+* **Execution Path:**
+  1. `signInWithGoogle(role)` executes with dynamic `redirectTo` set to `${window.location.origin}/auth?provider=google&role=${role}`.
+  2. Browser navigates to Google Accounts OAuth consent screen.
+  3. Upon consent, Google redirects to Supabase Auth (`https://<project-ref>.supabase.co/auth/v1/callback`).
+  4. Supabase validates the target URL against its **Site URL** and **Redirect URLs** whitelist:
+     - *Issue identified:* Supabase defaulted to `http://localhost:3000` because `http://localhost:5173/**` was not configured in the Supabase Redirect URL allowlist, causing redirected tokens to land on a dead port 3000.
+     - *Resolution:* Configured Supabase dashboard requirements and added in-app guidance modal detailing exact Site URL (`http://localhost:5173`) and Redirect URLs (`http://localhost:5173/**`, `http://localhost:5173/auth`).
+  5. Browser returns to `AuthPage.tsx` with session tokens in URL hash (`#access_token=...`) and role parameter.
+  6. `AuthPage.tsx` active `useEffect` listener detects the OAuth return via `supabase.auth.getSession()` and `supabase.auth.onAuthStateChange()`.
+  7. Renders high-fidelity `isProcessingOAuth` loading view ("Authenticating with Google...").
+  8. Synchronizes authenticated user into `MarketplaceContext` via `loginUser()`, storing active role and session tokens in `localStorage`.
+  9. Cleanly strips token fragments from browser address bar via `window.history.replaceState`.
+  10. Routes user smoothly to role-specific dashboard (`/app/student/dashboard` or `/app/employer/dashboard`).
+

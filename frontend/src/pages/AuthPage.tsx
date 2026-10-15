@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   GraduationCap, 
@@ -12,12 +12,13 @@ import {
   ArrowUpRight,
   AlertCircle,
   HelpCircle,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { UserRole, User as UserType } from '../types';
 import { authApi, verificationApi } from '../api/endpoints';
-import { isSupabaseConfigured, signInWithGoogle } from '../api/supabase';
+import { isSupabaseConfigured, signInWithGoogle, supabase } from '../api/supabase';
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -45,6 +46,117 @@ export const AuthPage: React.FC = () => {
 
   // Google OAuth guidance modal
   const [showGoogleGuide, setShowGoogleGuide] = useState(false);
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+
+  // Handle OAuth Callback on return from Google / Supabase
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkOAuthSession = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const isGoogle = searchParams.get('provider') === 'google';
+      const hasHashTokens = window.location.hash.includes('access_token=');
+      const hasCode = searchParams.has('code');
+
+      if (!isGoogle && !hasHashTokens && !hasCode) {
+        return;
+      }
+
+      if (!supabase) {
+        return;
+      }
+
+      setIsProcessingOAuth(true);
+
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        if (session && session.user && isMounted) {
+          const roleParam = (searchParams.get('role') as 'student' | 'employer') || registerRole || 'student';
+          const meta = session.user.user_metadata || {};
+          const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
+          const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
+            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+            : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
+
+          const liveUser: UserType = {
+            id: session.user.id,
+            name: fullName,
+            email: session.user.email || 'user@campusgigs.internal',
+            role: roleParam,
+            collegeOrCompany: roleParam === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
+            isVerified: true,
+            verificationBadgeText: roleParam === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
+            rating: 5.0,
+            completedGigs: 0,
+            avatar: avatarUrl,
+            balance: 0,
+          };
+
+          loginUser(liveUser);
+          window.history.replaceState({}, document.title, window.location.pathname);
+
+          if (roleParam === 'student') {
+            navigate('/app/student/dashboard', { replace: true });
+          } else {
+            navigate('/app/employer/dashboard', { replace: true });
+          }
+        }
+      } catch (err: any) {
+        console.error('Google OAuth callback error:', err);
+        if (isMounted) {
+          setErrorMessage(err.message || 'Failed to complete Google authentication.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsProcessingOAuth(false);
+        }
+      }
+    };
+
+    checkOAuthSession();
+
+    const { data: authListener } = supabase?.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session && session.user && isMounted) {
+        const searchParams = new URLSearchParams(window.location.search);
+        const roleParam = (searchParams.get('role') as 'student' | 'employer') || registerRole || 'student';
+        const meta = session.user.user_metadata || {};
+        const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
+        const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
+          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+          : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
+
+        const liveUser: UserType = {
+          id: session.user.id,
+          name: fullName,
+          email: session.user.email || 'user@campusgigs.internal',
+          role: roleParam,
+          collegeOrCompany: roleParam === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
+          isVerified: true,
+          verificationBadgeText: roleParam === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
+          rating: 5.0,
+          completedGigs: 0,
+          avatar: avatarUrl,
+          balance: 0,
+        };
+
+        loginUser(liveUser);
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        if (roleParam === 'student') {
+          navigate('/app/student/dashboard', { replace: true });
+        } else {
+          navigate('/app/employer/dashboard', { replace: true });
+        }
+      }
+    }) || { data: { subscription: { unsubscribe: () => {} } } };
+
+    return () => {
+      isMounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, [navigate, loginUser, registerRole]);
 
   // Handle Real Login
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -177,7 +289,7 @@ export const AuthPage: React.FC = () => {
     if (isSupabaseConfigured) {
       try {
         setIsSubmitting(true);
-        await signInWithGoogle();
+        await signInWithGoogle(authMode === 'register' ? registerRole : 'student');
       } catch (err: any) {
         setErrorMessage(err.message || 'Google OAuth failed to initialize.');
         setIsSubmitting(false);
@@ -195,6 +307,25 @@ export const AuthPage: React.FC = () => {
       setErrorMessage(null);
     }
   };
+
+  if (isProcessingOAuth) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md p-8 sm:p-10 rounded-[2.5rem] bg-white border border-purple-100 shadow-xl text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-purple-100 text-purple-700 mx-auto flex items-center justify-center">
+            <ShieldCheck size={32} />
+          </div>
+          <h2 className="text-xl font-black text-[#121214]">Authenticating with Google</h2>
+          <p className="text-xs text-slate-500 font-medium">
+            Verifying your identity and establishing your authenticated session...
+          </p>
+          <div className="pt-2 flex justify-center">
+            <Loader2 className="w-7 h-7 text-purple-600 animate-spin" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -545,6 +676,19 @@ export const AuthPage: React.FC = () => {
             <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200 text-xs space-y-1.5">
               <div className="text-purple-900 font-bold">2. In Supabase Dashboard:</div>
               <div className="text-slate-600">Go to <strong>Authentication</strong> → <strong>Providers</strong> → enable <strong>Google</strong> (paste Client ID & Secret from Google Cloud Console).</div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs space-y-1.5">
+              <div className="text-amber-900 font-bold">3. Supabase URL Configuration (Prevents Blank localhost:3000):</div>
+              <div className="text-slate-700">
+                Go to <strong>Authentication</strong> → <strong>URL Configuration</strong>:
+              </div>
+              <div className="font-mono text-[11px] text-amber-950">
+                • <strong>Site URL:</strong> {window.location.origin}
+              </div>
+              <div className="font-mono text-[11px] text-amber-950">
+                • <strong>Redirect URLs:</strong> Add <span className="font-bold">{window.location.origin}/**</span> and <span className="font-bold">{window.location.origin}/auth</span>
+              </div>
             </div>
 
             <button

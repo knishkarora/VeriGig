@@ -13,20 +13,23 @@ export const supabase = isSupabaseConfigured
 /**
  * Trigger authentic Google OAuth sign in via Supabase
  */
-export async function signInWithGoogle() {
+export async function signInWithGoogle(role: 'student' | 'employer' = 'student') {
   if (!supabase) {
     throw new Error(
       'Supabase client is not configured. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your frontend environment.'
     );
   }
 
+  // Preserve the intended role in query parameters so upon return the user is routed to the right dashboard
+  const redirectUrl = `${window.location.origin}/auth?provider=google&role=${role}`;
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth?provider=google`,
+      redirectTo: redirectUrl,
       queryParams: {
         access_type: 'offline',
-        prompt: 'consent',
+        prompt: 'select_account',
       },
     },
   });
