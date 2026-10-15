@@ -22,7 +22,7 @@ import { isSupabaseConfigured, signInWithGoogle, supabase } from '../api/supabas
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { loginUser } = useMarketplace();
+  const { currentRole, loginUser } = useMarketplace();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -48,6 +48,17 @@ export const AuthPage: React.FC = () => {
   const [showGoogleGuide, setShowGoogleGuide] = useState(false);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
+  // If already authenticated, redirect straight to appropriate dashboard
+  useEffect(() => {
+    if (currentRole === 'student') {
+      navigate('/app/student/dashboard', { replace: true });
+    } else if (currentRole === 'employer') {
+      navigate('/app/employer/dashboard', { replace: true });
+    } else if (currentRole === 'admin') {
+      navigate('/app/admin/verifications', { replace: true });
+    }
+  }, [currentRole, navigate]);
+
   // Handle OAuth Callback on return from Google / Supabase
   useEffect(() => {
     let isMounted = true;
@@ -69,6 +80,10 @@ export const AuthPage: React.FC = () => {
       setIsProcessingOAuth(true);
 
       try {
+        if (hasCode) {
+          await supabase.auth.exchangeCodeForSession(window.location.href);
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
 
@@ -118,7 +133,7 @@ export const AuthPage: React.FC = () => {
     checkOAuthSession();
 
     const { data: authListener } = supabase?.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session && session.user && isMounted) {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session && session.user && isMounted) {
         const searchParams = new URLSearchParams(window.location.search);
         const roleParam = (searchParams.get('role') as 'student' | 'employer') || registerRole || 'student';
         const meta = session.user.user_metadata || {};

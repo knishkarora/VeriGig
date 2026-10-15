@@ -19,6 +19,7 @@ import {
   initialNotifications 
 } from '../data/mockData';
 import { gigsApi, authApi } from '../api/endpoints';
+import { supabase } from '../api/supabase';
 
 interface MarketplaceContextType {
   currentRole: UserRole;
@@ -119,6 +120,99 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return () => { active = false; };
   }, []);
 
+  // Global Supabase Auth Session Synchronization (Google OAuth persistence)
+  useEffect(() => {
+    if (!supabase) return;
+    const client = supabase;
+
+    let isMounted = true;
+
+    const syncSession = async () => {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        // If returning with PKCE code, exchange for session
+        if (searchParams.has('code')) {
+          await client.auth.exchangeCodeForSession(window.location.href);
+        }
+
+        const { data: { session } } = await client.auth.getSession();
+        if (session?.user && isMounted) {
+          const roleParam = (searchParams.get('role') as UserRole) || 'student';
+          const meta = session.user.user_metadata || {};
+          const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
+          const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
+            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+            : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
+
+          const savedRole = localStorage.getItem('verigig_session_role') as UserRole;
+          const assignedRole = savedRole && savedRole !== 'guest' ? savedRole : roleParam;
+
+          const liveUser: User = {
+            id: session.user.id,
+            name: fullName,
+            email: session.user.email || 'user@campusgigs.internal',
+            role: assignedRole,
+            collegeOrCompany: assignedRole === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
+            isVerified: true,
+            verificationBadgeText: assignedRole === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
+            rating: 5.0,
+            completedGigs: 0,
+            avatar: avatarUrl,
+            balance: 0,
+          };
+
+          setCurrentRole(assignedRole);
+          setCurrentUser(liveUser);
+          localStorage.setItem('verigig_session_role', assignedRole);
+          localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
+        }
+      } catch (err) {
+        console.warn('Supabase global session sync error:', err);
+      }
+    };
+
+    syncSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session?.user && isMounted) {
+        const searchParams = new URLSearchParams(window.location.search);
+        const roleParam = (searchParams.get('role') as UserRole) || 'student';
+        const meta = session.user.user_metadata || {};
+        const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
+        const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
+          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+          : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
+
+        const savedRole = localStorage.getItem('verigig_session_role') as UserRole;
+        const assignedRole = savedRole && savedRole !== 'guest' ? savedRole : roleParam;
+
+        const liveUser: User = {
+          id: session.user.id,
+          name: fullName,
+          email: session.user.email || 'user@campusgigs.internal',
+          role: assignedRole,
+          collegeOrCompany: assignedRole === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
+          isVerified: true,
+          verificationBadgeText: assignedRole === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
+          rating: 5.0,
+          completedGigs: 0,
+          avatar: avatarUrl,
+          balance: 0,
+        };
+
+        setCurrentRole(assignedRole);
+        setCurrentUser(liveUser);
+        localStorage.setItem('verigig_session_role', assignedRole);
+        localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      authListener?.subscription?.unsubscribe();
+    };
+  }, []);
+
   const switchRole = (role: UserRole) => {
     setCurrentRole(role);
     const user = mockUsers[role] || mockUsers.guest;
@@ -149,6 +243,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       localStorage.removeItem('verigig_session_role');
       localStorage.removeItem('verigig_session_user');
       authApi.logout().catch(() => {});
+      supabase?.auth.signOut().catch(() => {});
     } catch {
       // ignore
     }
