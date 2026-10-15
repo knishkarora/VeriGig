@@ -10,8 +10,13 @@ export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+/** The localStorage key used to persist the intended role across the OAuth redirect round-trip. */
+export const OAUTH_PENDING_ROLE_KEY = 'verigig_oauth_pending_role';
+
 /**
- * Trigger authentic Google OAuth sign in via Supabase
+ * Trigger authentic Google OAuth sign in via Supabase (PKCE flow).
+ * Persists the intended role to localStorage BEFORE the redirect so it
+ * survives the round-trip through Google → Supabase → back to /auth.
  */
 export async function signInWithGoogle(role: 'student' | 'employer' = 'student') {
   if (!supabase) {
@@ -20,8 +25,13 @@ export async function signInWithGoogle(role: 'student' | 'employer' = 'student')
     );
   }
 
-  // Preserve the intended role in query parameters so upon return the user is routed to the right dashboard
-  const redirectUrl = `${window.location.origin}/auth?provider=google&role=${role}`;
+  // Persist role BEFORE the redirect so it survives the OAuth round-trip.
+  // ?role= in the redirectTo URL is stripped by Supabase when it sends back ?code=,
+  // so localStorage is the only reliable carrier across the browser redirect.
+  localStorage.setItem(OAUTH_PENDING_ROLE_KEY, role);
+
+  // redirectTo must be a plain URL that is whitelisted in Supabase URL Configuration.
+  const redirectUrl = `${window.location.origin}/auth`;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

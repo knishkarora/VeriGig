@@ -48,7 +48,15 @@ export const AuthPage: React.FC = () => {
   const [showGoogleGuide, setShowGoogleGuide] = useState(false);
   const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
-  // If already authenticated, redirect straight to appropriate dashboard
+  // Check if browser is currently returning from Google OAuth redirect
+  const isReturningFromOAuth = 
+    typeof window !== 'undefined' && (
+      window.location.search.includes('code=') || 
+      window.location.search.includes('provider=google') || 
+      window.location.hash.includes('access_token=')
+    );
+
+  // When user is authenticated (either from Google OAuth or manual login), immediately forward to role dashboard
   useEffect(() => {
     if (currentRole === 'student') {
       navigate('/app/student/dashboard', { replace: true });
@@ -58,120 +66,6 @@ export const AuthPage: React.FC = () => {
       navigate('/app/admin/verifications', { replace: true });
     }
   }, [currentRole, navigate]);
-
-  // Handle OAuth Callback on return from Google / Supabase
-  useEffect(() => {
-    let isMounted = true;
-
-    const checkOAuthSession = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
-      const isGoogle = searchParams.get('provider') === 'google';
-      const hasHashTokens = window.location.hash.includes('access_token=');
-      const hasCode = searchParams.has('code');
-
-      if (!isGoogle && !hasHashTokens && !hasCode) {
-        return;
-      }
-
-      if (!supabase) {
-        return;
-      }
-
-      setIsProcessingOAuth(true);
-
-      try {
-        if (hasCode) {
-          await supabase.auth.exchangeCodeForSession(window.location.href);
-        }
-
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        if (session && session.user && isMounted) {
-          const roleParam = (searchParams.get('role') as 'student' | 'employer') || registerRole || 'student';
-          const meta = session.user.user_metadata || {};
-          const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
-          const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
-            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
-            : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
-
-          const liveUser: UserType = {
-            id: session.user.id,
-            name: fullName,
-            email: session.user.email || 'user@campusgigs.internal',
-            role: roleParam,
-            collegeOrCompany: roleParam === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
-            isVerified: true,
-            verificationBadgeText: roleParam === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
-            rating: 5.0,
-            completedGigs: 0,
-            avatar: avatarUrl,
-            balance: 0,
-          };
-
-          loginUser(liveUser);
-          window.history.replaceState({}, document.title, window.location.pathname);
-
-          if (roleParam === 'student') {
-            navigate('/app/student/dashboard', { replace: true });
-          } else {
-            navigate('/app/employer/dashboard', { replace: true });
-          }
-        }
-      } catch (err: any) {
-        console.error('Google OAuth callback error:', err);
-        if (isMounted) {
-          setErrorMessage(err.message || 'Failed to complete Google authentication.');
-        }
-      } finally {
-        if (isMounted) {
-          setIsProcessingOAuth(false);
-        }
-      }
-    };
-
-    checkOAuthSession();
-
-    const { data: authListener } = supabase?.auth.onAuthStateChange(async (event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session && session.user && isMounted) {
-        const searchParams = new URLSearchParams(window.location.search);
-        const roleParam = (searchParams.get('role') as 'student' | 'employer') || registerRole || 'student';
-        const meta = session.user.user_metadata || {};
-        const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
-        const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
-          : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
-
-        const liveUser: UserType = {
-          id: session.user.id,
-          name: fullName,
-          email: session.user.email || 'user@campusgigs.internal',
-          role: roleParam,
-          collegeOrCompany: roleParam === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
-          isVerified: true,
-          verificationBadgeText: roleParam === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
-          rating: 5.0,
-          completedGigs: 0,
-          avatar: avatarUrl,
-          balance: 0,
-        };
-
-        loginUser(liveUser);
-        window.history.replaceState({}, document.title, window.location.pathname);
-
-        if (roleParam === 'student') {
-          navigate('/app/student/dashboard', { replace: true });
-        } else {
-          navigate('/app/employer/dashboard', { replace: true });
-        }
-      }
-    }) || { data: { subscription: { unsubscribe: () => {} } } };
-
-    return () => {
-      isMounted = false;
-      authListener?.subscription?.unsubscribe();
-    };
-  }, [navigate, loginUser, registerRole]);
 
   // Handle Real Login
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -323,7 +217,7 @@ export const AuthPage: React.FC = () => {
     }
   };
 
-  if (isProcessingOAuth) {
+  if (isReturningFromOAuth || isProcessingOAuth) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md p-8 sm:p-10 rounded-[2.5rem] bg-white border border-purple-100 shadow-xl text-center space-y-4">
@@ -332,7 +226,7 @@ export const AuthPage: React.FC = () => {
           </div>
           <h2 className="text-xl font-black text-[#121214]">Authenticating with Google</h2>
           <p className="text-xs text-slate-500 font-medium">
-            Verifying your identity and establishing your authenticated session...
+            Verifying your identity and setting up your workspace...
           </p>
           <div className="pt-2 flex justify-center">
             <Loader2 className="w-7 h-7 text-purple-600 animate-spin" />

@@ -19,7 +19,7 @@ import {
   initialNotifications 
 } from '../data/mockData';
 import { gigsApi, authApi } from '../api/endpoints';
-import { supabase } from '../api/supabase';
+import { supabase, OAUTH_PENDING_ROLE_KEY } from '../api/supabase';
 
 interface MarketplaceContextType {
   currentRole: UserRole;
@@ -127,44 +127,67 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     let isMounted = true;
 
+    const handleUserSession = (session: any) => {
+      if (!session?.user || !isMounted) return;
+
+      // Determine intended role: pending OAuth role > saved role > default 'student'
+      const pendingRole = localStorage.getItem(OAUTH_PENDING_ROLE_KEY) as UserRole | null;
+      if (pendingRole) {
+        localStorage.removeItem(OAUTH_PENDING_ROLE_KEY);
+      }
+      const savedRole = localStorage.getItem('verigig_session_role') as UserRole | null;
+      const assignedRole: UserRole = pendingRole || (savedRole && savedRole !== 'guest' ? savedRole : 'student');
+
+      const meta = session.user.user_metadata || {};
+      const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
+      const avatarUrl = meta.avatar_url || meta.picture || (assignedRole === 'student'
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
+        : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
+
+      const liveUser: User = {
+        id: session.user.id,
+        name: fullName,
+        email: session.user.email || 'user@campusgigs.internal',
+        role: assignedRole,
+        collegeOrCompany: assignedRole === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
+        isVerified: true,
+        verificationBadgeText: assignedRole === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
+        rating: 5.0,
+        completedGigs: 0,
+        avatar: avatarUrl,
+        balance: 0,
+      };
+
+      setCurrentRole(assignedRole);
+      setCurrentUser(liveUser);
+      try {
+        localStorage.setItem('verigig_session_role', assignedRole);
+        localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
+      } catch {
+        // ignore
+      }
+
+      // Clean URL params (e.g. ?code=...) without reloading
+      if (window.location.search.includes('code=') || window.location.hash.includes('access_token=')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
     const syncSession = async () => {
       try {
         const searchParams = new URLSearchParams(window.location.search);
-        // If returning with PKCE code, exchange for session
+        // If returning with PKCE code, exchange for session directly
         if (searchParams.has('code')) {
-          await client.auth.exchangeCodeForSession(window.location.href);
+          const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
+          if (!error && data?.session) {
+            handleUserSession(data.session);
+            return;
+          }
         }
 
         const { data: { session } } = await client.auth.getSession();
-        if (session?.user && isMounted) {
-          const roleParam = (searchParams.get('role') as UserRole) || 'student';
-          const meta = session.user.user_metadata || {};
-          const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
-          const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
-            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
-            : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
-
-          const savedRole = localStorage.getItem('verigig_session_role') as UserRole;
-          const assignedRole = savedRole && savedRole !== 'guest' ? savedRole : roleParam;
-
-          const liveUser: User = {
-            id: session.user.id,
-            name: fullName,
-            email: session.user.email || 'user@campusgigs.internal',
-            role: assignedRole,
-            collegeOrCompany: assignedRole === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
-            isVerified: true,
-            verificationBadgeText: assignedRole === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
-            rating: 5.0,
-            completedGigs: 0,
-            avatar: avatarUrl,
-            balance: 0,
-          };
-
-          setCurrentRole(assignedRole);
-          setCurrentUser(liveUser);
-          localStorage.setItem('verigig_session_role', assignedRole);
-          localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
+        if (session?.user) {
+          handleUserSession(session);
         }
       } catch (err) {
         console.warn('Supabase global session sync error:', err);
@@ -174,36 +197,13 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     syncSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session?.user && isMounted) {
-        const searchParams = new URLSearchParams(window.location.search);
-        const roleParam = (searchParams.get('role') as UserRole) || 'student';
-        const meta = session.user.user_metadata || {};
-        const fullName = meta.full_name || meta.name || session.user.email?.split('@')[0] || 'Google User';
-        const avatarUrl = meta.avatar_url || meta.picture || (roleParam === 'student'
-          ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80'
-          : 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&q=80');
-
-        const savedRole = localStorage.getItem('verigig_session_role') as UserRole;
-        const assignedRole = savedRole && savedRole !== 'guest' ? savedRole : roleParam;
-
-        const liveUser: User = {
-          id: session.user.id,
-          name: fullName,
-          email: session.user.email || 'user@campusgigs.internal',
-          role: assignedRole,
-          collegeOrCompany: assignedRole === 'student' ? 'PCTE Group of Institutes' : 'Verified SME Partner',
-          isVerified: true,
-          verificationBadgeText: assignedRole === 'student' ? 'Verified Student (Google)' : 'Verified SME (Google)',
-          rating: 5.0,
-          completedGigs: 0,
-          avatar: avatarUrl,
-          balance: 0,
-        };
-
-        setCurrentRole(assignedRole);
-        setCurrentUser(liveUser);
-        localStorage.setItem('verigig_session_role', assignedRole);
-        localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user && isMounted) {
+        handleUserSession(session);
+      } else if (event === 'SIGNED_OUT' && isMounted) {
+        setCurrentRole('guest');
+        setCurrentUser(mockUsers.guest);
+        localStorage.removeItem('verigig_session_role');
+        localStorage.removeItem('verigig_session_user');
       }
     });
 
