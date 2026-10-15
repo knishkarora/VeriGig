@@ -118,7 +118,7 @@ export const Navbar: React.FC = () => {
                       isActive('/app/student/profile') ? 'text-white bg-[#101014]' : 'text-slate-600 hover:text-[#101014] hover:bg-slate-100'
                     }`}
                   >
-                    Verified Profile
+                    Profile
                   </Link>
                 </>
               )}

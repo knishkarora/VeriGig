@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   X, 
   User, 
@@ -10,10 +10,12 @@ import {
   FileCheck,
   AlertCircle,
   Search,
-  GraduationCap
+  GraduationCap,
+  ChevronDown
 } from 'lucide-react';
 import { profilesApi, verificationApi } from '../../api/endpoints';
 import { PLATFORM_SKILLS } from '../../data/skills';
+import { PARTNER_COLLEGES, normalizeCollegeName } from '../../data/colleges';
 
 interface EditProfileDrawerProps {
   isOpen: boolean;
@@ -43,9 +45,27 @@ export const EditProfileDrawer: React.FC<EditProfileDrawerProps> = ({
 
   const [fullName, setFullName] = useState(initialData.fullName || '');
   const [bio, setBio] = useState(initialData.bio || '');
-  const [collegeName, setCollegeName] = useState(initialData.collegeName || '');
+  const [collegeName, setCollegeName] = useState(normalizeCollegeName(initialData.collegeName));
   const [rollNumber, setRollNumber] = useState(initialData.rollNumber || '');
   
+  // Synchronize when initialData or drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      setFullName(initialData.fullName || '');
+      setBio(initialData.bio || '');
+      setCollegeName(normalizeCollegeName(initialData.collegeName));
+      setRollNumber(initialData.rollNumber || '');
+      setGraduationYear(
+        initialData.graduationYear && initialData.graduationYear >= 2000 && initialData.graduationYear <= 2035
+          ? initialData.graduationYear
+          : 2026
+      );
+      setSkills(initialData.skills || []);
+      setAvailabilityStatus(initialData.availabilityStatus || 'available_now');
+      setFeedback(null);
+    }
+  }, [isOpen, initialData]);
+
   // Graduation Year Slider (Range 2000 - 2035)
   const [graduationYear, setGraduationYear] = useState<number>(
     initialData.graduationYear && initialData.graduationYear >= 2000 && initialData.graduationYear <= 2035
@@ -259,14 +279,26 @@ export const EditProfileDrawer: React.FC<EditProfileDrawerProps> = ({
             {/* College Name & Roll Number */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-white/70">College / University</label>
-                <input
-                  type="text"
-                  value={collegeName}
-                  onChange={(e) => setCollegeName(e.target.value)}
-                  placeholder="e.g. PCTE Group of Institutes"
-                  className="w-full bg-[#1E293B] border border-white/10 rounded-2xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#D4F851]"
-                />
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-white/70">Partner Campus</label>
+                  <span className="text-[10px] text-[#D4F851] font-bold">6 Campuses</span>
+                </div>
+                <div className="relative">
+                  <select
+                    value={collegeName}
+                    onChange={(e) => setCollegeName(e.target.value)}
+                    required
+                    className="w-full bg-[#1E293B] border border-white/10 rounded-2xl px-3 py-2.5 pr-8 text-xs text-white focus:outline-none focus:border-[#D4F851] appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled className="bg-[#0B101B] text-white/40">Select partner campus...</option>
+                    {PARTNER_COLLEGES.map((college) => (
+                      <option key={college} value={college} className="bg-[#0B101B] text-white py-1">
+                        {college}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-white/50 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
 
               <div className="space-y-1">

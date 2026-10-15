@@ -436,10 +436,6 @@ export const AuthPage: React.FC = () => {
                 />
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-200/80 text-xs text-purple-900 font-medium">
-                💡 <span className="font-bold">Next Step:</span> Academic credentials, college ID card, and roll number can be added or updated directly from your profile after registration.
-              </div>
-
               {regSuccess && (
                 <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-emerald-600" />

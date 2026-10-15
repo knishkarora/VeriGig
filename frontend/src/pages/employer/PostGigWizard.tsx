@@ -14,6 +14,7 @@ import {
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { GigCategory, GigDuration, LocationScope, Milestone } from '../../types';
 import { gigsApi } from '../../api/endpoints';
+import { PARTNER_COLLEGES } from '../../data/colleges';
 
 export const PostGigWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -450,11 +451,7 @@ export const PostGigWizard: React.FC = () => {
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
-                  'PCTE Group of Institutes',
-                  'GNDEC Ludhiana',
-                  'Thapar University',
-                  'Punjab Agricultural University (PAU)',
-                  'Chitkara University',
+                  ...PARTNER_COLLEGES,
                   'Any Verified Campus Talent'
                 ].map((college) => {
                   const isChecked = preferredColleges.includes(college);

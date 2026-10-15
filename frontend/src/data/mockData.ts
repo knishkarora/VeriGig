@@ -6,7 +6,7 @@ export const mockUsers: Record<string, User> = {
     name: 'Aarav Sharma',
     email: 'aarav.sharma@pcte.edu.in',
     role: 'student',
-    collegeOrCompany: 'PCTE Group of Institutes',
+    collegeOrCompany: 'PCTE Group of Institutes (Ludhiana)',
     isVerified: true,
     verificationBadgeText: 'Verified PCTE Student',
     rating: 4.9,

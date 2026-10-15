@@ -3,6 +3,7 @@ import { CheckCircle2, Code2, Edit3, GraduationCap, Mail, MapPin, Star, UserRoun
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
 import { EditProfileDrawer } from '../../components/student/EditProfileDrawer';
+import { ProfileCompletionBar } from '../../components/student/ProfileCompletionBar';
 
 export const StudentProfile: React.FC = () => {
   const { currentUser, loginUser } = useMarketplace();
@@ -13,6 +14,12 @@ export const StudentProfile: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
+      {/* Dynamic Profile Completion Linear Bar */}
+      <ProfileCompletionBar 
+        user={currentUser} 
+        onOpenEdit={() => setIsEditDrawerOpen(true)} 
+      />
+
       <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-[0_15px_40px_-15px_rgba(112,80,200,0.06)] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
           {currentUser.avatar ? (
@@ -45,10 +52,18 @@ export const StudentProfile: React.FC = () => {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
-          <div className="flex items-center gap-5 p-5 rounded-3xl bg-slate-50 border border-slate-200">
-            <div className="text-center px-2"><span className="text-2xl font-black text-amber-500 flex items-center justify-center gap-1"><Star size={18} className="fill-amber-400" /> {currentUser.rating || '—'}</span><span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">Rating</span></div>
+          <div className="flex items-center gap-4 sm:gap-6 px-5 py-4 rounded-3xl bg-slate-50 border border-slate-200">
+            <div className="text-center px-1">
+              <span className="text-2xl font-black text-amber-500 flex items-center justify-center gap-1">
+                <Star size={18} className="fill-amber-400" /> {currentUser.rating ? currentUser.rating : '—'}
+              </span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">Rating</span>
+            </div>
             <div className="h-9 w-px bg-slate-200" />
-            <div className="text-center px-2"><span className="text-2xl font-black text-[#121214]">{currentUser.completedGigs}</span><span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">Completed</span></div>
+            <div className="text-center px-1">
+              <span className="text-2xl font-black text-[#121214]">{currentUser.completedGigs || 0}</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5 whitespace-nowrap">Completed Projects</span>
+            </div>
           </div>
           <button onClick={() => setIsEditDrawerOpen(true)} className="w-full sm:w-auto px-5 py-4 rounded-3xl bg-[#121214] hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"><Edit3 size={15} className="text-[#D4F851]" /><span>Edit Profile</span></button>
         </div>

@@ -59,6 +59,15 @@
   - [x] Fixed profile save loader hang: aligned backend Zod graduation range (2000–2035), auto-provisioned student profiles in service, injected Bearer auth tokens in API client, and added alerts.
   - [x] Fixed blank gig details page: added defensive checks for undefined employer data and asynchronous backend API fetching by UUID.
   - [x] Connected MSME post gig wizard to create real database gigs and route directly to newly published gig pages.
+- [x] Partner Campus Dropdown Restriction, Create Account Cleanup & Profile Completion Score Engine:
+  - [x] Restricted college selection in student profile editing (`EditProfileDrawer.tsx`) strictly to the 6 regional partner campuses ([colleges.ts](../frontend/src/data/colleges.ts)).
+  - [x] Removed obsolete next-step academic credentials tip box from Create Account page (`AuthPage.tsx`).
+  - [x] Updated desktop student navigation label in `Navbar.tsx` from "Verified Profile" to "Profile".
+  - [x] Clarified student profile metric card from "Completed" to "Completed Projects" with responsive spacing.
+  - [x] Added `ProfileCompletionBar.tsx` featuring a linear gradient bar (reddish `#EF4444` -> amber `#F59E0B` -> emerald `#10B981`), floating percentage pointer needle, "Complete Your Profile" trigger, and missing fields list.
+  - [x] Implemented verification gate logic capping user fields at 90% with explicit "Verification Pending" status until campus admin verification unlocks 100%.
+  - [x] Added single-notice celebration modal upon reaching 100% completion, permanently removing the slider once dismissed to prevent UI clutter.
+
 - [x] Dynamic Student Dashboard, Footer RBAC Sanitization & Stage-Isolated Workspace:
   - [x] Replaced "Protected Escrow" jargon with "Secured In-Progress Pay" and replaced static ₹5,000 with dynamic computation across student's active gigs (reporting ₹0 for new accounts). Added plain-language Escrow explainer modal.
   - [x] Replaced static PCTE text in student banner and verification card with dynamic database properties (`currentUser.collegeOrCompany`, `currentUser.rollNumber`, and `currentUser.isVerified`). Unverified accounts show "Verification Status: Pending" and priority queue messaging.

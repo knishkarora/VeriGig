@@ -1,5 +1,15 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-15] Milestone: Partner Campus Dropdown Restriction, Create Account Cleanup & Profile Completion Score Engine
+
+* **Key Changes:**
+  - **Campus Eligibility Restriction:** Restricted college selection in student profile editing (`EditProfileDrawer.tsx`) to the 6 official regional academic partners (PCTE Group of Institutes (Ludhiana), GNDEC Engineering College, Thapar Institute (TIET), Punjab Agricultural University (PAU), Chitkara University, and Christian Medical College (CMC)) using a unified catalog in `frontend/src/data/colleges.ts`.
+  - **Create Account Page Polish:** Removed obsolete next-step academic credential tip box from `AuthPage.tsx` registration flow.
+  - **Navigation & Metrics Clarification:** Renamed "Verified Profile" nav item in `Navbar.tsx` to "Profile"; updated student profile metric from ambiguous "Completed" to "Completed Projects" with responsive spacing.
+  - **Profile Completion Score Engine & Linear Bar:** Built `ProfileCompletionBar.tsx` featuring a linear gradient track (reddish left `#EF4444` transitioning to amber `#F59E0B` and emerald `#10B981` at 100%), floating percentage pointer needle, "Complete Your Profile" trigger, missing items checklist, and verification gate logic (capped at 90% with "Verification Pending" notice until campus approval).
+  - **Single-Notice 100% Milestone Pop-up:** Upon reaching 100% completion (all fields complete + campus verification approved), displays a celebration modal once and permanently dismisses the slider to preserve a clean dashboard.
+* **Verification:** Production builds (`npm run build` for frontend and `tsc` for backend) completed with 0 errors.
+
 ## [2026-10-15] Milestone: Streamlined Onboarding, Profile Verification & Dynamic Micro-Gig Hydration
 
 * **Key Changes:**
