@@ -222,7 +222,7 @@ export const PostGigWizard: React.FC = () => {
       </div>
 
       <div>
-        <h1 className="text-3xl font-black text-[#121214] tracking-tight">Post a Milestone-Backed Micro-Gig</h1>
+        <h1 className="text-3xl font-black text-white tracking-tight">Post a Milestone-Backed Micro-Gig</h1>
         <p className="text-xs text-slate-500 font-medium mt-1">
           Engage verified local student talent from Ludhiana campuses with transparent escrow protection.
         </p>

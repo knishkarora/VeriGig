@@ -201,7 +201,7 @@ export const AuthPage: React.FC = () => {
             <ShieldCheck size={14} className="text-purple-700" />
             <span>Campus Institutional Verification Portal</span>
           </div>
-          <h2 className="text-4xl font-black text-[#121214] tracking-tight">
+          <h2 className="text-4xl font-black text-white tracking-tight">
             {authMode === 'login' ? 'Sign in to CampusGigs' : 'Register with ID Verification'}
           </h2>
           <p className="text-xs text-slate-500 font-medium">
