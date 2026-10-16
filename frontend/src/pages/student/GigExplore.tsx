@@ -201,7 +201,7 @@ export const GigExplore: React.FC = () => {
 
       {/* Gigs Feed Grid */}
       <div className="flex items-center justify-between pt-2">
-        <h2 className="text-xl font-black text-[#101014] flex items-center gap-2.5">
+        <h2 className="text-xl font-black text-white flex items-center gap-2.5">
           <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
             <Layers size={17} />
           </span>

@@ -174,7 +174,7 @@ export const StudentWorkspace: React.FC = () => {
         {/* Past Completed Projects Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-[#101014] flex items-center gap-2.5">
+            <h3 className="text-lg font-black text-white flex items-center gap-2.5">
               <span className="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
                 <History size={15} />
               </span>
