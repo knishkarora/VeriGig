@@ -2,9 +2,8 @@ import { buildApp } from './app.js';
 import { config } from './config/env.js';
 
 async function main() {
-  const app = await buildApp();
-
   try {
+    const app = await buildApp();
     await app.listen({
       port: config.PORT,
       host: config.HOST,
@@ -12,7 +11,7 @@ async function main() {
     console.log(`🚀 VeriGig API Server listening at http://${config.HOST}:${config.PORT}`);
     console.log(`📡 Healthcheck available at http://${config.HOST}:${config.PORT}/health`);
   } catch (err) {
-    app.log.error(err);
+    console.error('❌ Fatal error during backend bootstrap / startup:', err);
     process.exit(1);
   }
 }

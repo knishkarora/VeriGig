@@ -110,3 +110,4 @@
   - [x] Seeded past completed projects (`status: 'completed'` contracts, 5-star reviews, endorsed skills, and cryptographically verifiable SHA-256 completion proof hashes) ensuring all seed accounts feature rich, authentic work histories.
   - [x] Enhanced [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx) to query user contracts on authentication and merge in-progress and completed contracts into the active workspace.
 - [x] Verified 100% clean production builds for both backend and frontend (`npm run build`).
+- [x] Fixed deployment crash (`==> Exited with status 1`): resolved duplicate route registration for `GET /api/v1/gigs/:id/applications` in `backend/src/app.ts` (already handled in `gigs.routes.ts`), guarded `buildApp()` in `index.ts` with explicit startup exception logging, and updated `render.yaml` to include devDependencies (`typescript`) during build.

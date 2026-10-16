@@ -144,20 +144,6 @@ export async function buildApp(): Promise<FastifyInstance> {
   const paymentsService = new PaymentsService();
   const disputesService = new DisputesService();
 
-  // Alias for employer gig candidate pipeline
-  app.get<{ Params: { id: string } }>(
-    '/api/v1/gigs/:id/applications',
-    { preHandler: [authenticate, requireRole(['employer', 'admin'])] },
-    async (req, reply) => {
-      const candidates = await applicationsService.getGigApplications(
-        req.currentUser!.id,
-        req.currentUser!.role,
-        req.params.id
-      );
-      return reply.send({ gigId: req.params.id, candidates, total: candidates.length });
-    }
-  );
-
   app.get(
     '/api/v1/student/applications',
     { preHandler: [authenticate, requireRole(['student'])] },

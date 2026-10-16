@@ -1,5 +1,18 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-16] Milestone: Backend Deployment Crash Fix (`FST_ERR_DUPLICATED_ROUTE` & Render Build Resilience)
+* **Root Cause Diagnosis:**
+  - Deployment log `==> Exited with status 1` was caused by a duplicate Fastify route collision during `buildApp()` bootstrap: `app.get('/api/v1/gigs/:id/applications')` was registered in `backend/src/app.ts` while `gigs.routes.ts` already registered `/:id/applications` under `/api/v1/gigs`. Fastify threw `FST_ERR_DUPLICATED_ROUTE: Method 'GET' already declared for route '/api/v1/gigs/:id/applications'`.
+  - In `backend/src/index.ts`, `const app = await buildApp()` was located outside the startup `try/catch` block, causing unhandled promise rejections on startup to terminate the Node process with exit code 1.
+  - Additionally, `render.yaml` was updated with `npm install --include=dev && npm run build` to ensure `devDependencies` (`typescript`) are consistently installed on Render regardless of `NODE_ENV=production`.
+* **Key Changes:**
+  - `backend/src/app.ts`: Removed redundant route declaration for `/api/v1/gigs/:id/applications` (handled by `gigs.routes.ts`).
+  - `backend/src/index.ts`: Moved `buildApp()` inside `try/catch` with clear fatal startup logging.
+  - `render.yaml`: Updated `buildCommand` to `npm install --include=dev && npm run build`.
+* **Verification:**
+  - Backend TypeScript build (`tsc`) succeeded with 0 errors.
+  - Verified `buildApp()` startup in `dist/app.js` runs cleanly without errors.
+
 ## [2026-10-16] Milestone: Dark Theme Restoration & Student Dashboard Contrast Rectification
 * **Key Changes:**
   - **Restored Dark Background Theme:** Reverted global root canvas in [App.tsx](../frontend/src/App.tsx) and [index.html](../frontend/index.html) back to `bg-[#090D16] text-[#D1D5DB]`, preserving the high-impact dark aesthetic.
