@@ -189,13 +189,13 @@ export const StudentDashboard: React.FC = () => {
         {/* Left Column: Active Gigs Workspace */}
         <div className="lg:col-span-8 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-[#101014] flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
+            <h2 className="text-xl font-black text-white flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center border border-purple-500/30 shadow-xs">
                 <Layers size={17} />
               </span>
               <span>Active Contracts in Progress</span>
             </h2>
-            <span className="text-xs text-purple-900 bg-purple-50 border border-purple-200/80 px-3 py-1 rounded-full font-bold tabular-nums">
+            <span className="text-xs text-purple-300 bg-purple-500/15 border border-purple-500/30 px-3 py-1 rounded-full font-bold tabular-nums">
               {activeGigs.length} Ongoing
             </span>
           </div>
@@ -288,37 +288,44 @@ export const StudentDashboard: React.FC = () => {
           {/* Submitted Proposals Tracker */}
           <div className="pt-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-black text-[#101014] flex items-center gap-2">
-                <span className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200 shadow-xs">
+              <h2 className="text-base font-black text-white flex items-center gap-2.5">
+                <span className="w-7 h-7 rounded-lg bg-white/10 text-slate-200 flex items-center justify-center border border-white/10 shadow-xs">
                   <FileText size={15} />
                 </span>
                 <span>My Submitted Proposals</span>
               </h2>
-              <span className="text-xs text-slate-500 font-bold tabular-nums">
+              <span className="text-xs text-slate-300 bg-white/10 border border-white/10 px-2.5 py-0.5 rounded-full font-bold tabular-nums">
                 {myProposals.length} Submitted
               </span>
             </div>
 
             <div className="space-y-3">
-              {myProposals.map((prop) => (
-                <div key={prop.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-4">
-                  <div>
-                    <span className="text-xs font-black text-slate-900 block font-mono tabular-nums">
-                      Bid: ₹{prop.bidAmount.toLocaleString()} in {prop.deliveryTimeDays} days
-                    </span>
-                    <span className="text-xs text-slate-500 line-clamp-1 mt-0.5">{prop.coverNote}</span>
-                  </div>
-                  <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shrink-0 ${
-                    prop.status === 'hired'
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : prop.status === 'shortlisted'
-                      ? 'bg-purple-100 text-purple-800 border border-purple-300'
-                      : 'bg-slate-100 text-slate-600'
-                  }`}>
-                    {prop.status}
-                  </span>
+              {myProposals.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-white border border-dashed border-slate-200 text-center space-y-1">
+                  <p className="text-xs font-bold text-slate-800">No proposals submitted yet</p>
+                  <p className="text-[11px] text-slate-500">Apply to active micro-gigs to see and track your submitted proposals here.</p>
                 </div>
-              ))}
+              ) : (
+                myProposals.map((prop) => (
+                  <div key={prop.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between gap-4">
+                    <div>
+                      <span className="text-xs font-black text-slate-900 block font-mono tabular-nums">
+                        Bid: ₹{prop.bidAmount.toLocaleString()} in {prop.deliveryTimeDays} days
+                      </span>
+                      <span className="text-xs text-slate-500 line-clamp-1 mt-0.5">{prop.coverNote}</span>
+                    </div>
+                    <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider shrink-0 ${
+                      prop.status === 'hired'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : prop.status === 'shortlisted'
+                        ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {prop.status}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

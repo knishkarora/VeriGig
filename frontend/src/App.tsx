@@ -50,7 +50,7 @@ export const App: React.FC = () => {
     <MarketplaceProvider>
       <BrowserRouter>
         <ScrollToTop />
-        <div className="min-h-screen flex flex-col bg-[#F8F6FE] text-[#334155]">
+        <div className="min-h-screen flex flex-col bg-[#090D16] text-[#D1D5DB]">
           {/* Global Shell Navigation */}
           <Navbar />
 

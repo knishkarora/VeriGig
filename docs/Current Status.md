@@ -83,14 +83,11 @@
   - [x] Sanitized `EmployerWorkspace.tsx` by eliminating all static mock student "Aarav Sharma" fallbacks, adding a "Contract Awaiting Student Hire" stage card with candidate review CTA for unassigned gigs, dynamically binding to the real student and current employer, and adding a multi-gig switcher bar.
 
 - [x] Frontend Visual Polish, Heading Contrast Fixes & Emil Kowalski Micro-Animations:
-  - [x] Rectified root container background in [App.tsx](../frontend/src/App.tsx): replaced erroneous `bg-[#090D16] text-[#D1D5DB]` with canonical soft lavender canvas `bg-[#F8F6FE] text-[#334155]` from [[DESIGN.md]], immediately resolving all black-on-black heading collisions across the entire application.
-  - [x] Fixed dark-on-dark text contrast across headings: elevated "Active Contracts in Progress" and "My Submitted Proposals" in [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx) with dedicated icon containers (`bg-purple-100 text-purple-700`) and live status pill badges.
-  - [x] Elevated "Your Posted Micro-Gigs" in [EmployerDashboard.tsx](../frontend/src/pages/employer/EmployerDashboard.tsx) with tactile `Briefcase` badge container and active listings pill.
-  - [x] Elevated "Past Completed Projects" and "Project Milestones & Deliverables" in [StudentWorkspace.tsx](../frontend/src/pages/student/StudentWorkspace.tsx) and [EmployerWorkspace.tsx](../frontend/src/pages/employer/EmployerWorkspace.tsx) with rounded icon badges and count tags.
-  - [x] Added high-contrast section header "Available Campus Gigs" with opportunity count badge in [GigExplore.tsx](../frontend/src/pages/student/GigExplore.tsx).
-  - [x] Fixed canvas back button and ID contrast on [PublicEmployerProfile.tsx](../frontend/src/pages/employer/PublicEmployerProfile.tsx) and [CompletionVerificationPage.tsx](../frontend/src/pages/shared/CompletionVerificationPage.tsx).
+  - [x] Restored premium dark background `bg-[#090D16] text-[#D1D5DB]` in [App.tsx](../frontend/src/App.tsx) and [index.html](../frontend/index.html) per design preference.
+  - [x] Fixed Student Dashboard text contrast on dark canvas: elevated "Active Contracts in Progress" and "My Submitted Proposals" in [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx) to pure high-contrast `text-white` with tactile icon badges (`bg-purple-500/20 text-purple-300` and `bg-white/10 text-slate-200`) and clear status pills (`{activeGigs.length} Ongoing` and `{myProposals.length} Submitted`).
+  - [x] Added clean empty state card for proposals in [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx).
   - [x] Fixed black-on-black text contrast issue on dark cards (explicit `text-white` on `LandingPage.tsx` Section 2 heading and high-contrast subtext).
   - [x] Fixed invisible return link hover state on light background across legal pages (`TermsPage.tsx`, `PrivacyPolicyPage.tsx`, `EscrowProtocolPage.tsx`).
   - [x] Introduced Emil Kowalski custom cubic-bezier easings (`--ease-out`, `--ease-in-out`), refined `.editorial-card` transitions, and added `.btn-tactile` physical press feedback (`active:scale-[0.97]`).
   - [x] Integrated `framer-motion` staggered entrances, interactive badge float dynamics, smooth card scroll-reveals, and tactile button feedback across `LandingPage.tsx`, `Navbar.tsx`, and `Footer.tsx`.
-  - [x] Verified 100% clean production build with zero errors (`tsc -b && vite build` completed in ~5.0s).
+  - [x] Verified 100% clean production build with zero errors (`tsc -b && vite build` completed cleanly).
