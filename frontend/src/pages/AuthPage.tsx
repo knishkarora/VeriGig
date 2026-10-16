@@ -339,6 +339,61 @@ export const AuthPage: React.FC = () => {
                   </div>
                 </button>
               </div>
+
+              {/* Quick 1-Click Credentials & Demo Logins */}
+              <div className="pt-4 mt-2 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">
+                    Quick Autofill Accounts (Password: Password@123)
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('admin@campusgigs.internal');
+                      setLoginPassword('Password@123');
+                    }}
+                    className="p-2.5 rounded-2xl border border-purple-200 bg-purple-50/70 hover:bg-purple-100 hover:border-purple-400 text-left transition-all"
+                  >
+                    <div className="text-[11px] font-black text-purple-950 flex items-center gap-1">
+                      <ShieldCheck size={13} className="text-purple-700" />
+                      <span>Admin</span>
+                    </div>
+                    <div className="text-[9px] text-purple-700/90 font-mono truncate">admin@campusgigs.internal</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('aarav.sharma@pcte.edu.in');
+                      setLoginPassword('Password@123');
+                    }}
+                    className="p-2.5 rounded-2xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 hover:border-emerald-400 text-left transition-all"
+                  >
+                    <div className="text-[11px] font-black text-emerald-950 flex items-center gap-1">
+                      <GraduationCap size={13} className="text-emerald-700" />
+                      <span>Student</span>
+                    </div>
+                    <div className="text-[9px] text-emerald-700/90 font-mono truncate">aarav.sharma@pcte.edu.in</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('simran@bakeology.in');
+                      setLoginPassword('Password@123');
+                    }}
+                    className="p-2.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 text-left transition-all"
+                  >
+                    <div className="text-[11px] font-black text-slate-900 flex items-center gap-1">
+                      <Building2 size={13} className="text-slate-700" />
+                      <span>Employer</span>
+                    </div>
+                    <div className="text-[9px] text-slate-500 font-mono truncate">simran@bakeology.in</div>
+                  </button>
+                </div>
+              </div>
             </form>
           ) : (
             <form onSubmit={handleRegisterSubmit} className="space-y-4 text-left">

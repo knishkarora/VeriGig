@@ -136,6 +136,8 @@ export interface VerificationRequest {
   submittedAt: string;
   status: 'pending' | 'approved' | 'rejected';
   rejectionReason?: string;
+  userEmail?: string;
+  details?: Record<string, any>;
 }
 
 export interface NotificationItem {

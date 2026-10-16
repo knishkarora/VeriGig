@@ -5,6 +5,8 @@ type BackendUser = {
   email: string;
   role: UserRole;
   status: string;
+  isVerified?: boolean;
+  verificationStatus?: 'pending' | 'approved' | 'rejected' | 'none';
   profile?: Record<string, unknown> | null;
 };
 
@@ -15,25 +17,48 @@ export function toMarketplaceUser(
 ): User {
   const profile = user.profile ?? {};
   const isStudent = user.role === 'student';
+  const isAdmin = user.role === 'admin';
   const displayName = String(
-    profile.fullName || profile.companyName || providerProfile.fullName || providerProfile.name || user.email.split('@')[0],
+    profile.fullName || profile.companyName || providerProfile.fullName || providerProfile.name || (isAdmin ? 'Campus Governance Admin' : user.email.split('@')[0]),
   );
+
+  const isVerified = isAdmin
+    ? true
+    : (user.isVerified !== undefined
+      ? Boolean(user.isVerified)
+      : (isStudent
+        ? user.status === 'verified'
+        : Boolean(profile.verifiedBadge)));
+
+  const verificationBadgeText = isAdmin
+    ? 'Super Admin'
+    : (isVerified
+      ? (isStudent ? 'Verified Student' : 'Verified SME Partner')
+      : (user.status === 'pending_verification' ? 'Verification pending' : 'Unverified account'));
+
+  const verificationStatus = isAdmin
+    ? ('approved' as const)
+    : (user.verificationStatus
+      ? user.verificationStatus
+      : (user.status === 'pending_verification'
+        ? ('pending' as const)
+        : (isVerified ? ('approved' as const) : ('none' as const))));
 
   return {
     id: user.id,
     name: displayName,
     email: user.email,
     role: user.role,
-    collegeOrCompany: String(isStudent ? profile.collegeName || '' : profile.companyName || ''),
-    isVerified: isStudent ? user.status === 'verified' : Boolean(profile.verifiedBadge),
-    verificationBadgeText: user.status === 'verified' ? 'Verified account' : 'Verification pending',
-    rating: Number(profile.ratingAvg ?? 0),
+    collegeOrCompany: String(isAdmin ? 'Campus Oversight Committee' : (isStudent ? profile.collegeName || '' : profile.companyName || '')),
+    isVerified,
+    verificationBadgeText,
+    rating: Number(profile.ratingAvg ?? 5.0),
     completedGigs: Number(profile.completedGigsCount ?? 0),
     avatar: String(providerProfile.avatarUrl || providerProfile.picture || ''),
-    balance: 0,
-    bio: typeof profile.bio === 'string' && profile.bio ? profile.bio : undefined,
+    balance: isAdmin ? 500000 : 0,
+    bio: typeof profile.bio === 'string' && profile.bio ? profile.bio : (isAdmin ? 'Institutional Governance & Dispute Arbitration Desk' : undefined),
     skills: Array.isArray(profile.skills) ? profile.skills.filter((skill): skill is string => typeof skill === 'string') : [],
-    location: typeof profile.location === 'string' && profile.location ? profile.location : undefined,
+    location: typeof profile.location === 'string' && profile.location ? profile.location : (isAdmin ? 'Punjab Regional Hub' : undefined),
     degree: typeof profile.degree === 'string' && profile.degree ? profile.degree : undefined,
     graduationYear: typeof profile.graduationYear === 'number' && profile.graduationYear > 0
       ? profile.graduationYear
@@ -49,8 +74,6 @@ export function toMarketplaceUser(
     website: typeof profile.website === 'string' ? profile.website : undefined,
     phone: typeof profile.contactPhoneEncrypted === 'string' ? profile.contactPhoneEncrypted : undefined,
     address: typeof profile.registeredAddress === 'string' ? profile.registeredAddress : undefined,
-    verificationStatus: user.status === 'pending_verification' 
-      ? 'pending' 
-      : (isStudent ? (user.status === 'verified' ? 'approved' : 'none') : (profile.verifiedBadge ? 'approved' : 'none')),
+    verificationStatus,
   };
 }

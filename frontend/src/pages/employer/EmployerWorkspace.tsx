@@ -34,11 +34,14 @@ export const EmployerWorkspace: React.FC = () => {
   const { gigs, currentUser, approveMilestone, requestRevision, proposals } = useMarketplace();
 
   // Scope to gigs owned by current employer
-  const myGigs = gigs.filter(g => g.employerId === currentUser.id);
+  const myGigs = gigs.filter(g => 
+    g.employerId === currentUser.id || 
+    (currentUser.collegeOrCompany && g.employerCompany && g.employerCompany.toLowerCase().includes(currentUser.collegeOrCompany.toLowerCase()))
+  );
 
-  // Determine active gig: explicit URL param > employer's in_progress gig > employer's first gig > global fallback
-  const activeGigId = gigId || (myGigs.find(g => g.status === 'in_progress')?.id || myGigs[0]?.id || (gigs.length > 0 ? gigs[0].id : ''));
-  const gig = gigs.find(g => g.id === activeGigId) || myGigs[0] || (gigId ? undefined : gigs[0]);
+  // Determine active gig: explicit URL param > employer's in_progress gig > employer's first gig
+  const activeGigId = gigId || myGigs.find(g => g.status === 'in_progress')?.id || myGigs[0]?.id;
+  const gig = myGigs.find(g => g.id === activeGigId) || myGigs[0];
 
   const [revisionModalMilestone, setRevisionModalMilestone] = useState<Milestone | null>(null);
   const [revisionFeedback, setRevisionFeedback] = useState('');

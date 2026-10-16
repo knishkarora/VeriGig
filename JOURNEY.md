@@ -364,3 +364,54 @@
     - Added staggered scroll-reveal to the 4 task track media cards and 4-stage milestone lifecycle cards.
     - Added button-in-button trailing icon hover transitions and tactile press feedback across primary CTAs.
   - **Verification:** Verified clean TypeScript build and Vite compilation without errors.
+
+## Milestone 27: Super Admin Authentication & Role-Isolated Institutional Verification Desk
+* **Objective:** Enable administrator login, seed super admin credentials directly into Supabase PostgreSQL, isolate student and employer verification queues into dedicated separate tabs, and provide plain-text credentials for all dummy accounts.
+* **Key Changes:**
+  - **Super Admin Seeding & Database Provisioning (`seed.ts`):**
+    - Seeded two super administrator accounts in Supabase PostgreSQL: `admin@campusgigs.internal` and `admin@verigig.com` with default password `Password@123`.
+    - Seeded pending verification dossiers for both students (`navjot.singh@pcte.edu.in`, `gurpreet.kaur@thapar.edu`) and MSME businesses (`amrit@ludhianatech.in`, `deepak@punjaborganics.in`).
+  - **Plain-Text Dummy Account Catalog:**
+    - Documented `Password@123` across all 5 seeded students (`aarav.sharma@pcte.edu.in`, `mehak.kaur@gndec.ac.in`, etc.) and 5 seeded employers (`simran@bakeology.in`, `rajesh@apexautocomponents.in`, etc.).
+  - **Quick 1-Click Autofill Command Bar (`AuthPage.tsx`):**
+    - Added quick autofill cards for Super Admin, Student Talent, and SME Employer roles with explicit password transparency and 1-click execution.
+  - **Strict Role-Isolated Verification Queue (`AdminVerifications.tsx`, `verification.service.ts`):**
+    - Split verification governance into dedicated tabs: "🎓 Student IDs" and "🏢 SME Proofs" fetched independently from `/api/v1/verifications/admin/queue` with query parameters.
+    - Implemented rich dossiers: Students display academic institution, degree, graduation year, roll number, skill pills, and college ID card scans; Employers display business domain, GSTIN/Udyam tax proofs, address, and official registration documents.
+    - Integrated real-time approval/rejection API calls (`/api/v1/verifications/admin/requests/:id/review`), updating PostgreSQL database records, granting trust badges, and reflecting instantly in the UI.
+    - Added document proof zoom modal and customizable rejection reason presets.
+  - **Navigation & Access (`Navbar.tsx`, `Footer.tsx`):**
+    - Ensured admin routing forwards directly to `/app/admin/verifications` upon login, with direct links from the universal footer and user account menu.
+  - **Build Verification:** 100% clean production builds verified across both backend and frontend (`tsc -b && vite build` and `npm run build` in backend).
+
+---
+
+### Milestone 28: Database-Driven Admin Verification, Live Dispute Arbitrations, Real-Time Analytics & Authenticated Work Histories
+- **Timestamp:** 2026-10-16
+- **Status:** Complete & Production Verified
+- **Problem Statement:**
+  1. The Admin Verification Desk contained silent mock fallbacks; pending profiles displayed mock users rather than real database verification requests.
+  2. The Dispute Escalations Desk was displaying mock disputes instead of querying Supabase PostgreSQL.
+  3. The Platform Analytics dashboard displayed static hardcoded cards ("₹840,000", mock percentages).
+  4. Every employer account was seeing "Festive Handloom Lookbook" in the applicant pipeline due to lack of applicant seeding and un-scoped gig selection fallbacks. Seed accounts appeared empty rather than demonstrating active contracts and past work histories.
+- **Architectural & Technical Solution:**
+  - **Comprehensive Seed Execution (`backend/src/db/seed.ts`):**
+    - Seeded Super Admin accounts: `admin@campusgigs.internal` and `admin@verigig.com` (`Password@123`).
+    - Seeded 5 Verified Regional Campuses (PCTE, GNDEC, Thapar, PAU, Chitkara).
+    - Seeded 5 Verified Students (`aarav.sharma@pcte.edu.in`, `mehak.kaur@gndec.ac.in`, `rohan.verma@thapar.edu`, `simran.singh@pau.edu`, `tanvi.gupta@chitkara.edu.in`).
+    - Seeded 2 Pending Unverified Students in Admin Queue (`navjot.singh@pcte.edu.in`, `gurpreet.kaur@thapar.edu`).
+    - Seeded 5 Verified MSMEs (`simran@bakeology.in`, `rajesh@apexautocomponents.in`, `harpreet@greenroots.in`, `dr.bansal@bansaldental.in`, `karan@urbandrape.in`).
+    - Seeded 2 Pending Unverified MSMEs in Admin Queue (`amrit@ludhianatech.in`, `deepak@punjaborganics.in`).
+    - Seeded 5 Distinct Open Micro-Gigs with structured milestones (1 per employer) and rich applicant proposals with explainable fit scores.
+    - Seeded 5 Active Working Projects (`in_progress` contracts with milestone deliverable submissions) for every employer and student pair.
+    - Seeded 6 Completed Past Projects with 5-star ratings, written feedback, endorsed skills, and cryptographically verifiable SHA-256 completion proof hashes.
+    - Seeded 2 Real Contract Disputes in `disputes` and `disputeEvidence` for Apex Auto (`deliverable_quality`) and UrbanDrape (`scope_creep`).
+  - **Live Backend Analytics Service (`analytics.service.ts`, `analytics.routes.ts`, `app.ts`):**
+    - Built `GET /api/v1/analytics/platform` computing real-time total volume, escrow in transit, payout success rate, median turnaround, campus freelancer distribution, and category liquidity share directly from PostgreSQL tables.
+  - **Frontend Live Data Wiring:**
+    - `AdminVerifications.tsx`: Removed all mock fallbacks; displays only real database verification requests in isolated student and employer tabs. Verification approvals update badges immediately in PostgreSQL.
+    - `AdminDisputes.tsx`: Re-wired to `disputesApi.listAdminDisputes()`, fetches live case dossiers with timestamped evidence, and executes binding settlement rulings (`POST /api/v1/admin/disputes/:id/resolve`).
+    - `AdminAnalytics.tsx`: Replaced all hardcoded values with live telemetry from `analyticsApi.getPlatformAnalytics()`.
+    - `GigApplicants.tsx`: Fixed employer scoping to strictly isolate gigs owned by the logged-in business, eliminated fallback to foreign gigs, and fetches candidate applications dynamically from `applicationsApi.getGigApplicants(gig.id)`.
+    - `MarketplaceContext.tsx`: Synchronizes both open gigs and user contracts (`contractsApi.getUserContracts()`) on authentication, ensuring dashboards and workspaces display active contracts and past work.
+- **Verification:** Both backend (`npm run build`) and frontend (`tsc -b && vite build`) compiled with 0 errors. All accounts share the password `Password@123`.

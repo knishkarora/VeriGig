@@ -35,9 +35,22 @@ export const profilesApi = {
 
 export const verificationApi = {
   submitRequest: (formData: FormData) => api.post<any>('/verifications/submit', formData),
-  getAdminQueue: (status?: string) => api.get<any>(`/verifications/admin/queue${status ? `?status=${status}` : ''}`),
-  decideVerification: (id: string, data: { status: 'approved' | 'rejected'; rejectionReason?: string }) =>
-    api.post(`/verifications/admin/${id}/decision`, data),
+  getAdminQueue: (params?: { status?: 'pending' | 'approved' | 'rejected'; role?: 'student' | 'employer' }) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.append('status', params.status);
+    if (params?.role) q.append('role', params.role);
+    const qs = q.toString();
+    return api.get<{ requests: any[] }>(`/verifications/admin/queue${qs ? `?${qs}` : ''}`);
+  },
+  reviewRequest: (id: string, data: { decision: 'approve' | 'reject'; rejectionReason?: string; reviewerNotes?: string; validityMonths?: number }) =>
+    api.post<{ message: string; request: any }>(`/verifications/admin/requests/${id}/review`, data),
+  decideVerification: (id: string, data: { status: 'approved' | 'rejected'; rejectionReason?: string; reviewerNotes?: string }) =>
+    api.post<{ message: string; request: any }>(`/verifications/admin/requests/${id}/review`, {
+      decision: data.status === 'approved' ? 'approve' : 'reject',
+      rejectionReason: data.rejectionReason,
+      reviewerNotes: data.reviewerNotes,
+      validityMonths: 12,
+    }),
 };
 
 // ==========================================
@@ -173,3 +186,12 @@ export const messagingApi = {
   getMessages: (conversationId: string, after?: string) =>
     api.get<any>(`/messaging/conversations/${conversationId}/messages${after ? `?after=${after}` : ''}`),
 };
+
+// ==========================================
+// PLATFORM TELEMETRY & ANALYTICS
+// ==========================================
+
+export const analyticsApi = {
+  getPlatformAnalytics: () => api.get<any>('/analytics/platform'),
+};
+

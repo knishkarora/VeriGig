@@ -82,12 +82,31 @@
   - [x] Decoupled `Navbar.tsx` from hardcoded `/app/employer/gig/gig-2/applicants` to neutral `/app/employer/applicants`, upgraded `GigApplicants.tsx` to query the logged-in employer's gigs, provided an interactive multi-gig switcher bar, and handled empty states.
   - [x] Sanitized `EmployerWorkspace.tsx` by eliminating all static mock student "Aarav Sharma" fallbacks, adding a "Contract Awaiting Student Hire" stage card with candidate review CTA for unassigned gigs, dynamically binding to the real student and current employer, and adding a multi-gig switcher bar.
 
-- [x] Frontend Visual Polish, Heading Contrast Fixes & Emil Kowalski Micro-Animations:
-  - [x] Restored premium dark background `bg-[#090D16] text-[#D1D5DB]` in [App.tsx](../frontend/src/App.tsx) and [index.html](../frontend/index.html) per design preference.
-  - [x] Fixed Student Dashboard text contrast on dark canvas: elevated "Active Contracts in Progress" and "My Submitted Proposals" in [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx) to pure high-contrast `text-white` with tactile icon badges (`bg-purple-500/20 text-purple-300` and `bg-white/10 text-slate-200`) and clear status pills (`{activeGigs.length} Ongoing` and `{myProposals.length} Submitted`).
-  - [x] Added clean empty state card for proposals in [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx).
-  - [x] Fixed black-on-black text contrast issue on dark cards (explicit `text-white` on `LandingPage.tsx` Section 2 heading and high-contrast subtext).
-  - [x] Fixed invisible return link hover state on light background across legal pages (`TermsPage.tsx`, `PrivacyPolicyPage.tsx`, `EscrowProtocolPage.tsx`).
-  - [x] Introduced Emil Kowalski custom cubic-bezier easings (`--ease-out`, `--ease-in-out`), refined `.editorial-card` transitions, and added `.btn-tactile` physical press feedback (`active:scale-[0.97]`).
-  - [x] Integrated `framer-motion` staggered entrances, interactive badge float dynamics, smooth card scroll-reveals, and tactile button feedback across `LandingPage.tsx`, `Navbar.tsx`, and `Footer.tsx`.
-  - [x] Verified 100% clean production build with zero errors (`tsc -b && vite build` completed cleanly).
+- [x] Super Admin Seeding, Role-Isolated Verification Desk & Unified Account Credentials:
+  - [x] Seeded Super Admin accounts in Supabase PostgreSQL: `admin@campusgigs.internal` and `admin@verigig.com` (Default password: `Password@123`).
+  - [x] Documented plain-text password `Password@123` for all seeded dummy student accounts (`aarav.sharma@pcte.edu.in`, `mehak.kaur@gndec.ac.in`, etc.) and dummy MSME employers (`simran@bakeology.in`, `rajesh@apexautocomponents.in`, etc.).
+  - [x] Added 1-click Quick Autofill Account credentials to [AuthPage.tsx](../frontend/src/pages/AuthPage.tsx) for Admin, Student, and Employer roles.
+  - [x] Enhanced [AdminVerifications.tsx](../frontend/src/pages/admin/AdminVerifications.tsx) with strict role isolation: dedicated tabs for "🎓 Student IDs" and "🏢 SME Proofs" fetched independently from backend REST API without cross-contamination.
+  - [x] Connected real-time verification review actions (`/api/v1/verifications/admin/requests/:id/review`) issuing verified trust badges directly in PostgreSQL and syncing to client session context.
+  - [x] Integrated enlarged document proof lightbox modal and rejection reason presets with custom guidance.
+
+## Milestone 4: Database-Driven Admin Verification, Dispute Arbitrations, Analytics & Rich Account Seed Data
+- [x] Eliminated Static Mock Fallbacks:
+  - [x] Removed all silent fallbacks to static mock verification requests in [AdminVerifications.tsx](../frontend/src/pages/admin/AdminVerifications.tsx); replaced with explicit loading states and API error reporting.
+  - [x] Seeded pending verification requests directly in PostgreSQL for students (`navjot.singh@pcte.edu.in`, `gurpreet.kaur@thapar.edu`) and employers (`amrit@ludhianatech.in`, `deepak@punjaborganics.in`).
+  - [x] Verified that approving an account immediately updates their verification badge to "Verified Student" or "Verified SME Partner" upon next login.
+- [x] Database-Backed Dispute Escalation Desk:
+  - [x] Seeded 2 realistic contract disputes in Supabase PostgreSQL (`disputes` and `disputeEvidence` tables) for Apex Auto (`deliverable_quality`) and UrbanDrape (`scope_creep`).
+  - [x] Upgraded [AdminDisputes.tsx](../frontend/src/pages/admin/AdminDisputes.tsx) to query live disputes via `GET /api/v1/admin/disputes` and fetch detailed case dossiers with timestamped evidence.
+  - [x] Connected binding settlement rulings to `POST /api/v1/admin/disputes/:id/resolve`, executing automated payouts/refunds directly in PostgreSQL.
+- [x] Live Platform Analytics & Telemetry:
+  - [x] Built `AnalyticsService` and `analyticsRoutes` in [analytics.service.ts](../backend/src/modules/analytics/analytics.service.ts) and [analytics.routes.ts](../backend/src/modules/analytics/analytics.routes.ts), exposed at `GET /api/v1/analytics/platform`.
+  - [x] Aggregates live data from `gigs`, `contracts`, `contractMilestones`, `users`, `disputes`, and `campuses` (Total Volume, Active Escrow in Transit, Payout Success Rate, Median Turnaround, and Regional Campus engagement).
+  - [x] Connected [AdminAnalytics.tsx](../frontend/src/pages/admin/AdminAnalytics.tsx) to live database metrics, completely replacing static "₹840,000" and mock pilot data banners.
+- [x] Scoped Applicant Pipeline & Non-Blank Seed Accounts Work History:
+  - [x] Fixed "Festive Handloom Lookbook" appearing for every employer in [GigApplicants.tsx](../frontend/src/pages/employer/GigApplicants.tsx); strictly scopes gigs to the current employer and fetches real proposals from `GET /api/v1/applications/gigs/:id`.
+  - [x] Seeded realistic student applications for all 5 open gigs with fit score breakdowns, timelines, and bids.
+  - [x] Seeded active working projects (`status: 'in_progress'` contracts and milestones with deliverable submissions) for every seeded employer and student pair.
+  - [x] Seeded past completed projects (`status: 'completed'` contracts, 5-star reviews, endorsed skills, and cryptographically verifiable SHA-256 completion proof hashes) ensuring all seed accounts feature rich, authentic work histories.
+  - [x] Enhanced [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx) to query user contracts on authentication and merge in-progress and completed contracts into the active workspace.
+- [x] Verified 100% clean production builds for both backend and frontend (`npm run build`).

@@ -83,7 +83,12 @@ export const Footer: React.FC = () => {
                 </li>
                 <li>
                   <Link to="/auth" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white transition-all">
-                    Verification
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/app/admin/verifications" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white transition-all">
+                    Admin Desk
                   </Link>
                 </li>
               </ul>

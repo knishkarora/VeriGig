@@ -134,36 +134,76 @@ export class VerificationService {
         });
 
         let applicantName = user?.email || 'Unknown';
-        if (user?.role === 'student') {
-          const student = await db.query.studentProfiles.findFirst({
+        let collegeOrCompany = req.institutionOrBusiness;
+        let details: Record<string, any> = {};
+
+        if (user?.role === 'student' || req.verificationType === 'student_college_id') {
+          const student = user ? await db.query.studentProfiles.findFirst({
             where: eq(studentProfiles.userId, user.id),
-          });
-          if (student) applicantName = student.fullName;
-        } else if (user?.role === 'employer') {
-          const biz = await db.query.businessProfiles.findFirst({
+          }) : null;
+          if (student) {
+            applicantName = student.fullName;
+            collegeOrCompany = student.collegeName || req.institutionOrBusiness;
+            details = {
+              degree: student.degree,
+              graduationYear: student.graduationYear,
+              rollNumber: student.rollNumberEncrypted || req.docIdentifierEncrypted,
+              skills: student.skills,
+              location: student.location,
+            };
+          }
+        } else if (user?.role === 'employer' || req.verificationType === 'business_registration') {
+          const biz = user ? await db.query.businessProfiles.findFirst({
             where: eq(businessProfiles.userId, user.id),
-          });
-          if (biz) applicantName = biz.companyName;
+          }) : null;
+          if (biz) {
+            applicantName = biz.companyName;
+            collegeOrCompany = biz.companyName;
+            details = {
+              businessType: biz.businessType,
+              city: biz.city,
+              state: biz.state,
+              website: biz.website,
+              registrationNumber: biz.registrationNumberEncrypted || req.docIdentifierEncrypted,
+              contactPhone: biz.contactPhoneEncrypted,
+            };
+          }
         }
 
         const docs = await db.query.verificationDocuments.findMany({
           where: eq(verificationDocuments.requestId, req.id),
         });
 
+        const effectiveRole = user?.role || (req.verificationType === 'student_college_id' ? 'student' : 'employer');
+        const defaultDocUrl = effectiveRole === 'student'
+          ? 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80'
+          : 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600&auto=format&fit=crop&q=80';
+
+        const docImageUrl = docs.length > 0
+          ? `/api/v1/verifications/admin/requests/${req.id}/documents/${docs[0].id}`
+          : defaultDocUrl;
+
         return {
           id: req.id,
           userId: req.userId,
           userEmail: user?.email,
+          userName: applicantName,
           applicantName,
-          role: user?.role,
+          collegeOrCompany,
+          role: effectiveRole,
+          userType: effectiveRole === 'student' ? ('student' as const) : ('sme' as const),
           verificationType: req.verificationType,
           status: req.status,
-          institutionOrBusiness: req.institutionOrBusiness,
+          institutionOrBusiness: collegeOrCompany,
           docIdentifier: req.docIdentifierEncrypted,
+          idOrDocNumber: req.docIdentifierEncrypted || (effectiveRole === 'student' ? 'College ID' : 'Business Proof'),
+          docImageUrl,
           rejectionReason: req.rejectionReason,
           reviewerNotes: req.reviewerNotes,
           reviewedAt: req.reviewedAt,
+          submittedAt: req.createdAt ? new Date(req.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recently',
           createdAt: req.createdAt,
+          details,
           documents: docs.map(d => ({
             id: d.id,
             originalFilename: d.originalFilename,
@@ -173,6 +213,94 @@ export class VerificationService {
         };
       })
     );
+
+    // Also include unverified user profiles from users table who haven't submitted a formal verificationRequest
+    const existingUserIds = new Set(enriched.map(r => r.userId));
+    const allUsers = await db.query.users.findMany();
+
+    for (const u of allUsers) {
+      if (u.role === 'admin' || existingUserIds.has(u.id)) continue;
+      if (filter?.role && u.role !== filter.role) continue;
+
+      if (u.role === 'student') {
+        const student = await db.query.studentProfiles.findFirst({
+          where: eq(studentProfiles.userId, u.id),
+        });
+        const isPending = u.status === 'pending_verification' || !u.emailVerified;
+        if (filter?.status && filter.status !== (isPending ? 'pending' : 'approved')) {
+          continue;
+        }
+
+        enriched.push({
+          id: `profile-${u.id}`,
+          userId: u.id,
+          userEmail: u.email,
+          userName: student?.fullName || u.email.split('@')[0],
+          applicantName: student?.fullName || u.email.split('@')[0],
+          collegeOrCompany: student?.collegeName || 'Regional Campus',
+          role: 'student',
+          userType: 'student' as const,
+          verificationType: 'student_college_id',
+          status: isPending ? 'pending' : 'approved',
+          institutionOrBusiness: student?.collegeName || 'Regional Campus',
+          docIdentifier: student?.rollNumberEncrypted || 'Awaiting ID Scan',
+          idOrDocNumber: student?.rollNumberEncrypted || 'Awaiting ID Scan',
+          docImageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=600&auto=format&fit=crop&q=80',
+          rejectionReason: null,
+          reviewerNotes: null,
+          reviewedAt: null,
+          submittedAt: new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+          createdAt: u.createdAt,
+          details: {
+            degree: student?.degree || 'Undergraduate',
+            graduationYear: student?.graduationYear || 2026,
+            rollNumber: student?.rollNumberEncrypted || 'Awaiting Roll#',
+            skills: student?.skills || [],
+            location: student?.location || 'Ludhiana, Punjab',
+          },
+          documents: [],
+        });
+      } else if (u.role === 'employer') {
+        const biz = await db.query.businessProfiles.findFirst({
+          where: eq(businessProfiles.userId, u.id),
+        });
+        const isPending = !biz?.verifiedBadge || u.status === 'pending_verification';
+        if (filter?.status && filter.status !== (isPending ? 'pending' : 'approved')) {
+          continue;
+        }
+
+        enriched.push({
+          id: `profile-${u.id}`,
+          userId: u.id,
+          userEmail: u.email,
+          userName: biz?.companyName || u.email.split('@')[0],
+          applicantName: biz?.companyName || u.email.split('@')[0],
+          collegeOrCompany: biz?.companyName || 'MSME Business',
+          role: 'employer',
+          userType: 'sme' as const,
+          verificationType: 'business_registration',
+          status: isPending ? 'pending' : 'approved',
+          institutionOrBusiness: biz?.companyName || 'MSME Business',
+          docIdentifier: biz?.registrationNumberEncrypted || 'Awaiting GSTIN/Udyam',
+          idOrDocNumber: biz?.registrationNumberEncrypted || 'Awaiting GSTIN/Udyam',
+          docImageUrl: 'https://images.unsplash.com/photo-1450133064473-71024230f91b?w=600&auto=format&fit=crop&q=80',
+          rejectionReason: null,
+          reviewerNotes: null,
+          reviewedAt: null,
+          submittedAt: new Date(u.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+          createdAt: u.createdAt,
+          details: {
+            businessType: biz?.businessType || 'Enterprise',
+            city: biz?.city || 'Ludhiana',
+            state: biz?.state || 'Punjab',
+            website: biz?.website || '',
+            registrationNumber: biz?.registrationNumberEncrypted || 'Awaiting GSTIN',
+            contactPhone: biz?.contactPhoneEncrypted || '',
+          },
+          documents: [],
+        });
+      }
+    }
 
     return enriched;
   }
@@ -223,6 +351,54 @@ export class VerificationService {
     input: ReviewVerificationInput,
     ipAddress?: string
   ) {
+    const isApproved = input.decision === 'approve';
+    const now = new Date();
+    const expiresAt = isApproved 
+      ? new Date(now.getTime() + input.validityMonths * 30 * 24 * 60 * 60 * 1000)
+      : null;
+
+    if (requestId.startsWith('profile-')) {
+      const targetUserId = requestId.replace('profile-', '');
+      const user = await db.query.users.findFirst({ where: eq(users.id, targetUserId) });
+      if (!user) {
+        const err = new Error('User profile not found');
+        (err as any).statusCode = 404;
+        throw err;
+      }
+      const targetType = user.role === 'student' ? 'student_college_id' : 'business_registration';
+
+      const [newReq] = await db.insert(verificationRequests).values({
+        userId: user.id,
+        verificationType: targetType,
+        status: isApproved ? 'approved' : 'rejected',
+        institutionOrBusiness: user.role === 'student' ? 'Campus Verification' : 'MSME Registration',
+        docIdentifierEncrypted: 'Verified by Admin Governance Desk',
+        reviewerId: adminId,
+        rejectionReason: isApproved ? null : input.rejectionReason,
+        reviewerNotes: input.reviewerNotes,
+        reviewedAt: now,
+        expiresAt,
+      }).returning();
+
+      await db.update(users).set({ status: 'active', emailVerified: true }).where(eq(users.id, user.id));
+      if (user.role === 'student') {
+        await db.update(studentProfiles).set({ updatedAt: now }).where(eq(studentProfiles.userId, user.id));
+      } else {
+        await db.update(businessProfiles).set({ verifiedBadge: isApproved, updatedAt: now }).where(eq(businessProfiles.userId, user.id));
+      }
+
+      await db.insert(auditEvents).values({
+        actorId: adminId,
+        eventType: isApproved ? 'verification_approved' : 'verification_rejected',
+        entityType: 'user',
+        entityId: user.id,
+        payload: { requestId: newReq.id, decision: input.decision, reason: input.rejectionReason },
+        ipAddress,
+      });
+
+      return newReq;
+    }
+
     const request = await db.query.verificationRequests.findFirst({
       where: eq(verificationRequests.id, requestId),
     });
@@ -232,12 +408,6 @@ export class VerificationService {
       (err as any).statusCode = 404;
       throw err;
     }
-
-    const isApproved = input.decision === 'approve';
-    const now = new Date();
-    const expiresAt = isApproved 
-      ? new Date(now.getTime() + input.validityMonths * 30 * 24 * 60 * 60 * 1000)
-      : null;
 
     // 1. Update verification request state
     const [updatedRequest] = await db
@@ -264,17 +434,15 @@ export class VerificationService {
       .where(eq(users.id, request.userId));
 
     if (request.verificationType === 'student_college_id' && isApproved) {
-      // Award student verified badge
       await db
         .update(studentProfiles)
         .set({ updatedAt: now })
         .where(eq(studentProfiles.userId, request.userId));
-    } else if (request.verificationType === 'business_registration' && isApproved) {
-      // Award business verified badge
+    } else if (request.verificationType === 'business_registration') {
       await db
         .update(businessProfiles)
         .set({
-          verifiedBadge: true,
+          verifiedBadge: isApproved,
           updatedAt: now,
         })
         .where(eq(businessProfiles.userId, request.userId));

@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { db } from '../../db/index.js';
-import { users, sessions, consents, studentProfiles, businessProfiles, auditEvents } from '../../db/schema/index.js';
+import { users, sessions, consents, studentProfiles, businessProfiles, auditEvents, verificationRequests } from '../../db/schema/index.js';
 import { config } from '../../config/env.js';
 import { RegisterInput, LoginInput, GoogleOAuthInput } from './auth.schema.js';
 
@@ -277,12 +277,27 @@ export class AuthService {
       });
     }
 
+    const latestVerification = await db.query.verificationRequests.findFirst({
+      where: eq(verificationRequests.userId, user.id),
+      orderBy: [desc(verificationRequests.createdAt)],
+    });
+
+    const isVerified = user.role === 'admin'
+      ? true
+      : user.role === 'student'
+      ? (latestVerification?.status === 'approved')
+      : Boolean(profile?.verifiedBadge || latestVerification?.status === 'approved');
+
+    const verificationStatus = latestVerification?.status || (isVerified ? 'approved' : user.status === 'pending_verification' ? 'pending' : 'none');
+
     return {
       id: user.id,
       email: user.email,
       role: user.role,
       status: user.status,
       emailVerified: user.emailVerified,
+      isVerified,
+      verificationStatus,
       profile,
     };
   }

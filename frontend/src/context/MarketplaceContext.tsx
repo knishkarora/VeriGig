@@ -18,7 +18,7 @@ import {
   initialDisputes, 
   initialNotifications 
 } from '../data/mockData';
-import { gigsApi, authApi } from '../api/endpoints';
+import { gigsApi, authApi, contractsApi } from '../api/endpoints';
 import { supabase, OAUTH_PENDING_ROLE_KEY } from '../api/supabase';
 import { toMarketplaceUser } from '../auth/user';
 
@@ -87,13 +87,15 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const handledSupabaseTokens = useRef(new Set<string>());
 
   // Sync live gigs from backend if Fastify server is reachable
+  // Sync live gigs & user contracts from backend
   useEffect(() => {
     let active = true;
     const fetchLiveGigs = async () => {
       try {
+        let backendGigs: MicroGig[] = [];
         const res = await gigsApi.listGigs();
-        if (active && res && res.gigs && res.gigs.length > 0) {
-          const backendGigs: MicroGig[] = res.gigs.map((g: any) => ({
+        if (res && res.gigs && res.gigs.length > 0) {
+          backendGigs = res.gigs.map((g: any) => ({
             id: g.id,
             title: g.title,
             employerId: g.employerId,
@@ -116,8 +118,53 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
               { id: `ms-${g.id}-1`, title: 'Milestone 1: Deliverables', description: 'Complete work criteria', amount: g.totalBudget, percentage: 100, status: 'active' }
             ]
           }));
-          
-          setGigs(backendGigs);
+        }
+
+        // Also fetch active and completed contracts for logged-in user
+        let contractGigs: MicroGig[] = [];
+        try {
+          const cRes = await contractsApi.getUserContracts();
+          if (cRes && Array.isArray(cRes.contracts)) {
+            contractGigs = cRes.contracts.map((c: any) => ({
+              id: c.gigId || c.id,
+              title: c.gigTitle,
+              employerId: c.employerId,
+              employerName: c.employerCompany || 'Client',
+              employerCompany: c.employerCompany || 'Verified SME',
+              employerVerified: true,
+              hiredStudentId: c.studentId,
+              hiredStudentName: c.studentName,
+              category: c.category || 'Web Dev',
+              totalBudget: c.totalAmount,
+              paymentType: 'milestone' as const,
+              targetDuration: '2 weeks' as const,
+              locationScope: 'Remote' as const,
+              campusProximity: 'Within 5 km radius',
+              description: `Active production contract for ${c.gigTitle}`,
+              expectedDeliverables: ['Deliverable scope per contract agreement'],
+              requiredSkills: ['Full Stack', 'Design'],
+              preferredColleges: ['PCTE Group of Institutes'],
+              status: c.status === 'in_progress' ? ('in_progress' as const) : c.status === 'completed' ? ('completed' as const) : ('in_progress' as const),
+              createdAt: 'Recently',
+              milestones: (c.milestones || []).map((m: any) => ({
+                id: m.id,
+                title: m.title,
+                description: m.criteria || 'Deliverable scope criteria',
+                amount: m.amount,
+                percentage: Math.round((m.amount / (c.totalAmount || 1)) * 100),
+                status: m.status === 'approved' ? 'completed' : m.status === 'under_review' ? 'under_review' : m.status === 'active' ? 'active' : 'locked',
+              }))
+            }));
+          }
+        } catch {
+          // not authenticated or network error
+        }
+
+        if (active) {
+          const combined = [...contractGigs, ...backendGigs.filter(bg => !contractGigs.some(cg => cg.id === bg.id))];
+          if (combined.length > 0) {
+            setGigs(combined);
+          }
         }
       } catch (err) {
         // Fallback to initial mock gigs
@@ -126,7 +173,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     fetchLiveGigs();
     return () => { active = false; };
-  }, []);
+  }, [currentUser.id]);
 
   // Global Supabase session synchronization. The backend validates the Supabase
   // access token and owns the VeriGig account/session, so OAuth and email use

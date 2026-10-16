@@ -131,6 +131,9 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { disputesRoutes } = await import('./modules/disputes/disputes.routes.js');
   await app.register(disputesRoutes, { prefix: '/api/v1/disputes' });
 
+  const { analyticsRoutes } = await import('./modules/analytics/analytics.routes.js');
+  await app.register(analyticsRoutes, { prefix: '/api/v1/analytics' });
+
   // Direct alias for student applications tracking per specification
   const { ApplicationsService } = await import('./modules/applications/applications.service.js');
   const { PaymentsService } = await import('./modules/payments/payments.service.js');
@@ -140,6 +143,20 @@ export async function buildApp(): Promise<FastifyInstance> {
   const applicationsService = new ApplicationsService();
   const paymentsService = new PaymentsService();
   const disputesService = new DisputesService();
+
+  // Alias for employer gig candidate pipeline
+  app.get<{ Params: { id: string } }>(
+    '/api/v1/gigs/:id/applications',
+    { preHandler: [authenticate, requireRole(['employer', 'admin'])] },
+    async (req, reply) => {
+      const candidates = await applicationsService.getGigApplications(
+        req.currentUser!.id,
+        req.currentUser!.role,
+        req.params.id
+      );
+      return reply.send({ gigId: req.params.id, candidates, total: candidates.length });
+    }
+  );
 
   app.get(
     '/api/v1/student/applications',
