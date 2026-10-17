@@ -80,7 +80,16 @@ export const gigsApi = {
 // ==========================================
 
 export const applicationsApi = {
-  applyForGig: (gigId: string, data: { coverNote: string; proposedTimeline?: string; portfolioItems?: any[] }) =>
+  applyForGig: (
+    gigId: string, 
+    data: { 
+      coverNote: string; 
+      proposedTimeline?: string; 
+      bidAmount?: number; 
+      portfolioItems?: any[]; 
+      termsAccepted?: boolean; 
+    }
+  ) =>
     api.post<any>(`/gigs/${gigId}/apply`, data),
   getStudentApplications: () => api.get<any>('/student/applications'),
   getGigApplicants: (gigId: string) => api.get<any>(`/gigs/${gigId}/applications`),
