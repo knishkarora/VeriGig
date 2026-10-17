@@ -129,6 +129,13 @@ export const StudentDashboard: React.FC = () => {
             </div>
             <div className="text-[11px] text-slate-500 font-semibold mt-1">
               {activeGigs.length > 0 ? 'Safely reserved in escrow for active milestones' : 'No active project funds locked'}
+              <button
+                type="button" 
+                onClick={() => setIsEscrowModalOpen(true)}
+                className="text-[10px] text-purple-700 font-bold underline"
+              >
+                What is Secured Pay / Escrow?
+              </button>
             </div>
           </div>
 

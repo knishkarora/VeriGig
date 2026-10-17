@@ -6,7 +6,8 @@ import {
   gigPolicyFlags, 
   users, 
   businessProfiles, 
-  auditEvents 
+  auditEvents,
+  applications 
 } from '../../db/schema/index.js';
 import { CreateGigInput, FilterGigsInput, ModerateGigInput } from './gigs.schema.js';
 
@@ -168,11 +169,16 @@ export class GigsService {
           orderBy: [gigMilestones.sequenceOrder],
         });
 
+        const gigApps = await db.query.applications.findMany({
+          where: eq(applications.gigId, g.id),
+        });
+
         return {
           ...g,
           employerName: employer?.companyName || 'Regional Enterprise',
           employerCompany: employer?.companyName || 'Regional Enterprise',
           employerVerified: employer?.verifiedBadge || false,
+          applicantsCount: gigApps.length,
           milestones,
         };
       })
@@ -204,11 +210,16 @@ export class GigsService {
       orderBy: [gigMilestones.sequenceOrder],
     });
 
+    const gigApps = await db.query.applications.findMany({
+      where: eq(applications.gigId, gig.id),
+    });
+
     return {
       ...gig,
       employerName: employer?.companyName || 'Regional Enterprise',
       employerCompany: employer?.companyName || 'Regional Enterprise',
       employerVerified: employer?.verifiedBadge || false,
+      applicantsCount: gigApps.length,
       milestones,
     };
   }

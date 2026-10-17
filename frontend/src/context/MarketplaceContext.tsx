@@ -18,7 +18,7 @@ import {
   initialDisputes, 
   initialNotifications 
 } from '../data/mockData';
-import { gigsApi, authApi, contractsApi } from '../api/endpoints';
+import { gigsApi, authApi, contractsApi, applicationsApi } from '../api/endpoints';
 import { supabase, OAUTH_PENDING_ROLE_KEY } from '../api/supabase';
 import { toMarketplaceUser } from '../auth/user';
 
@@ -41,7 +41,7 @@ interface MarketplaceContextType {
   addNotification: (title: string, message: string, type: NotificationItem['type'], link?: string) => void;
   postGig: (gig: Partial<MicroGig> & { title: string; category: MicroGig['category']; totalBudget: number; milestones: Milestone[] }) => string;
   addOrUpdateGig: (gig: MicroGig) => void;
-  submitProposal: (gigId: string, coverNote: string, bidAmount: number, deliveryTimeDays: number, portfolioLinks: { label: string; url: string }[]) => void;
+  submitProposal: (gigId: string, coverNote: string, bidAmount: number, deliveryTimeDays: number, portfolioLinks: { label: string; url: string }[], existingId?: string) => Proposal;
   hireApplicant: (proposalId: string) => void;
   shortlistApplicant: (proposalId: string) => void;
   submitDeliverable: (gigId: string, milestoneId: string, data: { liveUrl: string; repoUrl?: string; notes: string }) => void;
@@ -77,8 +77,29 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   });
 
+  const loadPersistedProposals = (): Proposal[] => {
+    try {
+      const raw = localStorage.getItem('verigig_proposals');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const merged = [...parsed];
+          for (const ip of initialProposals) {
+            if (!merged.some(m => m.id === ip.id)) {
+              merged.push(ip);
+            }
+          }
+          return merged;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return initialProposals;
+  };
+
   const [gigs, setGigs] = useState<MicroGig[]>(initialGigs);
-  const [proposals, setProposals] = useState<Proposal[]>(initialProposals);
+  const [proposals, setProposals] = useState<Proposal[]>(loadPersistedProposals);
   const [verifications, setVerifications] = useState<VerificationRequest[]>(initialVerifications);
   const [disputes, setDisputes] = useState<Dispute[]>(initialDisputes);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
@@ -87,7 +108,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const handledSupabaseTokens = useRef(new Set<string>());
 
   // Sync live gigs from backend if Fastify server is reachable
-  // Sync live gigs & user contracts from backend
+  // Sync live gigs, user contracts & applications from backend
   useEffect(() => {
     let active = true;
     const fetchLiveGigs = async () => {
@@ -113,6 +134,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
             requiredSkills: g.requiredSkills || ['React', 'TypeScript'],
             preferredColleges: g.preferredColleges || ['PCTE Group of Institutes'],
             status: g.status || 'open',
+            applicantsCount: typeof g.applicantsCount === 'number' ? g.applicantsCount : 0,
             createdAt: g.createdAt || 'Today',
             milestones: g.milestones || [
               { id: `ms-${g.id}-1`, title: 'Milestone 1: Deliverables', description: 'Complete work criteria', amount: g.totalBudget, percentage: 100, status: 'active' }
@@ -166,6 +188,93 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
             setGigs(combined);
           }
         }
+
+        // Live Proposal / Application Synchronization
+        if (currentUser.role === 'student') {
+          try {
+            const aRes = await applicationsApi.getStudentApplications();
+            if (aRes && Array.isArray(aRes.applications) && active) {
+              const liveProps: Proposal[] = aRes.applications.map((app: any) => ({
+                id: app.id,
+                gigId: app.gigId,
+                studentId: currentUser.id,
+                studentName: currentUser.name,
+                studentCollege: currentUser.collegeOrCompany,
+                studentAvatar: currentUser.avatar || '',
+                studentGpa: currentUser.gpa || '8.8 GPA',
+                matchScore: app.fitScore || 90,
+                coverNote: app.coverNote,
+                bidAmount: app.bidAmount,
+                deliveryTimeDays: parseInt(app.proposedTimeline) || 7,
+                portfolioLinks: Array.isArray(app.portfolioItems) ? app.portfolioItems : [],
+                status: app.status || 'submitted',
+                submittedAt: app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+              }));
+
+              setProposals(prev => {
+                const combined = [...liveProps];
+                for (const p of prev) {
+                  if (!combined.some(c => c.id === p.id || (c.gigId === p.gigId && c.studentId === p.studentId))) {
+                    combined.push(p);
+                  }
+                }
+                try {
+                  localStorage.setItem('verigig_proposals', JSON.stringify(combined));
+                } catch {}
+                return combined;
+              });
+            }
+          } catch {
+            // Unauthenticated or offline
+          }
+        } else if (currentUser.role === 'employer') {
+          try {
+            const relevantGigs = backendGigs.filter(bg => 
+              bg.employerId === currentUser.id ||
+              (currentUser.collegeOrCompany && bg.employerCompany && bg.employerCompany.toLowerCase().includes(currentUser.collegeOrCompany.toLowerCase()))
+            );
+            for (const eg of relevantGigs) {
+              try {
+                const cRes = await applicationsApi.getGigApplicants(eg.id);
+                if (cRes && Array.isArray(cRes.candidates) && active) {
+                  const empProps: Proposal[] = cRes.candidates.map((c: any) => ({
+                    id: c.id,
+                    gigId: c.gigId,
+                    studentId: c.studentId,
+                    studentName: c.studentName || 'Student Applicant',
+                    studentCollege: c.studentCollege || 'Verified Campus',
+                    studentAvatar: c.studentAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+                    studentGpa: c.studentDegree || 'Undergraduate',
+                    matchScore: c.fitScore || 90,
+                    coverNote: c.coverNote,
+                    bidAmount: c.bidAmount || eg.totalBudget,
+                    deliveryTimeDays: parseInt(c.proposedTimeline) || 7,
+                    portfolioLinks: Array.isArray(c.portfolioItems) ? c.portfolioItems : [],
+                    status: c.status || 'submitted',
+                    submittedAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+                  }));
+
+                  setProposals(prev => {
+                    const combined = [...empProps];
+                    for (const p of prev) {
+                      if (!combined.some(c => c.id === p.id)) {
+                        combined.push(p);
+                      }
+                    }
+                    try {
+                      localStorage.setItem('verigig_proposals', JSON.stringify(combined));
+                    } catch {}
+                    return combined;
+                  });
+                }
+              } catch {
+                // Continue with next gig
+              }
+            }
+          } catch {
+            // Ignore employer candidate sync error
+          }
+        }
       } catch (err) {
         // Fallback to initial mock gigs
       }
@@ -173,7 +282,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     fetchLiveGigs();
     return () => { active = false; };
-  }, [currentUser.id]);
+  }, [currentUser.id, currentUser.role]);
 
   // Global Supabase session synchronization. The backend validates the Supabase
   // access token and owns the VeriGig account/session, so OAuth and email use
@@ -383,10 +492,17 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return gigId;
   };
 
-  const submitProposal = (gigId: string, coverNote: string, bidAmount: number, deliveryTimeDays: number, portfolioLinks: { label: string; url: string }[]) => {
+  const submitProposal = (
+    gigId: string, 
+    coverNote: string, 
+    bidAmount: number, 
+    deliveryTimeDays: number, 
+    portfolioLinks: { label: string; url: string }[],
+    existingId?: string
+  ): Proposal => {
     const gig = gigs.find(g => g.id === gigId);
     const newProp: Proposal = {
-      id: `prop-${Date.now()}`,
+      id: existingId || `prop-${Date.now()}`,
       gigId,
       studentId: currentUser.id,
       studentName: currentUser.name,
@@ -402,20 +518,41 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       submittedAt: 'Just now'
     };
 
-    setProposals(prev => [newProp, ...prev]);
-    setGigs(prev => prev.map(g => g.id === gigId ? { ...g, applicantsCount: g.applicantsCount + 1 } : g));
+    setProposals(prev => {
+      const filtered = prev.filter(p => !(p.id === newProp.id || (p.gigId === gigId && p.studentId === currentUser.id)));
+      const updated = [newProp, ...filtered];
+      try {
+        localStorage.setItem('verigig_proposals', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setGigs(prev => prev.map(g => g.id === gigId ? { ...g, applicantsCount: (g.applicantsCount || 0) + 1 } : g));
     addNotification('Proposal Submitted', `You applied to "${gig?.title || 'Micro-gig'}". The business will review your profile.`, 'applicant', `/app/student/gig/${gigId}`);
+    return newProp;
   };
 
   const shortlistApplicant = (proposalId: string) => {
-    setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: 'shortlisted' } : p));
+    setProposals(prev => {
+      const updated = prev.map(p => p.id === proposalId ? { ...p, status: 'shortlisted' as const } : p);
+      try {
+        localStorage.setItem('verigig_proposals', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const hireApplicant = (proposalId: string) => {
     const proposal = proposals.find(p => p.id === proposalId);
     if (!proposal) return;
 
-    setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, status: 'hired' } : p));
+    setProposals(prev => {
+      const updated = prev.map(p => p.id === proposalId ? { ...p, status: 'hired' as const } : p);
+      try {
+        localStorage.setItem('verigig_proposals', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     setGigs(prev => prev.map(g => {
       if (g.id === proposal.gigId) {
         return {

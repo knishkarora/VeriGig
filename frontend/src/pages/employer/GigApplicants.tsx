@@ -91,8 +91,10 @@ export const GigApplicants: React.FC = () => {
     return () => { active = false; };
   }, [gig?.id]);
 
-  // Combine fetched candidates with any newly submitted proposals in memory
-  const memoryProps = gig ? proposals.filter(p => p.gigId === gig.id && !apiCandidates.some(c => c.id === p.id)) : [];
+  // Combine fetched candidates with any newly submitted proposals in context/localStorage
+  const memoryProps = gig ? proposals.filter(p => 
+    p.gigId === gig.id && !apiCandidates.some(c => c.id === p.id || (c.studentId && p.studentId && c.studentId === p.studentId))
+  ) : [];
   const gigProposals = [...apiCandidates, ...memoryProps];
 
   // Modals

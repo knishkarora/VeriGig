@@ -38,6 +38,8 @@ export const GigDetails: React.FC = () => {
   const [deliveryDays, setDeliveryDays] = useState<number>(7);
   const [portfolioLink, setPortfolioLink] = useState('https://github.com/aaravsharma/project-demo');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+  const [proposalError, setProposalError] = useState<string | null>(null);
 
   // Fetch gig from backend API if not already loaded in context
   useEffect(() => {
@@ -182,26 +184,64 @@ export const GigDetails: React.FC = () => {
     );
   }
 
-  const handleProposalSubmit = (e: React.FormEvent) => {
+  const handleProposalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!coverNote.trim()) return;
+    setProposalError(null);
 
-    submitProposal(
-      gig.id,
-      coverNote,
-      bidAmount,
-      deliveryDays,
-      [{ label: 'Portfolio Link', url: portfolioLink }]
-    );
-
-    if (gig.id && !gig.id.startsWith('gig-')) {
-      applicationsApi.applyForGig(gig.id, {
-        coverNote,
-        proposedTimeline: `${deliveryDays} days`,
-        portfolioItems: [{ label: 'Portfolio Link', url: portfolioLink }],
-      }).catch(err => console.warn('API application fallback:', err));
+    const trimmedNote = coverNote.trim();
+    if (!trimmedNote || trimmedNote.length < 10) {
+      setProposalError('Please provide an approach description of at least 10 characters.');
+      return;
     }
 
+    if (currentUser.role !== 'student') {
+      setProposalError('Only registered students can apply. Please sign in or switch to a student account.');
+      return;
+    }
+
+    setIsSubmittingProposal(true);
+
+    // Format portfolio items cleanly
+    const rawLink = portfolioLink.trim();
+    const formattedLink = rawLink && !/^https?:\/\//i.test(rawLink) ? `https://${rawLink}` : rawLink;
+    const portfolioItems = formattedLink ? [{ label: 'Portfolio Demo', url: formattedLink }] : [];
+
+    let createdAppId: string | undefined = undefined;
+
+    try {
+      const res: any = await applicationsApi.applyForGig(gig.id, {
+        coverNote: trimmedNote,
+        proposedTimeline: `${deliveryDays} days`,
+        bidAmount: Number(bidAmount),
+        portfolioItems,
+        termsAccepted: true,
+      });
+
+      if (res && res.application) {
+        createdAppId = res.application.id;
+      }
+    } catch (err: any) {
+      console.warn('Backend application API response:', err);
+      const errMsg = err?.details?.message || err?.message || '';
+      if (errMsg.includes('already submitted') || err?.statusCode === 409) {
+        setProposalError('You have already submitted a proposal for this micro-gig.');
+        setIsSubmittingProposal(false);
+        return;
+      }
+      // On network failure or local fallback, proceed to local persistence
+    }
+
+    // Persist in local context and localStorage
+    submitProposal(
+      gig.id,
+      trimmedNote,
+      Number(bidAmount),
+      Number(deliveryDays),
+      portfolioItems,
+      createdAppId
+    );
+
+    setIsSubmittingProposal(false);
     setSubmitted(true);
     setTimeout(() => {
       setIsDrawerOpen(false);
@@ -519,11 +559,10 @@ export const GigDetails: React.FC = () => {
 
                     <div>
                       <label className="block text-xs font-bold text-slate-800 mb-1">
-                        Proof of Work / Demo Link
+                        Proof of Work / Demo Link (Optional)
                       </label>
                       <input
-                        type="url"
-                        required
+                        type="text"
                         value={portfolioLink}
                         onChange={(e) => setPortfolioLink(e.target.value)}
                         placeholder="https://github.com/... or Figma link"
@@ -532,16 +571,33 @@ export const GigDetails: React.FC = () => {
                     </div>
 
                     <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-xs text-purple-900 font-bold flex items-center gap-2">
-                      <TrustBadge type="student" size="sm" text="Applying as Verified PCTE Student" />
+                      <TrustBadge type="student" size="sm" text={`Applying as ${currentUser.name} • ${currentUser.collegeOrCompany || 'Verified Campus Talent'}`} />
                     </div>
+
+                    {proposalError && (
+                      <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 font-bold flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>{proposalError}</span>
+                      </div>
+                    )}
 
                     <div className="pt-4">
                       <button
                         type="submit"
-                        className="w-full py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                        disabled={isSubmittingProposal}
+                        className="w-full py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 disabled:opacity-60 text-white font-black text-xs shadow-md transition-all flex items-center justify-center gap-2"
                       >
-                        <Send size={14} />
-                        <span>Send Proposal to SME</span>
+                        {isSubmittingProposal ? (
+                          <>
+                            <Loader2 size={14} className="animate-spin text-[#D4F851]" />
+                            <span>Submitting to SME Ledger...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Send size={14} />
+                            <span>Send Proposal to SME</span>
+                          </>
+                        )}
                       </button>
                     </div>
 

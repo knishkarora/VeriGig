@@ -116,3 +116,11 @@
   - [x] Generated and applied migration `0010_aspiring_carnage.sql` against Supabase PostgreSQL database.
   - [x] Built Fastify endpoints `POST /api/v1/weekly-drops/subscribe` and `GET /api/v1/weekly-drops/subscribers` ([weekly-drops.routes.ts](../backend/src/modules/weekly-drops/weekly-drops.routes.ts)).
   - [x] Connected [Footer.tsx](../frontend/src/components/shared/Footer.tsx) with real-time API subscription call, loading spinner, dynamic confirmation feedback, and deduplication handling.
+- [x] Proposal Lifecycle Persistence, Schema Normalization & Dual-Role Synchronization:
+  - [x] Schema & Validation: Defaulted `termsAccepted: true` in `applyGigSchema`, relaxed `coverNote` threshold, allowed flexible portfolio link strings, and auto-provisioned student profiles in `ApplicationsService.applyToGig`.
+  - [x] Telemetry & Metrics: Added live `applicantsCount` counting in `GigsService.listGigs` and `GigsService.getGigById` from PostgreSQL `applications` table.
+  - [x] Employer Authorization: Enhanced `getGigApplications` to recognize company name matching so both demo accounts and database employers access candidate pipelines.
+  - [x] Robust Proposal Submission: Wired `GigDetails.tsx` to await `applicationsApi.applyForGig` with full parameters (`termsAccepted`, `bidAmount`, `proposedTimeline`, clean `portfolioItems`), capture real application UUID, and persist into client context.
+  - [x] Dual-Layer Persistence & Role Sync: Updated [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx) to cache proposals in `localStorage` under `verigig_proposals` and dynamically query `applicationsApi.getStudentApplications()` for students and `applicationsApi.getGigApplicants(gig.id)` for employers.
+  - [x] Student Profile Proposal Tracker: Added dedicated "Submitted Proposals & Applications" tracker section to [StudentProfile.tsx](../frontend/src/pages/student/StudentProfile.tsx) matching [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx).
+

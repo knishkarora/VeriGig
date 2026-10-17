@@ -346,7 +346,7 @@ export const Navbar: React.FC = () => {
                 className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm btn-tactile"
               >
                 <PlusCircle size={14} className="text-[#D4F851]" />
-                <span>Post a Task</span>
+                <span>Post Tasks</span>
               </Link>
             ) : (
               <Link

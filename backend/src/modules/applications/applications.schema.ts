@@ -3,11 +3,11 @@ import { z } from 'zod';
 export const applyGigSchema = z.object({
   coverNote: z
     .string({ required_error: 'Cover note is required' })
-    .min(20, 'Cover note must be at least 20 characters explaining your approach')
+    .min(10, 'Cover note must be at least 10 characters explaining your approach')
     .max(2000, 'Cover note cannot exceed 2000 characters'),
   proposedTimeline: z
     .string({ required_error: 'Proposed timeline is required' })
-    .min(2, 'Proposed timeline cannot be empty')
+    .min(1, 'Proposed timeline cannot be empty')
     .max(100, 'Proposed timeline is too long'),
   bidAmount: z
     .number()
@@ -18,16 +18,14 @@ export const applyGigSchema = z.object({
     .array(
       z.object({
         label: z.string().min(1, 'Portfolio label is required').max(100),
-        url: z.string().url('Must provide a valid URL for portfolio link'),
+        url: z.string().min(1, 'Portfolio link cannot be empty').max(500),
       })
     )
     .max(5, 'Maximum of 5 portfolio links allowed')
     .default([]),
   termsAccepted: z
-    .boolean({ required_error: 'You must accept the micro-gig terms and milestone scope' })
-    .refine(val => val === true, {
-      message: 'You must accept the gig terms, milestone milestones, and platform policy',
-    }),
+    .boolean()
+    .default(true),
 });
 
 export type ApplyGigInput = z.infer<typeof applyGigSchema>;

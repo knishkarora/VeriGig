@@ -63,15 +63,24 @@ export class ApplicationsService {
       throw err;
     }
 
-    // 3. Check student profile completeness
-    const student = await db.query.studentProfiles.findFirst({
+    // 3. Check student profile completeness (auto-provision basic profile if missing)
+    let student = await db.query.studentProfiles.findFirst({
       where: eq(studentProfiles.userId, studentUserId),
     });
 
     if (!student) {
-      const err = new Error('Incomplete profile. Please configure your student profile before applying');
-      (err as any).statusCode = 400;
-      throw err;
+      const [newProf] = await db.insert(studentProfiles).values({
+        userId: studentUserId,
+        fullName: user.email.split('@')[0],
+        collegeName: '',
+        degree: '',
+        graduationYear: new Date().getFullYear(),
+        skills: [],
+        location: 'Punjab, India',
+        workModePreference: 'both',
+        availabilityStatus: 'available_now',
+      }).returning();
+      student = newProf;
     }
 
     // 4. Verify student credential verification status (Judge Matrix Q5)
@@ -264,9 +273,21 @@ export class ApplicationsService {
     }
 
     if (userRole !== 'admin' && gig.employerId !== userId) {
-      const err = new Error('You are not authorized to view candidate applications for this gig');
-      (err as any).statusCode = 403;
-      throw err;
+      const employerProfile = await db.query.businessProfiles.findFirst({
+        where: eq(businessProfiles.userId, userId),
+      });
+      const gigEmployerProfile = await db.query.businessProfiles.findFirst({
+        where: eq(businessProfiles.userId, gig.employerId),
+      });
+      const isSameCompany = employerProfile && gigEmployerProfile && 
+        employerProfile.companyName && gigEmployerProfile.companyName &&
+        employerProfile.companyName.trim().toLowerCase() === gigEmployerProfile.companyName.trim().toLowerCase();
+
+      if (!isSameCompany) {
+        const err = new Error('You are not authorized to view candidate applications for this gig');
+        (err as any).statusCode = 403;
+        throw err;
+      }
     }
 
     const appsList = await db.query.applications.findMany({

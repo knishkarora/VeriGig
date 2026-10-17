@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Code2, Edit3, GraduationCap, Mail, MapPin, Star, UserRound } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CheckCircle2, Code2, Edit3, GraduationCap, Mail, MapPin, Star, UserRound, FileText, Send } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
 import { EditProfileDrawer } from '../../components/student/EditProfileDrawer';
 import { ProfileCompletionBar } from '../../components/student/ProfileCompletionBar';
 
 export const StudentProfile: React.FC = () => {
-  const { currentUser, loginUser } = useMarketplace();
+  const { currentUser, loginUser, proposals, gigs } = useMarketplace();
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const myProposals = proposals.filter(p => p.studentId === currentUser.id);
   const skills = currentUser.skills || [];
   const portfolioItems = currentUser.portfolioLinks || [];
   const initials = currentUser.name.split(' ').filter(Boolean).map((name) => name[0]).join('').slice(0, 2).toUpperCase() || 'U';
@@ -75,6 +77,77 @@ export const StudentProfile: React.FC = () => {
           <section className="p-8 rounded-[2rem] bg-white border border-purple-100 shadow-sm space-y-5">
             <div className="flex items-center justify-between"><h2 className="text-lg font-black text-[#121214]">Portfolio</h2><span className="text-xs text-slate-500 font-bold">{portfolioItems.length} item{portfolioItems.length === 1 ? '' : 's'}</span></div>
             {portfolioItems.length ? <div className="space-y-3">{portfolioItems.map((item) => <a key={`${item.label}-${item.url}`} href={item.url} target="_blank" rel="noreferrer" className="block p-4 rounded-2xl bg-purple-50/50 border border-purple-100 hover:border-purple-300"><span className="text-xs font-black text-[#121214]">{item.label}</span><span className="block text-[11px] text-purple-700 font-medium truncate mt-1">{item.url}</span></a>)}</div> : <p className="text-xs text-slate-500">No portfolio links have been added.</p>}
+          </section>
+
+          {/* Submitted Proposals Tracker */}
+          <section className="p-8 rounded-[2rem] bg-white border border-purple-100 shadow-sm space-y-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-black text-[#121214] flex items-center gap-2">
+                <FileText size={18} className="text-purple-700" />
+                <span>Submitted Proposals & Applications</span>
+              </h2>
+              <span className="text-xs font-bold text-purple-900 bg-purple-50 border border-purple-200 px-3 py-1 rounded-full tabular-nums">
+                {myProposals.length} Submitted
+              </span>
+            </div>
+
+            {myProposals.length > 0 ? (
+              <div className="space-y-3">
+                {myProposals.map((prop) => {
+                  const targetGig = gigs.find((g) => g.id === prop.gigId);
+                  return (
+                    <div
+                      key={prop.id}
+                      className="p-5 rounded-2xl bg-purple-50/40 border border-purple-100/80 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    >
+                      <div className="space-y-1">
+                        <Link
+                          to={`/app/student/gig/${prop.gigId}`}
+                          className="text-xs font-black text-slate-900 hover:text-purple-700 block transition-colors"
+                        >
+                          {targetGig?.title || 'Campus Micro-Gig'} ↗
+                        </Link>
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500 font-medium">
+                          <span className="font-mono font-bold text-slate-900">Bid: ₹{prop.bidAmount.toLocaleString()}</span>
+                          <span>•</span>
+                          <span>Turnaround: {prop.deliveryTimeDays} days</span>
+                          <span>•</span>
+                          <span>{prop.submittedAt}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 line-clamp-1 italic mt-0.5">"{prop.coverNote}"</p>
+                      </div>
+
+                      <div className="shrink-0 flex items-center gap-2">
+                        <span
+                          className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${
+                            prop.status === 'hired'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : prop.status === 'shortlisted'
+                              ? 'bg-purple-100 text-purple-800 border border-purple-300'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {prop.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-6 rounded-2xl bg-slate-50/70 border border-dashed border-slate-200 text-center space-y-2">
+                <p className="text-xs font-bold text-slate-800">No proposals submitted yet</p>
+                <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                  Explore open campus micro-gigs, submit your approach, and track your active proposals here.
+                </p>
+                <Link
+                  to="/app/student/explore"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#121214] text-white text-xs font-bold shadow-xs hover:bg-slate-800 transition-all mt-1"
+                >
+                  <span>Browse Gigs ↗</span>
+                </Link>
+              </div>
+            )}
           </section>
         </div>
         <aside className="lg:col-span-4 space-y-6">
