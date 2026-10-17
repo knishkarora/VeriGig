@@ -436,7 +436,7 @@ export const StudentWorkspace: React.FC = () => {
       {/* Stage-Wise Milestones List */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black text-[#101014] flex items-center gap-2.5">
+          <h2 className="text-xl font-black text-white flex items-center gap-2.5">
             <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center border border-purple-200 shadow-xs">
               <Layers size={17} />
             </span>
@@ -551,7 +551,7 @@ export const StudentWorkspace: React.FC = () => {
       {/* Past Completed Projects Archive Drawer/Section */}
       <div className="pt-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-black text-[#101014] flex items-center gap-2">
+          <h3 className="text-lg font-black text-white flex items-center gap-2">
             <History size={18} className="text-slate-700" />
             <span>Past Completed Projects</span>
           </h3>
