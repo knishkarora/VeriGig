@@ -86,7 +86,60 @@ sequenceDiagram
     end
 ```
 
+### Flow E: Cross-Route Guest Section Navigation & Notification Concealment
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Guest as Unauthenticated Guest
+    participant Nav as Navbar ("Why Us" / "Campus Network")
+    participant Router as React Router DOM (App / ScrollToTop)
+    participant Landing as LandingPage (/ #comparison / #colleges)
+
+    alt Guest is on non-landing route (e.g. /app/student/explore)
+        Guest->>Nav: Clicks "Why Us" or "Campus Network"
+        Nav->>Router: navigate('/#comparison') or navigate('/#colleges')
+        Router->>Landing: Mounts / route with location.hash
+        Router->>Router: ScrollToTop detects hash & targetId
+        Router->>Landing: element.scrollIntoView({ behavior: 'smooth' })
+    else Guest is already on landing page (/)
+        Guest->>Nav: Clicks "Why Us" or "Campus Network"
+        Nav->>Landing: element.scrollIntoView({ behavior: 'smooth' })
+        Nav->>Router: navigate('/#sectionId', { replace: true })
+    end
+    Note over Guest,Nav: When currentRole === 'guest', the Notification Bell and Drawer are strictly unmounted.
+```
+
+### Flow F: Weekly Drops Newsletter Subscription & Database Persistence
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Visitor as Website Visitor (Student / SME / Guest)
+    participant UI as Footer Newsletter Card
+    participant Client as Frontend API Client (weeklyDropsApi)
+    participant API as Fastify Backend (/api/v1/weekly-drops/subscribe)
+    participant DB as Supabase PostgreSQL (weekly_drops table)
+
+    Visitor->>UI: Enters email and clicks "Subscribe to Drops"
+    UI->>UI: Disables submit button & activates Loader spinner
+    UI->>Client: weeklyDropsApi.subscribe(cleanEmail, 'footer')
+    Client->>API: POST /api/v1/weekly-drops/subscribe { email, source: 'footer' }
+    API->>API: Validates email format & length via Zod
+    API->>DB: SELECT * FROM weekly_drops WHERE email = $email
+    alt Email already subscribed
+        API->>DB: Updates status to 'active' & updatedAt timestamp if needed
+        API->>Client: Returns 200 { success: true, message: 'You are already subscribed to Weekly Drops!', alreadySubscribed: true }
+    else New subscriber
+        API->>DB: INSERT INTO weekly_drops (email, source, status) VALUES ($email, 'footer', 'active')
+        API->>Client: Returns 200 { success: true, message: 'Successfully subscribed to Weekly Drops!', subscriber: {...} }
+    end
+    Client->>UI: Updates feedbackMessage and sets subscribed=true
+    UI->>Visitor: Renders green confirmation banner with dynamic welcome message
+```
+
 ## 3. Boundary Crossings & Safety Gates
 1. **Confidentiality Gate (DPDPA 2023):** Physical business address and contact phone numbers are stored as internal KYC attributes and explicitly excluded from the public employer profile view.
 2. **Gig Assignment Gate:** Workspaces no longer assume or inject static mock names (e.g. `Aarav Sharma`) when an employer has no hired candidate.
 3. **Route Neutrality:** Navbar navigation paths for pipeline and workspace are decoupled from static seeded mock IDs.
+4. **Guest Authentication & Navigation Isolation:** Inactive notification bells and empty drawer containers are prohibited for guests (`currentRole !== 'guest'`), and section anchor links gracefully transition cross-route to the landing page with sticky-header clearance (`scroll-mt-24`).
+5. **Newsletter Deduplication & Sanitization Gate:** All newsletter submissions are normalized (trimmed, lowercased), schema-validated with strict regex email constraints, deduplicated against the unique constraint on `weekly_drops.email`, and protected by optimistic fallback handling during presentation modes.
+

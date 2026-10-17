@@ -111,3 +111,8 @@
   - [x] Enhanced [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx) to query user contracts on authentication and merge in-progress and completed contracts into the active workspace.
 - [x] Verified 100% clean production builds for both backend and frontend (`npm run build`).
 - [x] Fixed deployment crash (`==> Exited with status 1`): resolved duplicate route registration for `GET /api/v1/gigs/:id/applications` in `backend/src/app.ts` (already handled in `gigs.routes.ts`), guarded `buildApp()` in `index.ts` with explicit startup exception logging, and updated `render.yaml` to include devDependencies (`typescript`) during build.
+- [x] Weekly Drops Newsletter Database Persistence:
+  - [x] Created `weekly_drops` table in PostgreSQL ([weekly-drops.ts](../backend/src/db/schema/weekly-drops.ts)) with unique email constraint, subscription status, source tracking (`footer`), and timestamp auditing.
+  - [x] Generated and applied migration `0010_aspiring_carnage.sql` against Supabase PostgreSQL database.
+  - [x] Built Fastify endpoints `POST /api/v1/weekly-drops/subscribe` and `GET /api/v1/weekly-drops/subscribers` ([weekly-drops.routes.ts](../backend/src/modules/weekly-drops/weekly-drops.routes.ts)).
+  - [x] Connected [Footer.tsx](../frontend/src/components/shared/Footer.tsx) with real-time API subscription call, loading spinner, dynamic confirmation feedback, and deduplication handling.

@@ -1,5 +1,22 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-17] Milestone: Weekly Drops Newsletter Database Persistence & Migration
+* **Key Changes:**
+  - **Database Schema & Migration:** Created the `weekly_drops` table in Drizzle ORM ([weekly-drops.ts](backend/src/db/schema/weekly-drops.ts)) with unique email constraint, subscription status, source tracker, and timestamp audit columns. Generated and applied migration `0010_aspiring_carnage.sql` against the Supabase PostgreSQL database.
+  - **REST API Endpoints:** Built and registered `weeklyDropsRoutes` ([weekly-drops.routes.ts](backend/src/modules/weekly-drops/weekly-drops.routes.ts)) providing public subscription `POST /api/v1/weekly-drops/subscribe` with Zod validation, idempotency/reactivation logic, and administrative listing `GET /api/v1/weekly-drops/subscribers`.
+  - **Frontend Client Integration:** Added `weeklyDropsApi` in [endpoints.ts](frontend/src/api/endpoints.ts) and connected [Footer.tsx](frontend/src/components/shared/Footer.tsx) newsletter form with real-time submission, active button disabled state with spinning loader (`Loader2`), inline validation error messaging, and dynamic confirmation response.
+* **Decisions Made:** [[decision.md]] — Weekly Drops Newsletter Database Persistence & Uniqueness Constraints.
+* **Verification:** Drizzle migration applied to Supabase PostgreSQL; both `backend` (`tsc`) and `frontend` (`tsc -b && vite build`) passed with zero errors.
+
+## [2026-10-17] Milestone: Cross-Route Anchor Navigation & Unauthenticated Notification Concealment
+* **Key Changes:**
+  - **Cross-Route Guest Navigation:** In [Navbar.tsx](frontend/src/components/shared/Navbar.tsx), upgraded "Why Us" and "Campus Network" navigation items with `handleSectionNav`. When unauthenticated guests are on external pages (e.g. `/app/student/explore`), clicking either link smoothly routes to `/#comparison` or `/#colleges` on the landing page, eliminating inert anchor clicks. Added corresponding links to the mobile dropdown menu.
+  - **Anchor Scroll Restoration:** Enhanced `ScrollToTop` in [App.tsx](frontend/src/App.tsx) with hash detection to ensure cross-route transitions to `#comparison` and `#colleges` automatically execute smooth scrolling to the target section once the DOM has mounted.
+  - **Header Clearance Margins:** Added `scroll-mt-24` to `<section id="comparison">` and `<section id="colleges">` in [LandingPage.tsx](frontend/src/pages/LandingPage.tsx) so smooth scrolls preserve a clean breathing margin below the sticky navigation bar.
+  - **Unauthenticated Notification Concealment:** Gated both the desktop/mobile Notification Bell button and `NotificationDrawer` in [Navbar.tsx](frontend/src/components/shared/Navbar.tsx) strictly behind `{currentRole !== 'guest' && (...)}`, ensuring guests only see clean exploration and "Login / Register" CTAs.
+* **Decisions Made:** [[decision.md]] — Cross-Route Guest Section Navigation & Unauthenticated Notification Hygiene.
+* **Verification:** Production build verified with `tsc -b && vite build` passing cleanly with zero errors.
+
 ## [2026-10-16] Milestone: Backend Deployment Crash Fix (`FST_ERR_DUPLICATED_ROUTE` & Render Build Resilience)
 * **Root Cause Diagnosis:**
   - Deployment log `==> Exited with status 1` was caused by a duplicate Fastify route collision during `buildApp()` bootstrap: `app.get('/api/v1/gigs/:id/applications')` was registered in `backend/src/app.ts` while `gigs.routes.ts` already registered `/:id/applications` under `/api/v1/gigs`. Fastify threw `FST_ERR_DUPLICATED_ROUTE: Method 'GET' already declared for route '/api/v1/gigs/:id/applications'`.

@@ -232,6 +232,10 @@ export async function buildApp(): Promise<FastifyInstance> {
   const { messagingRoutes } = await import('./modules/messaging/messaging.routes.js');
   await app.register(messagingRoutes, { prefix: '/api/v1/messaging' });
 
+  // Weekly Drops Newsletter Subscriptions
+  const { weeklyDropsRoutes } = await import('./modules/weekly-drops/weekly-drops.routes.js');
+  await app.register(weeklyDropsRoutes, { prefix: '/api/v1/weekly-drops' });
+
   const { ReviewsService } = await import('./modules/reviews/reviews.service.js');
   const reviewsService = new ReviewsService();
 

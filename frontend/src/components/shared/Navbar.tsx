@@ -33,6 +33,19 @@ export const Navbar: React.FC = () => {
     navigate('/');
   };
 
+  const handleSectionNav = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault();
+    if (location.pathname === '/') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        navigate(`/#${sectionId}`, { replace: true });
+      }
+    } else {
+      navigate(`/#${sectionId}`);
+    }
+  };
+
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -72,13 +85,15 @@ export const Navbar: React.FC = () => {
                     Explore Gigs
                   </Link>
                   <a 
-                    href="#comparison" 
+                    href="/#comparison" 
+                    onClick={(e) => handleSectionNav(e, 'comparison')}
                     className="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-[#101014] hover:bg-slate-100 rounded-full transition-all"
                   >
                     Why Us
                   </a>
                   <a 
-                    href="#colleges" 
+                    href="/#colleges" 
+                    onClick={(e) => handleSectionNav(e, 'colleges')}
                     className="px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-[#101014] hover:bg-slate-100 rounded-full transition-all"
                   >
                     Campus Network
@@ -271,19 +286,21 @@ export const Navbar: React.FC = () => {
               </div>
             )}
 
-            {/* Notification Bell */}
-            <button
-              onClick={() => setIsNotifOpen(true)}
-              className="relative p-2 rounded-full text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors border border-slate-200"
-              aria-label="Notifications"
-            >
-              <Bell size={16} />
-              {unreadNotifCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#101014] text-white text-[10px] font-bold flex items-center justify-center">
-                  {unreadNotifCount}
-                </span>
-              )}
-            </button>
+            {/* Notification Bell (Only when logged in) */}
+            {currentRole !== 'guest' && (
+              <button
+                onClick={() => setIsNotifOpen(true)}
+                className="relative p-2 rounded-full text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors border border-slate-200"
+                aria-label="Notifications"
+              >
+                <Bell size={16} />
+                {unreadNotifCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#101014] text-white text-[10px] font-bold flex items-center justify-center">
+                    {unreadNotifCount}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* In-App Messaging Button */}
             {currentRole !== 'guest' && (
@@ -359,6 +376,26 @@ export const Navbar: React.FC = () => {
               <>
                 <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Home</Link>
                 <Link to="/app/student/explore" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]">Explore Gigs</Link>
+                <a 
+                  href="/#comparison" 
+                  onClick={(e) => {
+                    setIsMobileMenuOpen(false);
+                    handleSectionNav(e, 'comparison');
+                  }} 
+                  className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]"
+                >
+                  Why Us
+                </a>
+                <a 
+                  href="/#colleges" 
+                  onClick={(e) => {
+                    setIsMobileMenuOpen(false);
+                    handleSectionNav(e, 'colleges');
+                  }} 
+                  className="block py-2 text-sm font-semibold text-slate-800 hover:text-[#101014]"
+                >
+                  Campus Network
+                </a>
                 <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 text-sm font-bold text-purple-700">Login / Register</Link>
               </>
             )}
@@ -391,7 +428,9 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Notification Drawer */}
-      <NotificationDrawer isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+      {currentRole !== 'guest' && (
+        <NotificationDrawer isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+      )}
 
       {/* In-App Contextual Chat Modal */}
       <ChatModal

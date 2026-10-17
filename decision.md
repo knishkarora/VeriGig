@@ -1,5 +1,38 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-17] Decision: Weekly Drops Newsletter Database Persistence & Uniqueness Constraints
+
+* **Context & Scope:** 
+  The editorial bubblegum pink footer contains a floating newsletter card ("Weekly Drop") designed to collect student and SME email submissions for weekly campus gig alerts. Previously, submitting an email only mutated local React component state without persisting to the database.
+* **Choice Made:** 
+  1. **PostgreSQL Relational Schema (`weekly_drops`):** Defined `weeklyDrops` table in Drizzle ORM (`backend/src/db/schema/weekly-drops.ts`) containing `id` (UUID PK), `email` (varchar(255) unique constraint), `source` (default `'footer'`), `status` (default `'active'`), `created_at`, and `updated_at` timestamps.
+  2. **Migration & Deployment (`0010_aspiring_carnage.sql`):** Generated and deployed migration directly to Supabase PostgreSQL, creating the table and unique index.
+  3. **Dedicated Service & REST Endpoints:** Created `weeklyDropsRoutes` registered at `/api/v1/weekly-drops/subscribe` with Zod input schema validation (`subscribeWeeklyDropSchema`). Built idempotency logic: if an email is already subscribed, it reactivates the subscriber if marked inactive and returns a friendly already-subscribed confirmation rather than throwing an unhandled duplicate key error.
+  4. **Frontend API Integration with Tactile Feedback:** Integrated `weeklyDropsApi` into `Footer.tsx` with asynchronous submission, active button disabled state with spinning loader (`Loader2`), inline validation error presentation, dynamic confirmation banner, and optimistic fallback resilience.
+* **Rationale (Why over What):**
+  - **Data Retention & Audience Growth:** Real email persistence is essential for building the campus talent drop network, engaging local SMEs, and sending weekly curated digests.
+  - **Graceful Duplicate Handling:** Users often resubmit their email to verify subscription. Upserting/idempotency ensures the user receives positive confirmation without database collisions or 500 errors.
+  - **Separation of Concerns:** Newsletter subscriptions do not require full account creation, keeping the top of the funnel frictionless while maintaining clean relational separation from user authentication tables.
+* **Tradeoffs Accepted:**
+  - Public subscription endpoint is unauthenticated to maximize top-of-funnel conversion; email inputs are strictly sanitized, validated, and normalized to prevent spam or malformed data injection.
+* **Immutability Status:** Settled & Immutable.
+
+## [2026-10-17] Decision: Cross-Route Guest Section Navigation & Unauthenticated Notification Hygiene
+
+* **Context & Scope:** 
+  1. When unauthenticated guest visitors navigated away from the landing page to other views (such as the Explore Gigs directory `/app/student/explore`), clicking "Why Us" (`#comparison`) or "Campus Network" (`#colleges`) in the navigation header failed silently because raw hash anchors (`href="#..."`) only resolve within the active DOM page.
+  2. The navigation header displayed the notification bell button and mounted the NotificationDrawer even for unauthenticated visitors (`currentRole === 'guest'`), creating visual clutter and confusing interactions for users who do not have an active account or message stream.
+* **Choice Made:** 
+  1. **Route-Aware Cross-Page Anchor Navigation:** Implemented `handleSectionNav` within `Navbar.tsx` which checks `location.pathname`. If the user is on the landing page (`/`), it triggers immediate smooth scrolling (`element.scrollIntoView({ behavior: 'smooth' })`) and synchronizes the URL hash. If the user is on another route (such as `/app/student/explore`), it initiates client-side navigation to `/#comparison` or `/#colleges`.
+  2. **Hash-Aware Scroll Restoration & Clearance:** Enhanced `ScrollToTop` in `App.tsx` with hash detection. When navigating across routes with an anchor hash, it automatically detects the target element upon mounting and smoothly scrolls to it. Added `scroll-mt-24` to `<section id="comparison">` and `<section id="colleges">` on the Landing Page to account for the floating sticky navigation header height and prevent header occlusion.
+  3. **Role-Gated Guest Notification Hygiene:** Explicitly wrapped both the desktop/mobile Notification Bell toggle and the `NotificationDrawer` component with `{currentRole !== 'guest' && (...)}`, completely concealing notification controls when the user is not authenticated.
+* **Rationale (Why over What):**
+  - **Friction-Free Prospect Browsing:** Unauthenticated guests frequently explore the micro-gig catalog first before deciding to register. Allowing them to fluidly return to "Why Us" and "Campus Network" sections directly from any page without broken clicks maintains high conversion and intuitive user experience.
+  - **UI Truthfulness & Cleanliness:** Showing an empty notification bell to unauthenticated visitors is misleading. Gating it strictly behind authentication reserves notifications for logged-in students, SMEs, and admins with actionable marketplace events.
+* **Tradeoffs Accepted:**
+  - Anchor routing across routes introduces a slight 100ms DOM hydration buffer in `ScrollToTop` to ensure target sections mount before running `scrollIntoView`, which ensures reliable scrolling across varying network and device speeds.
+* **Immutability Status:** Settled & Immutable.
+
 ## [2026-10-15] Decision: Streamlined Onboarding, Profile Verification & Dynamic Micro-Gig Hydration
 
 * **Context & Scope:** 

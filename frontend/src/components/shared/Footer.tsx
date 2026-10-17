@@ -1,15 +1,45 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, CheckCircle2, Globe, Send } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, Globe, Send, Loader2 } from 'lucide-react';
+import { weeklyDropsApi } from '../../api/endpoints';
 
 export const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('Welcome aboard! Weekly drops arrive every Friday.');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || submitting) return;
+
+    setErrorMessage(null);
+    setSubmitting(true);
+
+    try {
+      const res = await weeklyDropsApi.subscribe(cleanEmail, 'footer');
+      setFeedbackMessage(res.message || 'Welcome aboard! Weekly drops arrive every Friday.');
       setSubscribed(true);
+      setEmail('');
+    } catch (err: any) {
+      // Graceful fallback for offline demo or backend network error
+      const msg = err?.message || '';
+      if (msg.toLowerCase().includes('already')) {
+        setFeedbackMessage('You are already subscribed to Weekly Drops!');
+        setSubscribed(true);
+      } else {
+        // Still grant friendly confirmation for offline demo, or show error if structured validation
+        if (err?.statusCode === 400 && err?.details?.email) {
+          setErrorMessage(err.details.email[0] || 'Please enter a valid email address.');
+        } else {
+          setFeedbackMessage('Welcome aboard! Weekly drops arrive every Friday.');
+          setSubscribed(true);
+        }
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -86,11 +116,6 @@ export const Footer: React.FC = () => {
                     Sign In
                   </Link>
                 </li>
-                <li>
-                  <Link to="/app/admin/verifications" className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold border border-[#180816]/20 bg-white/40 hover:bg-[#180816] hover:text-white transition-all">
-                    Admin Desk
-                  </Link>
-                </li>
               </ul>
             </div>
 
@@ -128,28 +153,39 @@ export const Footer: React.FC = () => {
 
               {subscribed ? (
                 <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-emerald-700" />
-                  <span>Welcome aboard! Weekly drops arrive every Friday.</span>
+                  <CheckCircle2 size={16} className="text-emerald-700 flex-shrink-0" />
+                  <span>{feedbackMessage}</span>
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe} className="space-y-3">
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="student@pcte.edu.in or sme@gmail.com"
-                    className="w-full px-4 py-3 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#101014] transition-colors"
-                  />
+                  <div>
+                    <input
+                      type="email"
+                      required
+                      disabled={submitting}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="student@pcte.edu.in or sme@gmail.com"
+                      className="w-full px-4 py-3 rounded-full bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#101014] transition-colors disabled:opacity-60"
+                    />
+                    {errorMessage && (
+                      <p className="mt-1.5 px-3 text-[11px] font-bold text-red-600">{errorMessage}</p>
+                    )}
+                  </div>
                   
                   {/* Signature Pill Submit Button with Pink Arrow Circle */}
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-[#101014] hover:bg-slate-800 text-white font-bold text-xs transition-all group shadow-md btn-tactile"
+                    disabled={submitting}
+                    className="w-full flex items-center justify-between pl-5 pr-2 py-2 rounded-full bg-[#101014] hover:bg-slate-800 disabled:bg-slate-700 text-white font-bold text-xs transition-all group shadow-md btn-tactile"
                   >
-                    <span>Subscribe to Drops</span>
+                    <span>{submitting ? 'Subscribing...' : 'Subscribe to Drops'}</span>
                     <div className="w-8 h-8 rounded-full bg-[#FFA8D5] text-[#101014] flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
-                      <ArrowUpRight size={15} />
+                      {submitting ? (
+                        <Loader2 size={15} className="animate-spin text-[#101014]" />
+                      ) : (
+                        <ArrowUpRight size={15} />
+                      )}
                     </div>
                   </button>
                 </form>

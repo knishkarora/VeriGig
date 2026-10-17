@@ -358,7 +358,7 @@ export const LandingPage: React.FC = () => {
       {/* ============================================================ */}
       {/* SECTION 3: BENCHMARK COMPARISON MATRIX                       */}
       {/* ============================================================ */}
-      <section id="comparison" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="comparison" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <div className="rounded-[2.5rem] sm:rounded-[3.5rem] bg-white border border-[#EDE8FD] shadow-[0_20px_60px_-15px_rgba(100,65,180,0.08)] p-6 sm:p-12 space-y-10">
           
           <div className="text-center max-w-2xl mx-auto space-y-2">
@@ -639,7 +639,7 @@ export const LandingPage: React.FC = () => {
       {/* ============================================================ */}
       {/* SECTION 6: CAMPUS NETWORK PARTNERS                           */}
       {/* ============================================================ */}
-      <section id="colleges" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section id="colleges" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center scroll-mt-24">
         <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-sm space-y-4">
           <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-500">
             Connected Regional Academic Campuses

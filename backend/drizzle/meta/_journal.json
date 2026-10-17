@@ -71,6 +71,13 @@
       "when": 1792060868813,
       "tag": "0009_lean_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792235853487,
+      "tag": "0010_aspiring_carnage",
+      "breakpoints": true
     }
   ]
 }

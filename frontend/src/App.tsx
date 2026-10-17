@@ -34,13 +34,27 @@ import { AdminVerifications } from './pages/admin/AdminVerifications';
 import { AdminDisputes } from './pages/admin/AdminDisputes';
 import { AdminAnalytics } from './pages/admin/AdminAnalytics';
 
-// Helper component to reset scroll position on navigation
+// Helper component to reset scroll position on navigation or scroll to target hash anchor
 const ScrollToTop: React.FC = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (hash) {
+      const targetId = hash.replace('#', '');
+      const scrollToTarget = () => {
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      // Slight delay to ensure target DOM element has mounted
+      const timer = setTimeout(scrollToTarget, 100);
+      return () => clearTimeout(timer);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [pathname, hash]);
 
   return null;
 };

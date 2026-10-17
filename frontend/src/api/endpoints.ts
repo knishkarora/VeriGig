@@ -195,3 +195,15 @@ export const analyticsApi = {
   getPlatformAnalytics: () => api.get<any>('/analytics/platform'),
 };
 
+// ==========================================
+// WEEKLY DROPS NEWSLETTER
+// ==========================================
+
+export const weeklyDropsApi = {
+  subscribe: (email: string, source = 'footer') =>
+    api.post<{ success: boolean; message: string; alreadySubscribed?: boolean; subscriber?: any }>('/weekly-drops/subscribe', {
+      email,
+      source,
+    }),
+};
+
