@@ -22,6 +22,8 @@ import { PaymentEscrowModal } from '../../components/payments/PaymentEscrowModal
 import { applicationsApi } from '../../api/endpoints';
 import { Proposal } from '../../types';
 
+const DEFAULT_STUDENT_AVATAR = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80';
+
 export const GigApplicants: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -52,22 +54,25 @@ export const GigApplicants: React.FC = () => {
       try {
         const res = await applicationsApi.getGigApplicants(gig.id);
         if (active && res && Array.isArray(res.candidates)) {
-          const mapped: Proposal[] = res.candidates.map((c: any) => ({
-            id: c.id,
-            gigId: c.gigId,
-            studentId: c.studentId,
-            studentName: c.studentName || 'Student Applicant',
-            studentCollege: c.studentCollege || 'Verified Campus',
-            studentAvatar: c.studentAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-            studentGpa: c.studentDegree || 'Undergraduate',
-            matchScore: c.fitScore || 90,
-            coverNote: c.coverNote,
-            bidAmount: c.bidAmount || gig.totalBudget,
-            deliveryTimeDays: parseInt(c.proposedTimeline) || 7,
-            portfolioLinks: Array.isArray(c.portfolioItems) ? c.portfolioItems : [],
-            status: c.status || 'submitted',
-            submittedAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
-          }));
+          const mapped: Proposal[] = res.candidates.map((c: any) => {
+            const localMatch = proposals.find(p => p.id === c.id || (p.studentId && c.studentId && p.studentId === c.studentId));
+            return {
+              id: c.id,
+              gigId: c.gigId,
+              studentId: c.studentId,
+              studentName: c.studentName || 'Student Applicant',
+              studentCollege: c.studentCollege || 'Verified Campus',
+              studentAvatar: c.studentAvatar || localMatch?.studentAvatar || '',
+              studentGpa: c.studentDegree || 'Undergraduate',
+              matchScore: c.fitScore || 90,
+              coverNote: c.coverNote,
+              bidAmount: c.bidAmount || gig.totalBudget,
+              deliveryTimeDays: parseInt(c.proposedTimeline) || 7,
+              portfolioLinks: Array.isArray(c.portfolioItems) ? c.portfolioItems : [],
+              status: c.status || 'submitted',
+              submittedAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+            };
+          });
 
           setApiCandidates(mapped);
           if (mapped.length > 0) {
@@ -233,8 +238,9 @@ export const GigApplicants: React.FC = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <img 
-                        src={prop.studentAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'} 
+                        src={prop.studentAvatar || DEFAULT_STUDENT_AVATAR} 
                         alt={prop.studentName} 
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_STUDENT_AVATAR; }}
                         className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-sm"
                       />
                       <div>
@@ -276,8 +282,9 @@ export const GigApplicants: React.FC = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-4">
                     <img 
-                      src={selectedProposal.studentAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80'} 
+                      src={selectedProposal.studentAvatar || DEFAULT_STUDENT_AVATAR} 
                       alt={selectedProposal.studentName} 
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_STUDENT_AVATAR; }}
                       className="w-14 h-14 rounded-3xl object-cover border-2 border-emerald-400 shadow-sm"
                     />
                     <div>
@@ -445,7 +452,7 @@ export const GigApplicants: React.FC = () => {
           recipientId={selectedProposal.studentId}
           recipientName={selectedProposal.studentName}
           recipientRole="student"
-          currentUserId={gig.employerId}
+          currentUserId={currentUser.id || gig.employerId}
         />
       )}
 

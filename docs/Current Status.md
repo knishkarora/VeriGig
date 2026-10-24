@@ -123,4 +123,21 @@
   - [x] Robust Proposal Submission: Wired `GigDetails.tsx` to await `applicationsApi.applyForGig` with full parameters (`termsAccepted`, `bidAmount`, `proposedTimeline`, clean `portfolioItems`), capture real application UUID, and persist into client context.
   - [x] Dual-Layer Persistence & Role Sync: Updated [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx) to cache proposals in `localStorage` under `verigig_proposals` and dynamically query `applicationsApi.getStudentApplications()` for students and `applicationsApi.getGigApplicants(gig.id)` for employers.
   - [x] Student Profile Proposal Tracker: Added dedicated "Submitted Proposals & Applications" tracker section to [StudentProfile.tsx](../frontend/src/pages/student/StudentProfile.tsx) matching [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx).
+- [x] Authentic Student Profile Picture Propagation & Safe Fallback:
+  - [x] Added `studentAvatar: z.string().optional()` to [applications.schema.ts](../backend/src/modules/applications/applications.schema.ts) and [endpoints.ts](../frontend/src/api/endpoints.ts).
+  - [x] Persisted student avatar under internal `__student_avatar__` marker in `applications.portfolioItems` and student profile links in [applications.service.ts](../backend/src/modules/applications/applications.service.ts).
+  - [x] Extracted student avatar and stripped internal markers in `getGigApplications`.
+  - [x] Transmitted Google OAuth profile picture (`currentUser.avatar`) on proposal submission in [GigDetails.tsx](../frontend/src/pages/student/GigDetails.tsx) and preserved it in [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx).
+  - [x] Rendered authentic avatar in candidate lists and candidate dossiers in [GigApplicants.tsx](../frontend/src/pages/employer/GigApplicants.tsx), with safe `DEFAULT_STUDENT_AVATAR` fallback and `onError` client handling for email accounts without avatars.
+- [x] Contextual Messaging & Delivery Ticks State Machine:
+  - [x] Replaced hardcoded clock icons with a 4-stage delivery state machine in [ChatModal.tsx](../frontend/src/components/messaging/ChatModal.tsx):
+    - `sending`: `<Clock />` (message pending / not sent yet from user side).
+    - `sent`: `<Check />` (single gray tick, sent from user side).
+    - `delivered`: `<CheckCheck />` (double gray tick, delivered to student).
+    - `read`: `<CheckCheck className="text-[#38BDF8]" />` (double sky-blue tick, seen/read by student).
+  - [x] Implemented deterministic UUID hashing (`toValidUuid`) in [messaging.service.ts](../backend/src/modules/messaging/messaging.service.ts) to prevent PostgreSQL UUID type failures on non-UUID identifiers.
+  - [x] Relaxed schema validation in [messaging.schema.ts](../backend/src/modules/messaging/messaging.schema.ts) from rigid `.uuid()` to `z.string().min(1)`.
+  - [x] Synchronized messages across browser tabs and roles via `localStorage` and `verigig_message_sent` / `verigig_message_read` custom event bus.
+  - [x] Added multi-thread conversation switcher and dynamic thread auto-discovery in [Navbar.tsx](../frontend/src/components/shared/Navbar.tsx).
+
 

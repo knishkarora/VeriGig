@@ -184,6 +184,77 @@ sequenceDiagram
     EmpUI-->>Employer: Renders student candidate card with exact bid, timeline, match score & dossier
 ```
 
+### Flow 8: Student Authentic Profile Avatar Propagation & Fallback
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student
+    participant StuUI as Student UI (GigDetails.tsx)
+    participant Client as API Client (endpoints.ts)
+    participant API as Fastify Backend (applications.routes.ts)
+    participant Service as Applications Service (applications.service.ts)
+    participant DB as PostgreSQL Database
+    actor Employer
+    participant EmpUI as Employer Pipeline UI (GigApplicants.tsx)
+
+    Student->>StuUI: Submits Proposal (with Google Auth or Uploaded Avatar)
+    StuUI->>Client: applicationsApi.applyForGig(gig.id, { ..., studentAvatar })
+    Client->>API: POST /api/v1/gigs/:id/apply
+    API->>Service: applyToGig(studentUserId, gigId, input)
+    Note over Service,DB: Persists avatar in portfolio_items (`__student_avatar__`) & student_profiles
+    Service->>DB: INSERT INTO applications (portfolio_items) VALUES ([..., { label: '__student_avatar__', url }])
+    DB-->>Service: Application inserted
+    Service-->>API: Created application record
+    API-->>Client: { application: ... }
+    StuUI->>StuUI: Commits to MarketplaceContext & localStorage (`verigig_proposals`)
+
+    Note over Employer,EmpUI: Employer reviews candidate dossiers
+    Employer->>EmpUI: Opens Applicant Pipeline
+    EmpUI->>Client: applicationsApi.getGigApplicants(gig.id)
+    Client->>API: GET /api/v1/gigs/:id/applications
+    API->>Service: getGigApplications(userId, userRole, gigId)
+    Service->>DB: Query applications and student_profiles
+    DB-->>Service: Applications data
+    Service->>Service: Extracts `studentAvatar`, filters out internal marker from `portfolioItems`
+    Service-->>API: Enriched candidate list with authentic `studentAvatar`
+    API-->>Client: { candidates: [...] }
+    Client-->>EmpUI: Candidate list
+    EmpUI->>EmpUI: Checks candidate `studentAvatar` || local proposal avatar || DEFAULT_STUDENT_AVATAR
+    EmpUI-->>Employer: Renders genuine student avatar from Google Auth with safe onError fallback
+```
+
+### Flow 9: Real-time Multi-Role Messaging & Delivery Ticks State Machine
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Employer
+    participant Modal as ChatModal (Employer Tab)
+    participant MsgAPI as Messaging API / DB
+    participant Sync as LocalStorage & Event Bus
+    actor Student
+    participant StuModal as ChatModal (Student Tab / Navbar)
+
+    Employer->>Modal: Types message and clicks Send
+    Note over Modal: State: 'sending' -> Renders Clock icon
+    Modal->>Modal: Render <Clock /> (message pending from sender side)
+    Modal->>MsgAPI: POST /api/v1/messaging/conversations/:id/messages
+    MsgAPI-->>Modal: Message saved in DB (status: 'delivered')
+    Note over Modal: State: 'sent' -> Renders Single Tick <Check />
+    Modal->>Modal: Render <Check /> (message sent from sender side)
+    Modal->>Sync: Store in `verigig_chat_messages_*`, dispatch `verigig_message_sent`
+    Note over Modal: State: 'delivered' -> Renders Double Tick <CheckCheck /> (neutral gray)
+    Modal->>Modal: Render <CheckCheck /> (delivered to recipient)
+
+    Note over Student,StuModal: Student opens Messages from Navbar or Application link
+    Student->>StuModal: Opens ChatModal (Auto-discovers employer conversation)
+    StuModal->>StuModal: Detects incoming message from Employer (sender !== Student)
+    StuModal->>StuModal: Marks `readAt = new Date().toISOString()`, updates storage
+    StuModal->>Sync: Dispatches `verigig_message_read`
+    Sync-->>Modal: Employer's ChatModal receives `verigig_message_read`
+    Note over Modal: State: 'read' -> Turns Double Tick to Sky-Blue (#38BDF8)
+    Modal->>Modal: Render <CheckCheck className="text-[#38BDF8]" /> (seen by student)
+```
+
 ## 3. Boundary Crossings & Safety Gates
 1. **Confidentiality Gate (DPDPA 2023):** Physical business address and contact phone numbers are stored as internal KYC attributes and explicitly excluded from the public employer profile view.
 2. **Gig Assignment Gate:** Workspaces no longer assume or inject static mock names (e.g. `Aarav Sharma`) when an employer has no hired candidate.
@@ -191,5 +262,8 @@ sequenceDiagram
 4. **Guest Authentication & Navigation Isolation:** Inactive notification bells and empty drawer containers are prohibited for guests (`currentRole !== 'guest'`), and section anchor links gracefully transition cross-route to the landing page with sticky-header clearance (`scroll-mt-24`).
 5. **Newsletter Deduplication & Sanitization Gate:** All newsletter submissions are normalized (trimmed, lowercased), schema-validated with strict regex email constraints, deduplicated against the unique constraint on `weekly_drops.email`, and protected by optimistic fallback handling during presentation modes.
 6. **Proposal Persistence & Schema Safety Gate:** Proposal submissions strictly provide required `termsAccepted: true` and `bidAmount`, auto-prefix URLs, auto-provision student profiles if uninitialized, and commit proposals to both PostgreSQL and `localStorage` so proposals persist across session logouts and remain immediately visible in both student dashboards and employer pipeline dossiers.
+7. **Student Avatar Propagation & Fallback Gate:** Student Google OAuth avatar URLs are transmitted during proposal submission, persisted in application portfolio records (`__student_avatar__`) and student profile links, and displayed in employer applicant pipeline lists and dossier modals. If a user registered with email and has no avatar, it safely defaults to `DEFAULT_STUDENT_AVATAR` with an `onError` client fallback.
+8. **Messaging Delivery State Machine & Context Discovery Gate:** Replaces hardcoded clock icons with a deterministic 4-stage delivery state machine: `sending` (Clock icon) -> `sent` (Single check) -> `delivered` (Double check in neutral gray) -> `read` (Double check in WhatsApp sky-blue `#38BDF8`). Relaxes backend schemas from rigid UUID validation to deterministic UUID hashing (`toValidUuid`), enables multi-thread switching in `ChatModal`, and dynamic active conversation auto-discovery in `Navbar.tsx`.
+
 
 

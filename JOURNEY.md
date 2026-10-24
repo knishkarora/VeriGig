@@ -445,3 +445,32 @@
     - `GigApplicants.tsx`: Fixed employer scoping to strictly isolate gigs owned by the logged-in business, eliminated fallback to foreign gigs, and fetches candidate applications dynamically from `applicationsApi.getGigApplicants(gig.id)`.
     - `MarketplaceContext.tsx`: Synchronizes both open gigs and user contracts (`contractsApi.getUserContracts()`) on authentication, ensuring dashboards and workspaces display active contracts and past work.
 - **Verification:** Both backend (`npm run build`) and frontend (`tsc -b && vite build`) compiled with 0 errors. All accounts share the password `Password@123`.
+
+---
+
+## Phase 14: Authentic Student Profile Picture Propagation and Contextual Messaging Delivery Ticks & Clock State Machine
+- **Timestamp:** 2026-10-24
+- **Status:** Complete & Production Verified
+- **Problem Statement:**
+  1. Student proposals in the employer pipeline view showed a hardcoded Unsplash profile picture instead of the authentic profile picture fetched via Google Auth.
+  2. Messages sent from an employer to a student applicant were not received by the student, and the employer saw a static `<Clock />` icon that misleadingly indicated the message was not sent from their side.
+- **Architectural & Technical Solution:**
+  - **Authentic Student Avatar Propagation & Fallback:**
+    - Updated `backend/src/modules/applications/applications.schema.ts` to accept `studentAvatar`.
+    - Updated `backend/src/modules/applications/applications.service.ts` to persist `studentAvatar` under internal marker `__student_avatar__` in `portfolioItems` and return it cleanly in `getGigApplications`.
+    - Wired `currentUser.avatar` through `GigDetails.tsx`, `endpoints.ts`, and `MarketplaceContext.tsx`.
+    - In `GigApplicants.tsx`, candidate cards and dossiers render the student's authentic Google Auth avatar, with automatic safe fallback to `DEFAULT_STUDENT_AVATAR` on missing avatar or image load error.
+  - **Contextual Messaging & Delivery State Machine:**
+    - Replaced the hardcoded clock in `ChatModal.tsx` with a 4-state delivery model:
+      - `sending`: `<Clock className="w-3 h-3 text-white/40 animate-spin" />` (not sent yet from user side).
+      - `sent`: `<Check className="w-3.5 h-3.5 text-white/50" />` (single gray tick, confirmed sent from user side).
+      - `delivered`: `<CheckCheck className="w-3.5 h-3.5 text-white/50" />` (double gray tick, delivered to student).
+      - `read`: `<CheckCheck className="w-3.5 h-3.5 text-[#38BDF8]" />` (double sky-blue tick, seen/read by student).
+    - In `backend/src/modules/messaging/messaging.service.ts`, implemented `toValidUuid(id)` using deterministic MD5 hashing to prevent PostgreSQL UUID type crashes on non-UUID context and user identifiers.
+    - Added multi-thread discovery in `ChatModal.tsx` and updated `Navbar.tsx` to dynamically open real active conversation threads.
+    - Synchronized messages across browser tabs and sessions via `localStorage` and `verigig_message_sent` / `verigig_message_read` custom event bus.
+- **Verification:**
+  - Backend TypeScript checked (`tsc --noEmit`) with 0 errors.
+  - Frontend TypeScript checked (`tsc --noEmit`) with 0 errors.
+  - Frontend production build (`vite build`) succeeded with 0 errors.
+

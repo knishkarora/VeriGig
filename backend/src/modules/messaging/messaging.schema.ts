@@ -4,8 +4,8 @@ export const getOrCreateConversationSchema = z.object({
   contextType: z.enum(['gig', 'application', 'contract'], {
     required_error: 'Context type is required',
   }),
-  contextId: z.string({ required_error: 'Context ID is required' }).uuid(),
-  recipientId: z.string({ required_error: 'Recipient user ID is required' }).uuid(),
+  contextId: z.string({ required_error: 'Context ID is required' }).min(1, 'Context ID cannot be empty'),
+  recipientId: z.string({ required_error: 'Recipient user ID is required' }).min(1, 'Recipient user ID cannot be empty'),
 });
 
 export type GetOrCreateConversationInput = z.infer<typeof getOrCreateConversationSchema>;

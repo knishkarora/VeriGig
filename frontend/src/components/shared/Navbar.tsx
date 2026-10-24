@@ -433,16 +433,13 @@ export const Navbar: React.FC = () => {
       )}
 
       {/* In-App Contextual Chat Modal */}
-      <ChatModal
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        contextType="contract"
-        contextId="c7b2a19e-5e3a-4a21-99bc"
-        recipientId={currentRole === 'student' ? 'emp-apex-ludhiana' : 'stu-aarav-sharma'}
-        recipientName={currentRole === 'student' ? 'Apex Technologies Punjab' : 'Aarav Sharma'}
-        recipientRole={currentRole === 'student' ? 'employer' : 'student'}
-        currentUserId={currentUser.id}
-      />
+      {isChatOpen && (
+        <ChatModal
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          currentUserId={currentUser.id}
+        />
+      )}
     </>
   );
 };

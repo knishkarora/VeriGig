@@ -215,6 +215,7 @@ export const GigDetails: React.FC = () => {
         bidAmount: Number(bidAmount),
         portfolioItems,
         termsAccepted: true,
+        studentAvatar: currentUser.avatar || '',
       });
 
       if (res && res.application) {

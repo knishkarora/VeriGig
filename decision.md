@@ -336,3 +336,34 @@
   - Physical addresses and direct contact numbers are collected strictly for administrative KYC verification and remain inaccessible in public dossiers.
 * **Immutability Status:** Settled & Immutable.
 
+## [2026-10-24] Decision: Authentic Student Profile Picture Propagation and Contextual Messaging Delivery Ticks & Clock State Machine
+
+* **Context & Scope:**
+  1. **Student Proposal Profile Picture Hardcoding:** When employers inspected proposals for their micro-gigs, all candidate student cards displayed a static hardcoded Unsplash image regardless of whether the student logged in via Google Auth or uploaded a personal profile avatar.
+  2. **Employer-to-Student Messaging & Delivery Ticks / Clock Logic:** When an employer messaged a student applicant from the candidate pipeline dossier, the student never received the message because the Navbar messaging trigger was hardcoded to a static fake contract thread (`c7b2a19e-5e3a-4a21-99bc` / `emp-apex-ludhiana`), and backend UUID validation rejected non-UUID string IDs. Furthermore, the employer saw a hardcoded `<Clock />` icon next to every message timestamp, incorrectly giving the impression that the message had not been sent.
+* **Choice Made:**
+  1. **Authentic Student Avatar Propagation & Safe Fallback:**
+     - Updated `backend/src/modules/applications/applications.schema.ts` to accept optional `studentAvatar`.
+     - In `backend/src/modules/applications/applications.service.ts`, stored `studentAvatar` in `applications.portfolioItems` under internal label `__student_avatar__` and enriched `studentProfiles.portfolioLinks`.
+     - In `getGigApplications`, extracted `studentAvatar` and cleaned the user-facing `portfolioItems` array.
+     - Updated `frontend/src/api/endpoints.ts`, `frontend/src/pages/student/GigDetails.tsx`, and `frontend/src/context/MarketplaceContext.tsx` to transmit the authentic Google OAuth profile picture (`currentUser.avatar`).
+     - In `frontend/src/pages/employer/GigApplicants.tsx`, checked candidate `studentAvatar` with priority: backend avatar -> local proposal match avatar -> default fallback (`DEFAULT_STUDENT_AVATAR`), backed by an HTML image `onError` listener.
+  2. **Delivery Ticks & Clock State Machine:**
+     - Replaced the hardcoded clock icon beside timestamps with a deterministic 4-stage delivery state machine:
+       - **Pending / In-Flight (`sending`):** `<Clock className="w-3 h-3 text-white/40 animate-spin" />` indicating the message has not yet departed the sender's device.
+       - **Sent from Sender (`sent`):** `<Check className="w-3.5 h-3.5 text-white/50" />` (single gray tick) indicating confirmation from server/local persistence.
+       - **Delivered to Recipient (`delivered`):** `<CheckCheck className="w-3.5 h-3.5 text-white/50" />` (double gray tick) indicating recipient delivery.
+       - **Seen / Read by Recipient (`read`):** `<CheckCheck className="w-3.5 h-3.5 text-[#38BDF8]" />` (double WhatsApp sky-blue tick) indicating counterparty has opened and viewed the message thread.
+  3. **Deterministic UUID Conversion & Multi-Thread Discovery:**
+     - In `backend/src/modules/messaging/messaging.service.ts`, created `toValidUuid(id)` using deterministic MD5 hashing to safely convert arbitrary application, gig, or proposal IDs into valid PostgreSQL UUIDs without schema violation.
+     - Enhanced `frontend/src/components/messaging/ChatModal.tsx` with a multi-conversation switcher (`availableThreads`), real-time `verigig_message_sent` and `verigig_message_read` event bus synchronization, and background polling.
+     - Decoupled `frontend/src/components/shared/Navbar.tsx` from static fake IDs, allowing students and employers to automatically discover and view active conversation threads.
+* **Rationale (Why over What):**
+  - Respects student Google OAuth profile identity while providing an unbreakably graceful fallback for standard email registrations.
+  - Aligns with universal instant-messaging mental models (Clock = sending, Single tick = sent, Double tick = delivered, Colored double tick = read).
+  - Eliminates silent 400 validation failures on non-UUID context identifiers via deterministic hashing.
+* **Tradeoffs Accepted:**
+  - In offline demo modes without active WebSocket clusters, delivery transitions use optimistic local event dispatching and heartbeat polling (3.5s interval).
+* **Immutability Status:** Settled & Immutable.
+
+

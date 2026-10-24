@@ -88,6 +88,7 @@ export const applicationsApi = {
       bidAmount?: number; 
       portfolioItems?: any[]; 
       termsAccepted?: boolean; 
+      studentAvatar?: string;
     }
   ) =>
     api.post<any>(`/gigs/${gigId}/apply`, data),

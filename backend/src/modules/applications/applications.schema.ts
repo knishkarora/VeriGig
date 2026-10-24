@@ -26,6 +26,7 @@ export const applyGigSchema = z.object({
   termsAccepted: z
     .boolean()
     .default(true),
+  studentAvatar: z.string().optional(),
 });
 
 export type ApplyGigInput = z.infer<typeof applyGigSchema>;

@@ -139,6 +139,14 @@ export class ApplicationsService {
     );
 
     // 7. Insert application
+    const appPortfolioItems = [...input.portfolioItems];
+    if (input.studentAvatar) {
+      appPortfolioItems.push({
+        label: '__student_avatar__',
+        url: input.studentAvatar,
+      });
+    }
+
     const [application] = await db
       .insert(applications)
       .values({
@@ -147,7 +155,7 @@ export class ApplicationsService {
         coverNote: input.coverNote,
         proposedTimeline: input.proposedTimeline,
         bidAmount: input.bidAmount ?? gig.totalBudget,
-        portfolioItems: input.portfolioItems,
+        portfolioItems: appPortfolioItems,
         status: 'submitted',
         fitScore: fitResult.overallScore,
         fitBreakdown: fitResult.breakdown,
@@ -155,6 +163,24 @@ export class ApplicationsService {
         termsAccepted: input.termsAccepted,
       })
       .returning();
+
+    // Also update studentProfile portfolioLinks if student avatar present
+    if (input.studentAvatar && student) {
+      try {
+        const existingPort = (student.portfolioLinks as any[]) || [];
+        if (!existingPort.some(p => p.label === '__student_avatar__')) {
+          await db
+            .update(studentProfiles)
+            .set({
+              portfolioLinks: [...existingPort, { label: '__student_avatar__', url: input.studentAvatar }],
+              updatedAt: new Date(),
+            })
+            .where(eq(studentProfiles.id, student.id));
+        }
+      } catch (e) {
+        // Non-blocking profile enrichment
+      }
+    }
 
     // 8. Log audit event
     await db.insert(auditEvents).values({
@@ -316,6 +342,11 @@ export class ApplicationsService {
           where: eq(interviews.applicationId, app.id),
         });
 
+        const avatarItem = (app.portfolioItems as any[])?.find(p => p.label === '__student_avatar__');
+        const profileAvatar = (profile?.portfolioLinks as any[])?.find(p => p.label === '__student_avatar__');
+        const studentAvatar = avatarItem?.url || profileAvatar?.url || '';
+        const cleanPortfolio = (app.portfolioItems as any[])?.filter(p => p.label !== '__student_avatar__') || [];
+
         return {
           id: app.id,
           gigId: app.gigId,
@@ -323,6 +354,7 @@ export class ApplicationsService {
           studentName: profile?.fullName || studentUser?.email || 'Student Applicant',
           studentCollege: profile?.collegeName || 'Verified Campus',
           studentDegree: profile?.degree || 'Undergraduate',
+          studentAvatar,
           studentLocation: profile?.location || 'Ludhiana, Punjab',
           studentSkills: profile?.skills || [],
           studentRating: profile?.ratingAvg ? parseFloat(profile.ratingAvg) : 5.0,
@@ -331,7 +363,7 @@ export class ApplicationsService {
           coverNote: app.coverNote,
           proposedTimeline: app.proposedTimeline,
           bidAmount: app.bidAmount,
-          portfolioItems: app.portfolioItems,
+          portfolioItems: cleanPortfolio,
           status: app.status,
           fitScore: app.fitScore,
           fitBreakdown: app.fitBreakdown,

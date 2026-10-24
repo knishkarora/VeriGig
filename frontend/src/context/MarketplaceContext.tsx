@@ -237,24 +237,27 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
               try {
                 const cRes = await applicationsApi.getGigApplicants(eg.id);
                 if (cRes && Array.isArray(cRes.candidates) && active) {
-                  const empProps: Proposal[] = cRes.candidates.map((c: any) => ({
-                    id: c.id,
-                    gigId: c.gigId,
-                    studentId: c.studentId,
-                    studentName: c.studentName || 'Student Applicant',
-                    studentCollege: c.studentCollege || 'Verified Campus',
-                    studentAvatar: c.studentAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
-                    studentGpa: c.studentDegree || 'Undergraduate',
-                    matchScore: c.fitScore || 90,
-                    coverNote: c.coverNote,
-                    bidAmount: c.bidAmount || eg.totalBudget,
-                    deliveryTimeDays: parseInt(c.proposedTimeline) || 7,
-                    portfolioLinks: Array.isArray(c.portfolioItems) ? c.portfolioItems : [],
-                    status: c.status || 'submitted',
-                    submittedAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
-                  }));
-
                   setProposals(prev => {
+                    const empProps: Proposal[] = cRes.candidates.map((c: any) => {
+                      const existingMatch = prev.find(p => p.id === c.id || (p.studentId && c.studentId && p.studentId === c.studentId));
+                      return {
+                        id: c.id,
+                        gigId: c.gigId,
+                        studentId: c.studentId,
+                        studentName: c.studentName || 'Student Applicant',
+                        studentCollege: c.studentCollege || 'Verified Campus',
+                        studentAvatar: c.studentAvatar || existingMatch?.studentAvatar || '',
+                        studentGpa: c.studentDegree || 'Undergraduate',
+                        matchScore: c.fitScore || 90,
+                        coverNote: c.coverNote,
+                        bidAmount: c.bidAmount || eg.totalBudget,
+                        deliveryTimeDays: parseInt(c.proposedTimeline) || 7,
+                        portfolioLinks: Array.isArray(c.portfolioItems) ? c.portfolioItems : [],
+                        status: c.status || 'submitted',
+                        submittedAt: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+                      };
+                    });
+
                     const combined = [...empProps];
                     for (const p of prev) {
                       if (!combined.some(c => c.id === p.id)) {
