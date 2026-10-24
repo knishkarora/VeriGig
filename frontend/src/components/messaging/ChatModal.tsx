@@ -344,8 +344,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
   // Listen to cross-window and cross-role events (read receipts & message delivery)
   useEffect(() => {
+    if (!conversationId) return;
+    const activeConvId = conversationId;
+
     const handleReadNotification = (e: any) => {
-      if (e.detail?.conversationId === conversationId) {
+      if (e.detail?.conversationId === activeConvId) {
         const readTime = e.detail?.readAt || new Date().toISOString();
         setMessages(prev => prev.map(m => {
           const isMe = m.senderId === currentUserId || m.senderName === 'You';
@@ -358,22 +361,22 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     };
 
     const handleMessageSent = (e: any) => {
-      if (e.detail?.conversationId === conversationId && e.detail?.message) {
+      if (e.detail?.conversationId === activeConvId && e.detail?.message) {
         setMessages(prev => {
           if (prev.some(m => m.id === e.detail.message.id)) return prev;
           const updated = [...prev, e.detail.message];
-          markMessagesAsRead(conversationId, updated);
+          markMessagesAsRead(activeConvId, updated);
           return updated;
         });
       }
     };
 
     const handleStorageChange = (e: StorageEvent) => {
-      if (conversationId && e.key === `verigig_chat_messages_${conversationId}` && e.newValue) {
+      if (e.key === `verigig_chat_messages_${activeConvId}` && e.newValue) {
         try {
           const parsed = JSON.parse(e.newValue);
           setMessages(parsed);
-          markMessagesAsRead(conversationId, parsed);
+          markMessagesAsRead(activeConvId, parsed);
         } catch {}
       }
     };
