@@ -142,9 +142,9 @@ export const GigApplicants: React.FC = () => {
     }
   };
 
-  const handleHire = (proposalId: string) => {
+  const handleHire = async (proposalId: string) => {
     if (!gig) return;
-    hireApplicant(proposalId);
+    await hireApplicant(proposalId);
     setTimeout(() => {
       navigate(`/app/employer/workspace/${gig.id}`);
     }, 1500);

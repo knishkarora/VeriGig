@@ -42,6 +42,7 @@ export const filterGigsSchema = z.object({
   workMode: z.string().optional(),
   city: z.string().optional(),
   gigLevel: z.string().optional(),
+  status: z.string().optional(),
   search: z.string().optional(),
   minBudget: z.coerce.number().optional(),
   maxBudget: z.coerce.number().optional(),

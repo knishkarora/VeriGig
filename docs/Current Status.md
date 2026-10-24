@@ -152,6 +152,13 @@
   - [x] Built distinct visual differentiation: shortlisted candidates display warm amber borders, golden star avatar rings, and a gold `<Star /> Shortlisted Finalist` badge, while other non-shortlisted applicants receive a slightly subdued, duller presentation (`opacity-60 bg-slate-50/60 border-slate-200/80`) with `Applied` tags.
   - [x] Ensured non-shortlisted applicants remain fully clickable and interactive to inspect their full dossiers, schedule interviews, or hire.
   - [x] Upgraded Candidate Dossier with "Shortlisted & Finalized Candidate" top banner, avatar star ring, toggleable `<Check /> Shortlisted Finalist` button, and `"Hire Finalist & Pre-Authorize Escrow"` action.
+- [x] End-to-End Candidate Hiring, Contract Auto-Activation, Targeted Notification Routing & Workspace Hardening:
+  - [x] Backend Contract Auto-Creation & Activation: In `ApplicationsService.updateApplicationStatus` ([applications.service.ts](../backend/src/modules/applications/applications.service.ts)), updated status `'hired'` to mark gig `in_progress`, link `hiredStudentId`, and create/activate the binding contract in PostgreSQL with Milestone 1 marked `active`.
+  - [x] Multi-Status Gig Querying & Enriched Payloads: In `GigsService.listGigs` and `getGigById` ([gigs.service.ts](../backend/src/modules/gigs/gigs.service.ts)), included active in-progress gigs, added `status` filter support, resolved `hiredStudentName` from `studentProfiles`, and guaranteed default `status` for all returned milestones.
+  - [x] Full-Stack Hire Persistence: In [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx) and [GigApplicants.tsx](../frontend/src/pages/employer/GigApplicants.tsx), wired `hireApplicant` to await `applicationsApi.updateApplicantStatus` and persist status `'hired'` to the backend.
+  - [x] Targeted Notification Partitioning: Scoped notifications by `recipientUserId`, routing employers to `/app/employer/workspace/:id` and hired students to `/app/student/workspace/:id`.
+  - [x] Black Screen Crash Rectification: In [EmployerWorkspace.tsx](../frontend/src/pages/employer/EmployerWorkspace.tsx), protected all `ms.status.replace` operations with safe fallback defaults `(ms.status || 'locked').replace('_', ' ')`, preventing uncaught TypeErrors from crashing the React tree to a black screen.
+  - [x] Cross-Role Workspace Redirection: Added bidirectional role guards in `EmployerWorkspace.tsx` (redirects students to `/app/student/workspace/:id`) and `StudentWorkspace.tsx` (redirects employers to `/app/employer/workspace/:id`), preventing role mismatch confusion and inappropriate empty state prompts.
 
 
 

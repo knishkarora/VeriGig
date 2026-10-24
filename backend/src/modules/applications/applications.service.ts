@@ -8,7 +8,10 @@ import {
   studentProfiles, 
   businessProfiles, 
   verificationRequests, 
-  auditEvents 
+  auditEvents,
+  contracts,
+  contractMilestones,
+  gigMilestones 
 } from '../../db/schema/index.js';
 import { ApplyGigInput, UpdateApplicationStatusInput, ScheduleInterviewInput } from './applications.schema.js';
 import { CandidateFitEngine } from './matching.service.js';
@@ -495,16 +498,94 @@ export class ApplicationsService {
       .where(eq(applications.id, applicationId))
       .returning();
 
-    // If candidate hired, update gig hiredStudentId and mark status
+    // If candidate hired, update gig hiredStudentId, set status in_progress, and create/activate binding contract
     if (input.status === 'hired') {
       await db
         .update(gigs)
         .set({
           hiredStudentId: app.studentId,
-          status: 'offer_pending',
+          status: 'in_progress',
           updatedAt: now,
         })
         .where(eq(gigs.id, gig.id));
+
+      // Check if a contract already exists for this gig
+      const existingContract = await db.query.contracts.findFirst({
+        where: eq(contracts.gigId, gig.id),
+      });
+
+      if (!existingContract) {
+        const gigMilestoneList = await db.query.gigMilestones.findMany({
+          where: eq(gigMilestones.gigId, gig.id),
+          orderBy: [gigMilestones.sequenceOrder],
+        });
+
+        const totalAmount = app.bidAmount || gig.totalBudget;
+
+        const [newContract] = await db
+          .insert(contracts)
+          .values({
+            gigId: gig.id,
+            applicationId: app.id,
+            studentId: app.studentId,
+            employerId: employerUserId,
+            totalAmount,
+            termsVersion: '1.0',
+            confidentialityAccepted: true,
+            ipClauseAccepted: true,
+            maxRevisionsPerMilestone: gig.maxRevisions || 2,
+            status: 'in_progress',
+          })
+          .returning();
+
+        if (gigMilestoneList.length > 0) {
+          await Promise.all(
+            gigMilestoneList.map(async (gm, idx) => {
+              await db.insert(contractMilestones).values({
+                contractId: newContract.id,
+                sequenceOrder: gm.sequenceOrder,
+                title: gm.title,
+                criteria: gm.deliverableCriteria || gm.description,
+                amount: gm.amount,
+                status: idx === 0 ? 'active' : 'locked',
+              });
+            })
+          );
+        } else {
+          await db.insert(contractMilestones).values({
+            contractId: newContract.id,
+            sequenceOrder: 1,
+            title: 'Project Deliverables',
+            criteria: 'Complete deliverables as specified in gig description',
+            amount: totalAmount,
+            status: 'active',
+          });
+        }
+      } else {
+        await db
+          .update(contracts)
+          .set({
+            status: 'in_progress',
+            studentId: app.studentId,
+            confidentialityAccepted: true,
+            ipClauseAccepted: true,
+            updatedAt: now,
+          })
+          .where(eq(contracts.id, existingContract.id));
+
+        await db
+          .update(contractMilestones)
+          .set({
+            status: 'active',
+            updatedAt: now,
+          })
+          .where(
+            and(
+              eq(contractMilestones.contractId, existingContract.id),
+              eq(contractMilestones.sequenceOrder, 1)
+            )
+          );
+      }
     }
 
     // Log audit event

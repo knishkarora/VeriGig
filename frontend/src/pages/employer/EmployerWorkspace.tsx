@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { 
   CheckCircle2, 
   ExternalLink, 
@@ -33,6 +33,11 @@ export const EmployerWorkspace: React.FC = () => {
   const { gigId } = useParams<{ gigId?: string }>();
   const { gigs, currentUser, approveMilestone, requestRevision, proposals } = useMarketplace();
 
+  // Role Protection: Redirect campus student freelancers to Student Workspace
+  if (currentUser.role === 'student') {
+    return <Navigate to={gigId ? `/app/student/workspace/${gigId}` : '/app/student/workspace'} replace />;
+  }
+
   // Scope to gigs owned by current employer
   const myGigs = gigs.filter(g => 
     g.employerId === currentUser.id || 
@@ -40,8 +45,11 @@ export const EmployerWorkspace: React.FC = () => {
   );
 
   // Determine active gig: explicit URL param > employer's in_progress gig > employer's first gig
+  const gigById = gigId ? gigs.find(g => g.id === gigId) : null;
   const activeGigId = gigId || myGigs.find(g => g.status === 'in_progress')?.id || myGigs[0]?.id;
-  const gig = myGigs.find(g => g.id === activeGigId) || myGigs[0];
+  const gig = (gigById && (gigById.employerId === currentUser.id || !gigById.employerId)) 
+    ? gigById 
+    : (myGigs.find(g => g.id === activeGigId) || gigById || myGigs[0]);
 
   const [revisionModalMilestone, setRevisionModalMilestone] = useState<Milestone | null>(null);
   const [revisionFeedback, setRevisionFeedback] = useState('');
@@ -142,7 +150,7 @@ export const EmployerWorkspace: React.FC = () => {
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold capitalize ${
                     g.status === 'in_progress' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
                   }`}>
-                    {g.status.replace('_', ' ')}
+                    {(g.status || 'open').replace('_', ' ')}
                   </span>
                 </Link>
               );
@@ -177,9 +185,9 @@ export const EmployerWorkspace: React.FC = () => {
 
         <div className="text-left md:text-right shrink-0">
           <span className="text-xs text-slate-400 font-bold block uppercase tracking-wider">Total Contract Escrow</span>
-          <span className="text-3xl font-black text-[#121214]">₹{gig.totalBudget.toLocaleString()}</span>
+          <span className="text-3xl font-black text-[#121214]">₹{(gig.totalBudget || 0).toLocaleString()}</span>
           <div className="mt-1 text-xs text-emerald-800 font-bold">
-            {gig.milestones.filter(m => m.status === 'completed').length} of {gig.milestones.length} Milestones Paid Out
+            {(gig.milestones || []).filter(m => m.status === 'completed').length} of {(gig.milestones || []).length} Milestones Paid Out
           </div>
         </div>
 
@@ -216,7 +224,7 @@ export const EmployerWorkspace: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {hasHiredStudent && gig.milestones.every(m => m.status === 'completed') && (
+            {hasHiredStudent && (gig.milestones || []).length > 0 && gig.milestones.every(m => m.status === 'completed') && (
               <button
                 type="button"
                 onClick={() => setIsDoubleSidedReviewOpen(true)}
@@ -231,7 +239,7 @@ export const EmployerWorkspace: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setDisputeMilestone(gig.milestones[0]);
+                  setDisputeMilestone(gig.milestones?.[0] || null);
                   setIsDisputeOpen(true);
                 }}
                 className="px-3.5 py-2 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
@@ -283,10 +291,11 @@ export const EmployerWorkspace: React.FC = () => {
           </div>
 
           <div className="space-y-6">
-            {gig.milestones.map((ms, index) => {
-              const isUnderReview = ms.status === 'under_review';
-              const isCompleted = ms.status === 'completed';
-              const isInRevision = ms.status === 'in_revision';
+            {(gig.milestones || []).map((ms, index) => {
+              const msStatus = ms.status || 'locked';
+              const isUnderReview = msStatus === 'under_review';
+              const isCompleted = msStatus === 'completed';
+              const isInRevision = msStatus === 'in_revision';
 
               return (
                 <div
@@ -317,14 +326,14 @@ export const EmployerWorkspace: React.FC = () => {
                             ? 'bg-rose-100 text-rose-900 border border-rose-300'
                             : 'bg-slate-100 text-slate-600'
                         }`}>
-                          {ms.status.replace('_', ' ')}
+                          {msStatus.replace('_', ' ')}
                         </span>
                       </div>
                       <p className="text-xs text-slate-600 pl-9 font-normal leading-relaxed">{ms.description}</p>
                     </div>
 
                     <div className="text-left md:text-right shrink-0 pl-9 md:pl-0">
-                      <span className="text-base font-black text-[#121214]">₹{ms.amount.toLocaleString()}</span>
+                      <span className="text-base font-black text-[#121214]">₹{(ms.amount || 0).toLocaleString()}</span>
                       <span className="block text-[10px] text-slate-400 font-medium">Target: {ms.deadline}</span>
                     </div>
                   </div>
@@ -470,9 +479,9 @@ export const EmployerWorkspace: React.FC = () => {
         isOpen={isDisputeOpen}
         onClose={() => setIsDisputeOpen(false)}
         contractId={`contract-${gig.id}`}
-        milestoneId={disputeMilestone?.id || gig.milestones[0]?.id || 'ms-1'}
-        milestoneTitle={disputeMilestone?.title || gig.milestones[0]?.title || 'Milestone 1'}
-        milestoneAmount={disputeMilestone?.amount || gig.milestones[0]?.amount || gig.totalBudget}
+        milestoneId={disputeMilestone?.id || gig.milestones?.[0]?.id || 'ms-1'}
+        milestoneTitle={disputeMilestone?.title || gig.milestones?.[0]?.title || 'Milestone 1'}
+        milestoneAmount={disputeMilestone?.amount || gig.milestones?.[0]?.amount || gig.totalBudget}
         onDisputeRaised={() => {}}
       />
 

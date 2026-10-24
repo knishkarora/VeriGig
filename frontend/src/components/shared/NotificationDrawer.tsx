@@ -11,9 +11,13 @@ interface NotificationDrawerProps {
 }
 
 export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, onClose, onOpenChat }) => {
-  const { notifications, markNotificationRead, markAllNotificationsRead } = useMarketplace();
+  const { notifications, currentUser, markNotificationRead, markAllNotificationsRead } = useMarketplace();
 
   if (!isOpen) return null;
+
+  const userNotifications = notifications.filter(
+    n => !n.recipientUserId || n.recipientUserId === currentUser.id
+  );
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -54,13 +58,13 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
 
           {/* List */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 divide-y divide-purple-50">
-            {notifications.length === 0 ? (
+            {userNotifications.length === 0 ? (
               <div className="text-center py-16 text-slate-400">
                 <Bell size={32} className="mx-auto mb-2 opacity-40 text-purple-400" />
                 <p className="text-sm">No notifications yet.</p>
               </div>
             ) : (
-              notifications.map((notif) => {
+              userNotifications.map((notif) => {
                 const getIcon = () => {
                   switch (notif.type) {
                     case 'message':

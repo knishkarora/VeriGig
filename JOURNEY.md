@@ -1,5 +1,20 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-25] Milestone: End-to-End Candidate Hiring & Contract Auto-Activation, Targeted Notification Routing & Workspace Hardening
+* **Key Changes:**
+  - **Backend Contract Auto-Creation & State Synchronization:** Updated `updateApplicationStatus` in [applications.service.ts](backend/src/modules/applications/applications.service.ts) to automatically update the application to `hired`, set gig status to `in_progress`, set `gig.hiredStudentId`, and create or activate the binding record in `contracts` and `contract_milestones` with Milestone 1 marked `active`.
+  - **Gig Query Multi-Status Visibility & Candidate Resolution:** Updated `listGigs` and `getGigById` in [gigs.service.ts](backend/src/modules/gigs/gigs.service.ts) to include active in-progress gigs, enrich payloads with `hiredStudentName` from `studentProfiles`, and ensure all milestone objects contain a default `status` value. Added `status` parameter to `filterGigsSchema` in [gigs.schema.ts](backend/src/modules/gigs/gigs.schema.ts).
+  - **Full-Stack Hire Flow Persistence:** Made `hireApplicant` in [MarketplaceContext.tsx](frontend/src/context/MarketplaceContext.tsx) asynchronous and hooked to `applicationsApi.updateApplicantStatus`. Updated `handleHire` in [GigApplicants.tsx](frontend/src/pages/employer/GigApplicants.tsx) to await the API call before triggering workspace navigation.
+  - **Targeted Notification Partitioning:** Scoped notifications strictly using `recipientUserId`:
+    - Employer alert: `"Candidate Hired & Escrow Funded"` directing to `/app/employer/workspace/:gigId`.
+    - Student alert: `"You Have Been Hired! 🎉"` directing to `/app/student/workspace/:gigId`.
+    - Hardened [NotificationDrawer.tsx](frontend/src/components/shared/NotificationDrawer.tsx) and [Navbar.tsx](frontend/src/components/shared/Navbar.tsx) unread counters to only display notifications intended for the currently authenticated user.
+  - **Black Screen Rectification & Defensive Rendering:** Eliminated the blank black screen on `/app/employer/workspace/:id` by replacing fragile `ms.status.replace` operations with safe fallback formatting `(ms.status || 'locked').replace('_', ' ')`. Added fallback checks on `gig.milestones` throughout [EmployerWorkspace.tsx](frontend/src/pages/employer/EmployerWorkspace.tsx), [StudentWorkspace.tsx](frontend/src/pages/student/StudentWorkspace.tsx), [EmployerDashboard.tsx](frontend/src/pages/employer/EmployerDashboard.tsx), and [StudentDashboard.tsx](frontend/src/pages/student/StudentDashboard.tsx).
+  - **Cross-Role Workspace Redirection:** Implemented bidirectional role guards in `EmployerWorkspace` (redirects students to `/app/student/workspace/:gigId`) and `StudentWorkspace` (redirects employers to `/app/employer/workspace/:gigId`), preventing students from landing on employer management desks or seeing "Post active listing" prompts.
+* **Decisions Made:** [[decision.md]] — End-to-End Candidate Hiring, Contract Auto-Activation, Targeted Notifications & Workspace Hardening.
+* **Flows Mapped:** [[flow.md]] — Flow 11: End-to-End Candidate Hiring, Contract Auto-Activation & Dual-Role Workspace Resolution.
+* **Verification:** Production builds verified with both backend (`tsc`) and frontend (`tsc -b && vite build`) passing with zero errors.
+
 ## [2026-10-18] Milestone: Applicant Pipeline Shortlisting, Finalist Finalization & Subdued Visual Hierarchy
 * **Key Changes:**
   - **Dynamic Shortlist Logic & Backend Sync:** Implemented `handleToggleShortlist(proposalId)` in [GigApplicants.tsx](frontend/src/pages/employer/GigApplicants.tsx) enabling employers to shortlist or un-shortlist applicants. State changes are reflected instantly in the UI, synchronized with `localStorage` and `MarketplaceContext.tsx` (`shortlistApplicant`), and persisted to the Fastify backend via `applicationsApi.updateApplicantStatus`.

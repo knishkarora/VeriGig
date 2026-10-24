@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { 
   CheckCircle2, 
   Clock, 
@@ -32,10 +32,16 @@ export const StudentWorkspace: React.FC = () => {
   const { gigId } = useParams<{ gigId?: string }>();
   const { gigs, currentUser, submitDeliverable } = useMarketplace();
 
+  // Role Protection: Redirect employers to Employer Escrow Workspace
+  if (currentUser.role === 'employer') {
+    return <Navigate to={gigId ? `/app/employer/workspace/${gigId}` : '/app/employer/workspace'} replace />;
+  }
+
   // Filter projects strictly assigned/hired to the logged-in student
   const myGigs = gigs.filter(g => g.hiredStudentId === currentUser.id);
   const activeGigs = myGigs.filter(g => 
     g.status === 'in_progress' || 
+    g.status === 'funded' ||
     (g.status === 'open' && g.milestones?.some(m => m.status === 'active' || m.status === 'under_review' || m.status === 'in_revision'))
   );
   const pastGigs = myGigs.filter(g => 
@@ -53,7 +59,7 @@ export const StudentWorkspace: React.FC = () => {
     ? myGigs.find(g => g.id === gigId) || (activeGigs.length > 0 ? activeGigs[0] : null)
     : (activeGigs.length > 0 ? activeGigs[0] : null);
 
-  const isArchivedView = Boolean(viewingPastGigId || (gig && (gig.status === 'completed' || gig.milestones.every(m => m.status === 'completed'))));
+  const isArchivedView = Boolean(viewingPastGigId || (gig && (gig.status === 'completed' || ((gig.milestones || []).length > 0 && gig.milestones.every(m => m.status === 'completed')))));
 
   // Modal states
   const [activeModalMilestone, setActiveModalMilestone] = useState<Milestone | null>(null);
@@ -693,7 +699,7 @@ export const StudentWorkspace: React.FC = () => {
         gigTitle={gig.title}
         employerName={gig.employerCompany}
         totalAmount={gig.totalBudget}
-        milestones={gig.milestones.map(m => ({ id: m.id, title: m.title, criteria: m.description, amount: m.amount }))}
+        milestones={(gig.milestones || []).map(m => ({ id: m.id, title: m.title, criteria: m.description, amount: m.amount }))}
         onAccepted={() => {}}
       />
 

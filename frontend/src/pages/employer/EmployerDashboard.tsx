@@ -24,7 +24,7 @@ export const EmployerDashboard: React.FC = () => {
   const myGigs = gigs.filter(g => g.employerId === currentUser.id);
 
   const pendingDeliverables = myGigs.flatMap(g => 
-    g.milestones
+    (g.milestones || [])
       .filter(m => m.status === 'under_review')
       .map(m => ({ gig: g, milestone: m }))
   );

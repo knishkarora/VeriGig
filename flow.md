@@ -283,6 +283,41 @@ sequenceDiagram
     UI->>UI: Hire button updates to "Hire Finalist & Pre-Authorize Escrow"
 ```
 
+### Flow 11: End-to-End Candidate Hiring, Contract Auto-Activation & Dual-Role Workspace Resolution
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Employer
+    participant UI as GigApplicants (/app/employer/gig/:id/applicants)
+    participant Modal as PaymentEscrowModal / Razorpay
+    participant Ctx as MarketplaceContext / LocalStorage
+    participant API as Fastify Backend (/api/v1)
+    actor Student
+    participant EmpWS as EmployerWorkspace (/app/employer/workspace/:id)
+    participant StuWS as StudentWorkspace (/app/student/workspace/:id)
+
+    Employer->>UI: Clicks "Hire Finalist & Pre-Authorize Escrow"
+    UI->>Modal: Opens PaymentEscrowModal with contract milestone budget
+    Employer->>Modal: Completes simulated Razorpay pre-authorization
+    Modal->>UI: Triggers onFunded() -> handleHire(proposalId)
+    UI->>Ctx: hireApplicant(proposalId)
+    Ctx->>API: PATCH /api/v1/applications/:id/status { status: 'hired' }
+    API->>API: ApplicationsService updates application status to 'hired'
+    API->>API: Sets gig status to 'in_progress' and gig.hiredStudentId = student.id
+    API->>API: Auto-creates binding contract in PostgreSQL with status 'in_progress'
+    API->>API: Clones gig milestones into contract_milestones, activating Milestone 1 ('active')
+    API-->>Ctx: 200 OK
+    Ctx->>Ctx: Updates local proposals (`status = 'hired'`) and gigs (`status = 'in_progress'`)
+    Ctx->>Ctx: Triggers celebratory confetti animation
+    Ctx-->>Employer: Targeted notification: "Candidate Hired & Escrow Funded" -> /app/employer/workspace/:gigId
+    Ctx-->>Student: Targeted notification: "You Have Been Hired! 🎉" -> /app/student/workspace/:gigId
+    UI->>EmpWS: Navigates employer to /app/employer/workspace/:gigId
+    EmpWS->>EmpWS: Renders active contract, verified student badge, and Milestone 1 in progress (no crash)
+    Student->>StuWS: Student logs in and navigates to active workspace via dashboard or notification
+    StuWS->>StuWS: Finds gig via `g.hiredStudentId === currentUser.id`
+    StuWS->>StuWS: Displays active workspace with Milestone 1 In Progress & deliverable submit modal
+```
+
 ## 3. Boundary Crossings & Safety Gates
 1. **Confidentiality Gate (DPDPA 2023):** Physical business address and contact phone numbers are stored as internal KYC attributes and explicitly excluded from the public employer profile view.
 2. **Gig Assignment Gate:** Workspaces no longer assume or inject static mock names (e.g. `Aarav Sharma`) when an employer has no hired candidate.
@@ -294,6 +329,7 @@ sequenceDiagram
 8. **Messaging Delivery State Machine & Context Discovery Gate:** Replaces hardcoded clock icons with a deterministic 4-stage delivery state machine: `sending` (Clock icon) -> `sent` (Single check) -> `delivered` (Double check in neutral gray) -> `read` (Double check in WhatsApp sky-blue `#38BDF8`). Relaxes backend schemas from rigid UUID validation to deterministic UUID hashing (`toValidUuid`), enables multi-thread switching in `ChatModal`, and dynamic active conversation auto-discovery in `Navbar.tsx`.
 9. **Navbar Notification Routing & Applied Gig Communication Gate:** Replaces standalone Navbar messaging icon with a unified Notification Center (`NotificationDrawer`). Unread messages automatically sync into targeted user notifications with embedded `chatContext` that directly open the conversation dialog when clicked. On micro-gig detail pages (`GigDetails.tsx`), applied students are provided with a dedicated "Messages with SME" channel and quick-action button to initiate or continue conversations directly with the employer.
 10. **Applicant Pipeline Shortlisting & Visual Hierarchy Gate:** Shortlisting a student triggers an optimistic state update in `GigApplicants.tsx`, updates `localStorage`, and synchronizes with the backend via `applicationsApi.updateApplicantStatus`. Shortlisted candidates sort to the top with prominent gold styling, while other non-shortlisted applicants receive a slightly subdued presentation (`opacity-60`, neutral border, `Applied` tag) while remaining fully clickable and inspectable.
+11. **Contract Auto-Activation & Role Isolation Gate:** When an employer hires an applicant, the Fastify backend automatically transitions the application to `hired`, the gig to `in_progress`, links `hiredStudentId`, and creates/activates the binding contract with Milestone 1 set to `active`. Notifications are strictly partitioned by `recipientUserId`, preventing students from receiving employer URLs. Both workspace components enforce bidirectional role redirection (`EmployerWorkspace` redirects students to `/app/student/workspace`; `StudentWorkspace` redirects employers to `/app/employer/workspace`). All milestone rendering functions defend against undefined status values via default fallbacks (`ms.status || 'locked'`), preventing uncaught TypeErrors and black screens.
 
 
 

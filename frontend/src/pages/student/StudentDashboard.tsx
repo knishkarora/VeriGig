@@ -232,7 +232,14 @@ export const StudentDashboard: React.FC = () => {
             </div>
           ) : (
             activeGigs.map((gig) => {
-              const activeMs = gig.milestones.find(m => m.status === 'active' || m.status === 'under_review') || gig.milestones[0];
+              const activeMs = (gig.milestones || []).find(m => m.status === 'active' || m.status === 'under_review') || gig.milestones?.[0] || {
+                id: 'ms-default',
+                title: 'Project Deliverables',
+                description: 'Complete deliverables as outlined in project criteria',
+                amount: gig.totalBudget,
+                status: 'active',
+                deadline: '7 days'
+              };
               return (
                 <div 
                   key={gig.id}
@@ -248,7 +255,7 @@ export const StudentDashboard: React.FC = () => {
                     </div>
                     <div className="text-left sm:text-right">
                       <span className="text-xl font-black text-[#101014] font-mono tabular-nums">₹{gig.totalBudget.toLocaleString()}</span>
-                      <span className="text-[11px] text-slate-400 block">{gig.milestones.length} Milestones</span>
+                      <span className="text-[11px] text-slate-400 block">{(gig.milestones || []).length} Milestones</span>
                     </div>
                   </div>
 

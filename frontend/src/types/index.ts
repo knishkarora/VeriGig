@@ -80,7 +80,7 @@ export interface MicroGig {
   expectedDeliverables: string[];
   requiredSkills: string[];
   preferredColleges: string[];
-  status: 'open' | 'in_progress' | 'completed' | 'disputed';
+  status: 'open' | 'in_progress' | 'completed' | 'disputed' | 'funded' | 'offer_pending';
   milestones: Milestone[];
   applicantsCount: number;
   createdAt: string;

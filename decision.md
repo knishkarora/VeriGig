@@ -1,5 +1,42 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-25] Decision: End-to-End Candidate Hiring, Contract Auto-Activation, Targeted Notifications & Workspace Hardening
+
+* **Context & Scope:**
+  After finalizing shortlisting and triggering the "Hire Finalist & Pre-Authorize Escrow" action with simulated payment, four cascading issues occurred:
+  1. Navigating to `/app/employer/workspace/:gigId` rendered a black screen / blank page due to an unhandled `TypeError: Cannot read properties of undefined (reading 'replace')` when evaluating `ms.status.replace('_', ' ')` on backend milestones lacking an explicit `status` column.
+  2. The hiring action never communicated with the Fastify backend API (`applicationsApi.updateApplicantStatus` was not called during hire), leaving the candidate proposal in `'shortlisted'` status and the gig in `'open'` status in PostgreSQL.
+  3. Reloading caused the client to refetch from the backend, wiping the in-memory hire state: the employer dashboard showed no hired student, and the student active workspace had no active contract.
+  4. Global un-targeted notifications sent both the employer and student the same notification with an employer link (`/app/employer/workspace/:gigId`), causing the student to land on the employer workspace where an empty employer prompt ("No Active Workspace - Post a micro-gig") was shown, confusing the student and prompting an "Only verified MSMEs can post gigs" error when clicked.
+
+* **Choice Made:**
+  1. **Backend Contract Auto-Creation & Activation in `ApplicationsService.updateApplicationStatus`:**
+     - When an employer updates an application to `status: 'hired'`, the backend automatically updates the application to `'hired'` and the gig to `'in_progress'`, linking `hiredStudentId`.
+     - Automatically provisions or updates the binding record in `contracts` with `status: 'in_progress'`, `confidentialityAccepted: true`, and `ipClauseAccepted: true`.
+     - Automatically clones the gig's milestones into `contract_milestones` with Milestone 1 set to `status: 'active'` and subsequent milestones set to `'locked'`.
+  2. **Multi-Status Gig Discovery & Candidate Enrichment in `GigsService.listGigs` and `getGigById`:**
+     - Updated `listGigs` to allow multi-status retrieval (`['open', 'in_progress', 'offer_pending', 'funded', 'completed']`) rather than exclusively filtering for `'open'`, preventing active contracted gigs from vanishing from dashboards.
+     - Enriched gig payloads with `hiredStudentName` resolved from `studentProfiles` via `hiredStudentId`.
+     - Guaranteed that all returned milestone records include a default `status` attribute (`'active'` for sequence 1 when gig is in progress, `'locked'` otherwise).
+  3. **Full-Stack Hire Flow Execution in `MarketplaceContext.hireApplicant` and `GigApplicants.tsx`:**
+     - Made `hireApplicant` asynchronous, invoking `applicationsApi.updateApplicantStatus(proposalId, { status: 'hired' })` before local optimistic updates.
+     - Separated and targeted notifications by `recipientUserId`:
+       - Employer receives: `"Candidate Hired & Escrow Funded"` directing to `/app/employer/workspace/:gigId`.
+       - Student receives: `"You Have Been Hired! 🎉"` directing to `/app/student/workspace/:gigId`.
+  4. **Workspace Role-Isolation & Crash-Proof Defensive Rendering:**
+     - Added bidirectional role guards: `EmployerWorkspace` redirects authenticated student users to `/app/student/workspace/:gigId`; `StudentWorkspace` redirects employer users to `/app/employer/workspace/:gigId`.
+     - Hardened all milestone status string formatting using fallback defaults `(ms.status || 'locked').replace('_', ' ')`, ensuring uncaught TypeErrors can never crash the component tree to a black screen.
+     - Filtered `NotificationDrawer` and `Navbar` notification count strictly to `!n.recipientUserId || n.recipientUserId === currentUser.id`.
+
+* **Rationale (Why over What):**
+  - **Single Source of Truth:** A hire action is a binding legal and financial agreement; updating PostgreSQL immediately ensures contract telemetry survives page refreshes and multi-device logins.
+  - **Role Segregation:** Students should never see SME employer empty states or authoring prompts, and employers should never see freelancer onboarding cues.
+  - **Zero-Crash Resilience:** Frontend components must gracefully handle missing or undefined fields from network payloads without taking down the entire page viewport.
+
+* **Tradeoffs Accepted:**
+  - When an employer pre-authorizes milestone escrow, the initial contract is auto-transitioned to `in_progress` with Milestone 1 activated, reducing friction for rapid prototype evaluation while preserving milestone-by-milestone sign-off.
+* **Immutability Status:** Settled & Immutable.
+
 ## [2026-10-18] Decision: Applicant Pipeline Shortlisting, Finalist Finalization & Subdued Visual Hierarchy
 
 * **Context & Scope:**

@@ -49,7 +49,7 @@ interface MarketplaceContextType {
   postGig: (gig: Partial<MicroGig> & { title: string; category: MicroGig['category']; totalBudget: number; milestones: Milestone[] }) => string;
   addOrUpdateGig: (gig: MicroGig) => void;
   submitProposal: (gigId: string, coverNote: string, bidAmount: number, deliveryTimeDays: number, portfolioLinks: { label: string; url: string }[], existingId?: string) => Proposal;
-  hireApplicant: (proposalId: string) => void;
+  hireApplicant: (proposalId: string) => Promise<void> | void;
   shortlistApplicant: (proposalId: string) => void;
   submitDeliverable: (gigId: string, milestoneId: string, data: { liveUrl: string; repoUrl?: string; notes: string }) => void;
   approveMilestone: (gigId: string, milestoneId: string, feedback?: string) => void;
@@ -141,6 +141,8 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
             employerName: g.employerName || 'Verified SME Client',
             employerCompany: g.employerCompany || 'SME Business',
             employerVerified: true,
+            hiredStudentId: g.hiredStudentId,
+            hiredStudentName: g.hiredStudentName,
             category: g.category,
             totalBudget: g.totalBudget,
             paymentType: g.paymentType || 'milestone',
@@ -154,9 +156,19 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
             status: g.status || 'open',
             applicantsCount: typeof g.applicantsCount === 'number' ? g.applicantsCount : 0,
             createdAt: g.createdAt || 'Today',
-            milestones: g.milestones || [
-              { id: `ms-${g.id}-1`, title: 'Milestone 1: Deliverables', description: 'Complete work criteria', amount: g.totalBudget, percentage: 100, status: 'active' }
-            ]
+            milestones: (g.milestones && g.milestones.length > 0)
+              ? g.milestones.map((m: any, idx: number) => ({
+                  id: m.id || `ms-${g.id}-${idx + 1}`,
+                  title: m.title || `Milestone ${idx + 1}`,
+                  description: m.description || m.deliverableCriteria || 'Deliverable criteria',
+                  amount: m.amount || Math.round(g.totalBudget / g.milestones.length),
+                  percentage: Math.round(((m.amount || 0) / (g.totalBudget || 1)) * 100),
+                  status: m.status || (idx === 0 && (g.status === 'in_progress' || g.status === 'funded') ? 'active' : 'locked'),
+                  deadline: m.durationDays ? `${m.durationDays} days` : '7 days',
+                }))
+              : [
+                  { id: `ms-${g.id}-1`, title: 'Milestone 1: Deliverables', description: 'Complete work criteria', amount: g.totalBudget, percentage: 100, status: (g.status === 'in_progress' || g.status === 'funded') ? 'active' : 'locked', deadline: '7 days' }
+                ]
           }));
         }
 
@@ -707,10 +719,18 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
-  const hireApplicant = (proposalId: string) => {
+  const hireApplicant = async (proposalId: string) => {
     const proposal = proposals.find(p => p.id === proposalId);
     if (!proposal) return;
 
+    // 1. Persist hired status to Fastify backend API & activate binding contract
+    try {
+      await applicationsApi.updateApplicantStatus(proposalId, { status: 'hired' });
+    } catch (err) {
+      console.warn('Backend updateApplicantStatus error on hire:', err);
+    }
+
+    // 2. Update local proposals
     setProposals(prev => {
       const updated = prev.map(p => p.id === proposalId ? { ...p, status: 'hired' as const } : p);
       try {
@@ -718,6 +738,8 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       } catch {}
       return updated;
     });
+
+    // 3. Update local gigs state
     setGigs(prev => prev.map(g => {
       if (g.id === proposal.gigId) {
         return {
@@ -725,7 +747,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
           status: 'in_progress',
           hiredStudentId: proposal.studentId,
           hiredStudentName: proposal.studentName,
-          milestones: g.milestones.map((ms, idx) => idx === 0 ? { ...ms, status: 'active' } : ms)
+          milestones: (g.milestones || []).map((ms, idx) => idx === 0 ? { ...ms, status: 'active' } : ms)
         };
       }
       return g;
@@ -741,7 +763,25 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       // ignore
     }
 
-    addNotification('Candidate Hired & Escrow Funded', `You hired ${proposal.studentName}! Milestone 1 is active.`, 'milestone', `/app/employer/workspace/${proposal.gigId}`);
+    const gig = gigs.find(g => g.id === proposal.gigId);
+
+    // Employer notification (targeted to current employer)
+    addNotification(
+      'Candidate Hired & Escrow Funded',
+      `You hired ${proposal.studentName}! Milestone 1 is active.`,
+      'milestone',
+      `/app/employer/workspace/${proposal.gigId}`,
+      currentUser.id
+    );
+
+    // Student notification (targeted to hired student, directing to Student Workspace)
+    addNotification(
+      'You Have Been Hired! 🎉',
+      `Congratulations! You have been hired for "${gig?.title || 'Micro-gig'}". Your active workspace is now unlocked.`,
+      'milestone',
+      `/app/student/workspace/${proposal.gigId}`,
+      proposal.studentId
+    );
   };
 
   const submitDeliverable = (gigId: string, milestoneId: string, data: { liveUrl: string; repoUrl?: string; notes: string }) => {

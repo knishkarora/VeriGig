@@ -1,10 +1,11 @@
-import { eq, and, desc, ilike, or, gte, lte } from 'drizzle-orm';
+import { eq, and, desc, ilike, or, gte, lte, inArray } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { 
   gigs, 
   gigMilestones, 
   gigPolicyFlags, 
   users, 
+  studentProfiles,
   businessProfiles, 
   auditEvents,
   applications 
@@ -127,8 +128,12 @@ export class GigsService {
    * Multi-facet public search and filtering for gigs
    */
   async listGigs(filters: FilterGigsInput) {
+    const statusCondition = filters.status && filters.status !== 'all'
+      ? eq(gigs.status, filters.status as any)
+      : inArray(gigs.status, ['open', 'in_progress', 'offer_pending', 'funded', 'completed']);
+
     let allGigs = await db.query.gigs.findMany({
-      where: eq(gigs.status, 'open'),
+      where: statusCondition,
       orderBy: [desc(gigs.createdAt)],
       limit: filters.limit,
       offset: filters.offset,
@@ -164,6 +169,12 @@ export class GigsService {
           where: eq(businessProfiles.userId, g.employerId),
         });
 
+        const student = g.hiredStudentId
+          ? await db.query.studentProfiles.findFirst({
+              where: eq(studentProfiles.userId, g.hiredStudentId),
+            })
+          : null;
+
         const milestones = await db.query.gigMilestones.findMany({
           where: eq(gigMilestones.gigId, g.id),
           orderBy: [gigMilestones.sequenceOrder],
@@ -178,8 +189,12 @@ export class GigsService {
           employerName: employer?.companyName || 'Regional Enterprise',
           employerCompany: employer?.companyName || 'Regional Enterprise',
           employerVerified: employer?.verifiedBadge || false,
+          hiredStudentName: student?.fullName || undefined,
           applicantsCount: gigApps.length,
-          milestones,
+          milestones: milestones.map((m, idx) => ({
+            ...m,
+            status: idx === 0 && (g.status === 'in_progress' || g.status === 'funded') ? 'active' : 'locked',
+          })),
         };
       })
     );
@@ -205,6 +220,12 @@ export class GigsService {
       where: eq(businessProfiles.userId, gig.employerId),
     });
 
+    const student = gig.hiredStudentId
+      ? await db.query.studentProfiles.findFirst({
+          where: eq(studentProfiles.userId, gig.hiredStudentId),
+        })
+      : null;
+
     const milestones = await db.query.gigMilestones.findMany({
       where: eq(gigMilestones.gigId, gig.id),
       orderBy: [gigMilestones.sequenceOrder],
@@ -219,8 +240,12 @@ export class GigsService {
       employerName: employer?.companyName || 'Regional Enterprise',
       employerCompany: employer?.companyName || 'Regional Enterprise',
       employerVerified: employer?.verifiedBadge || false,
+      hiredStudentName: student?.fullName || undefined,
       applicantsCount: gigApps.length,
-      milestones,
+      milestones: milestones.map((m, idx) => ({
+        ...m,
+        status: idx === 0 && (gig.status === 'in_progress' || gig.status === 'funded') ? 'active' : 'locked',
+      })),
     };
   }
 
