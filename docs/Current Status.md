@@ -145,6 +145,13 @@
   - [x] Isolated notifications by user and synced unread conversation messages in [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx).
   - [x] Added "Open Conversation" action button and clickable message cards in [NotificationDrawer.tsx](../frontend/src/components/shared/NotificationDrawer.tsx).
   - [x] Added "Messages with SME" quick-action button and dedicated SME communication channel card in [GigDetails.tsx](../frontend/src/pages/student/GigDetails.tsx) for applied candidates.
+- [x] Applicant Pipeline Candidate Shortlisting, Finalist Finalization & Subdued Visual Hierarchy:
+  - [x] Implemented dynamic shortlist toggle logic in [GigApplicants.tsx](../frontend/src/pages/employer/GigApplicants.tsx), updating local state, `localStorage`, `MarketplaceContext`, and calling backend API `applicationsApi.updateApplicantStatus`.
+  - [x] Updated `updateApplicationStatus` in [applications.service.ts](../backend/src/modules/applications/applications.service.ts) to verify company matching (`isSameCompany`) to prevent 403 authorization rejections.
+  - [x] Added automatic priority sorting to float shortlisted candidates to the top of the applicant pool.
+  - [x] Built distinct visual differentiation: shortlisted candidates display warm amber borders, golden star avatar rings, and a gold `<Star /> Shortlisted Finalist` badge, while other non-shortlisted applicants receive a slightly subdued, duller presentation (`opacity-60 bg-slate-50/60 border-slate-200/80`) with `Applied` tags.
+  - [x] Ensured non-shortlisted applicants remain fully clickable and interactive to inspect their full dossiers, schedule interviews, or hire.
+  - [x] Upgraded Candidate Dossier with "Shortlisted & Finalized Candidate" top banner, avatar star ring, toggleable `<Check /> Shortlisted Finalist` button, and `"Hire Finalist & Pre-Authorize Escrow"` action.
 
 
 

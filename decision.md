@@ -1,5 +1,31 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-18] Decision: Applicant Pipeline Shortlisting, Finalist Finalization & Subdued Visual Hierarchy
+
+* **Context & Scope:**
+  When reviewing proposals in the employer's Applicant Pipeline (`/app/employer/gig/:id/applicants`), clicking the "Shortlist this Student" button triggered no persistent state mutation, had no backend API sync, and lacked visual indicators to finalize the candidate. The employer required the ability to shortlist and finalize a candidate, have that candidate stand out prominently at the top of the pool, while keeping non-shortlisted applicants interactive, accessible, and inspectable with a subdued visual treatment.
+* **Choice Made:**
+  1. **Dual-Layer Toggle Logic & Instant State Updates:**
+     - In `frontend/src/pages/employer/GigApplicants.tsx`, implemented `handleToggleShortlist(proposalId)` which immediately toggles candidate status between `'submitted'` and `'shortlisted'`.
+     - Updates local pipeline state (`setApiCandidates`), synchronizes client cache via `MarketplaceContext.shortlistApplicant(proposalId)` (which emits notifications to both parties and persists to `localStorage`), and asynchronously calls `applicationsApi.updateApplicantStatus(proposalId, { status })`.
+  2. **Backend Authorization Alignment:**
+     - Updated `updateApplicationStatus` in `backend/src/modules/applications/applications.service.ts` to include the same company profile name matching check (`isSameCompany`) used in `getGigApplications`, preventing false 403 Forbidden errors when employers manage applicants across demo/live sessions.
+  3. **Visual Hierarchy & Priority Sorting in Pipeline List:**
+     - Shortlisted candidates automatically sort to the top of the applicant list (`sortedProposals`).
+     - Shortlisted candidate card: Warm amber border/gradient background (`bg-amber-50/80 border-amber-400`), golden star avatar ring (`ring-2 ring-amber-200`), and a prominent gold badge (`Shortlisted Finalist` with `<Star />`).
+     - Non-shortlisted candidate cards: When a candidate is shortlisted, non-shortlisted cards take on a slightly subdued, duller appearance (`opacity-60 bg-slate-50/60 border-slate-200/80 hover:opacity-100 hover:bg-white`) with a neutral `Applied` tag. All cards remain 100% interactive and clickable for comparison.
+  4. **Candidate Dossier (Right Pane) Finalization State:**
+     - Renders a prominent "Shortlisted & Finalized Candidate" top banner in the dossier when `selectedProposal.status === 'shortlisted'`.
+     - Golden star ring and badge on the dossier candidate avatar.
+     - Toggleable action button: transitions dynamically between `<Star /> Shortlist Student` and `<Check /> Shortlisted Finalist`.
+     - Hire button dynamically reflects finalist status: `"Hire Finalist & Pre-Authorize Escrow"`.
+* **Rationale (Why over What):**
+  - **Clarity in Decision-Making:** Employers evaluating multiple bids need immediate visual feedback when they have settled on a preferred candidate without losing access to alternative applicants in case terms change.
+  - **Preserving Discovery:** Rather than hiding or rejecting non-shortlisted applicants, subduing them keeps all candidate research and interview channels open.
+* **Tradeoffs Accepted:**
+  - Status updates are applied optimistically in UI state for immediate interaction, with backend synchronization executing in the background.
+* **Immutability Status:** Settled & Immutable.
+
 ## [2026-10-17] Decision: Proposal Lifecycle Persistence, Schema Normalization & Dual-Role Synchronization
 
 * **Context & Scope:** 

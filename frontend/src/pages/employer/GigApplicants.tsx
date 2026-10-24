@@ -12,7 +12,9 @@ import {
   Lock,
   ShieldCheck,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Star,
+  Check
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
@@ -102,12 +104,43 @@ export const GigApplicants: React.FC = () => {
   ) : [];
   const gigProposals = [...apiCandidates, ...memoryProps];
 
+  // Visual differentiation and priority ordering for shortlisted finalist
+  const hasShortlisted = gigProposals.some(p => p.status === 'shortlisted');
+  const sortedProposals = [...gigProposals].sort((a, b) => {
+    if (a.status === 'shortlisted' && b.status !== 'shortlisted') return -1;
+    if (b.status === 'shortlisted' && a.status !== 'shortlisted') return 1;
+    return 0;
+  });
+
   // Modals
   const [isInterviewOpen, setIsInterviewOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isEscrowOpen, setIsEscrowOpen] = useState(false);
 
-  const selectedProposal = gigProposals.find(p => p.id === selectedProposalId) || gigProposals[0];
+  const selectedProposal = gigProposals.find(p => p.id === selectedProposalId) || sortedProposals[0];
+
+  const handleToggleShortlist = async (proposalId: string) => {
+    const currentProp = gigProposals.find(p => p.id === proposalId);
+    if (!currentProp) return;
+
+    const nextStatus = currentProp.status === 'shortlisted' ? 'submitted' : 'shortlisted';
+
+    // 1. Immediately update local pipeline state for instantaneous UI feedback
+    setApiCandidates(prev => {
+      const base = prev.length > 0 ? prev : gigProposals;
+      return base.map(c => c.id === proposalId ? { ...c, status: nextStatus } : c);
+    });
+
+    // 2. Update MarketplaceContext & localStorage
+    shortlistApplicant(proposalId);
+
+    // 3. Persist to Fastify backend API
+    try {
+      await applicationsApi.updateApplicantStatus(proposalId, { status: nextStatus });
+    } catch (err) {
+      console.warn('Backend updateApplicantStatus sync error:', err);
+    }
+  };
 
   const handleHire = (proposalId: string) => {
     if (!gig) return;
@@ -219,54 +252,103 @@ export const GigApplicants: React.FC = () => {
           
           {/* Left Pane: Candidate List */}
           <div className="lg:col-span-5 space-y-3">
-            <span className="text-xs font-black uppercase tracking-wider text-slate-400 block mb-1">
-              Ranked Candidate Pool ({gigProposals.length})
-            </span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-black uppercase tracking-wider text-slate-400">
+                Ranked Candidate Pool ({gigProposals.length})
+              </span>
+              {hasShortlisted && (
+                <span className="text-[11px] font-black text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                  <Star size={11} className="fill-amber-600 text-amber-600" />
+                  <span>Candidate Shortlisted</span>
+                </span>
+              )}
+            </div>
 
-            {gigProposals.map((prop) => {
+            {sortedProposals.map((prop) => {
               const isSelected = prop.id === (selectedProposal?.id);
+              const isShortlisted = prop.status === 'shortlisted';
+              const isHired = prop.status === 'hired';
+              const isDull = hasShortlisted && !isShortlisted && !isHired;
+
               return (
                 <div
                   key={prop.id}
                   onClick={() => setSelectedProposalId(prop.id)}
                   className={`p-5 rounded-[2rem] border cursor-pointer transition-all ${
-                    isSelected
+                    isShortlisted
+                      ? isSelected
+                        ? 'bg-amber-50/80 border-amber-400 shadow-lg ring-2 ring-amber-400 scale-[1.01]'
+                        : 'bg-gradient-to-r from-amber-50/90 via-white to-amber-50/40 border-amber-300 shadow-md hover:border-amber-400'
+                      : isSelected
                       ? 'bg-white border-[#101014] shadow-md ring-2 ring-[#101014]'
+                      : isDull
+                      ? 'bg-slate-50/60 border-slate-200/80 opacity-60 hover:opacity-100 hover:bg-white hover:border-slate-300 hover:shadow-xs'
                       : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={prop.studentAvatar || DEFAULT_STUDENT_AVATAR} 
-                        alt={prop.studentName} 
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_STUDENT_AVATAR; }}
-                        className="w-11 h-11 rounded-2xl object-cover border border-slate-200 shadow-sm"
-                      />
+                      <div className="relative">
+                        <img 
+                          src={prop.studentAvatar || DEFAULT_STUDENT_AVATAR} 
+                          alt={prop.studentName} 
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_STUDENT_AVATAR; }}
+                          className={`w-11 h-11 rounded-2xl object-cover shadow-sm ${
+                            isShortlisted 
+                              ? 'border-2 border-amber-400 ring-2 ring-amber-200' 
+                              : isDull
+                              ? 'border border-slate-300 grayscale-[25%]'
+                              : 'border border-slate-200'
+                          }`}
+                        />
+                        {isShortlisted && (
+                          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 border border-white text-[#101014] flex items-center justify-center shadow-xs">
+                            <Star size={9} className="fill-[#101014]" />
+                          </span>
+                        )}
+                      </div>
                       <div>
-                        <h4 className="text-xs font-black text-[#101014] flex items-center gap-1.5">
+                        <h4 className="text-xs font-black text-[#101014] flex items-center gap-1.5 flex-wrap">
                           <span>{prop.studentName}</span>
-                          {prop.status === 'hired' && (
+                          {isShortlisted && (
+                            <span className="text-[10px] text-amber-900 bg-amber-200/90 border border-amber-300 px-2 py-0.5 rounded-full font-black flex items-center gap-1 shadow-2xs">
+                              <Star size={9} className="fill-amber-900" /> Shortlisted Finalist
+                            </span>
+                          )}
+                          {isHired && (
                             <span className="text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full font-extrabold">
                               Hired
                             </span>
                           )}
+                          {isDull && (
+                            <span className="text-[9px] text-slate-400 font-bold bg-slate-100 px-1.5 py-0.2 rounded-md">
+                              Applied
+                            </span>
+                          )}
                         </h4>
-                        <p className="text-[11px] text-slate-500 font-medium">{prop.studentCollege}</p>
+                        <p className={`text-[11px] font-medium ${isDull ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {prop.studentCollege}
+                        </p>
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-xs font-black text-[#101014] font-mono tabular-nums">₹{prop.bidAmount.toLocaleString()}</span>
-                      <span className="text-[10px] text-slate-400 font-semibold block">{prop.deliveryTimeDays} days</span>
+                      <span className="text-xs font-black text-[#101014] font-mono tabular-nums">
+                        ₹{prop.bidAmount.toLocaleString()}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-semibold block">
+                        {prop.deliveryTimeDays} days
+                      </span>
                     </div>
                   </div>
 
                   <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-emerald-700 flex items-center gap-1">
+                    <span className={`flex items-center gap-1 ${isShortlisted ? 'text-amber-800 font-extrabold' : isDull ? 'text-slate-500' : 'text-emerald-700'}`}>
                       <Sparkles size={11} /> {prop.matchScore}% Match Score
                     </span>
-                    <span className="text-slate-500">{prop.studentGpa}</span>
+                    <span className={isDull ? 'text-slate-400 font-medium' : 'text-slate-500 font-medium'}>
+                      {prop.studentGpa}
+                    </span>
                   </div>
                 </div>
               );
@@ -278,19 +360,67 @@ export const GigApplicants: React.FC = () => {
             {selectedProposal && (
               <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white border border-[#EDE8FD] shadow-md space-y-6">
                 
+                {/* Shortlisted Finalist Top Banner */}
+                {selectedProposal.status === 'shortlisted' && (
+                  <div className="p-4 sm:p-5 rounded-3xl bg-amber-50/90 border-2 border-amber-300 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm animate-in fade-in duration-200">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-2xl bg-amber-400 text-[#101014] flex items-center justify-center font-black shadow-xs shrink-0">
+                        <Star size={20} className="fill-[#101014]" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-amber-950">
+                            Shortlisted & Finalized Candidate
+                          </h4>
+                          <span className="text-[10px] bg-amber-200 border border-amber-300 text-amber-900 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
+                            Finalist
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-amber-900/80 font-medium mt-0.5">
+                          This student is marked as your finalized choice for this gig. Other applicants remain accessible below.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleShortlist(selectedProposal.id)}
+                      className="text-xs font-bold text-amber-900/80 hover:text-amber-950 hover:underline px-2 py-1 shrink-0 self-start sm:self-center"
+                    >
+                      Remove Finalist
+                    </button>
+                  </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-4">
-                    <img 
-                      src={selectedProposal.studentAvatar || DEFAULT_STUDENT_AVATAR} 
-                      alt={selectedProposal.studentName} 
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_STUDENT_AVATAR; }}
-                      className="w-14 h-14 rounded-3xl object-cover border-2 border-emerald-400 shadow-sm"
-                    />
+                    <div className="relative">
+                      <img 
+                        src={selectedProposal.studentAvatar || DEFAULT_STUDENT_AVATAR} 
+                        alt={selectedProposal.studentName} 
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = DEFAULT_STUDENT_AVATAR; }}
+                        className={`w-14 h-14 rounded-3xl object-cover shadow-sm transition-all ${
+                          selectedProposal.status === 'shortlisted'
+                            ? 'border-2 border-amber-400 ring-4 ring-amber-200'
+                            : 'border-2 border-slate-200'
+                        }`}
+                      />
+                      {selectedProposal.status === 'shortlisted' && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-amber-400 border border-white text-[#101014] flex items-center justify-center shadow-xs">
+                          <Star size={10} className="fill-[#101014]" />
+                        </span>
+                      )}
+                    </div>
                     <div>
                       <h3 className="text-lg font-black text-[#101014] flex items-center gap-2">
                         <span>{selectedProposal.studentName}</span>
-                        <TrustBadge type="student" size="sm" text="Verified Student" />
+                        {selectedProposal.status === 'shortlisted' ? (
+                          <span className="text-[10px] font-black text-amber-900 bg-amber-200 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                            <Star size={10} className="fill-amber-900" /> Shortlisted Finalist
+                          </span>
+                        ) : (
+                          <TrustBadge type="student" size="sm" text="Verified Student" />
+                        )}
                       </h3>
                       <p className="text-xs text-slate-500 font-bold">
                         {selectedProposal.studentCollege} • {selectedProposal.studentGpa}
@@ -388,10 +518,16 @@ export const GigApplicants: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setIsEscrowOpen(true)}
-                        className="flex-1 py-3.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-black shadow-md transition-all flex items-center justify-center gap-2"
+                        className={`flex-1 py-3.5 rounded-full text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 ${
+                          selectedProposal.status === 'shortlisted'
+                            ? 'bg-[#101014] hover:bg-slate-800 text-white ring-2 ring-amber-400'
+                            : 'bg-[#101014] hover:bg-slate-800 text-white'
+                        }`}
                       >
                         <UserCheck size={15} className="text-[#D4F851]" />
-                        <span>Hire & Pre-Authorize Escrow (₹{selectedProposal.bidAmount.toLocaleString()})</span>
+                        <span>
+                          {selectedProposal.status === 'shortlisted' ? 'Hire Finalist' : 'Hire'} & Pre-Authorize Escrow (₹{selectedProposal.bidAmount.toLocaleString()})
+                        </span>
                       </button>
 
                       <button
@@ -414,10 +550,25 @@ export const GigApplicants: React.FC = () => {
 
                       <button
                         type="button"
-                        onClick={() => shortlistApplicant(selectedProposal.id)}
-                        className="px-4 py-3.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors"
+                        onClick={() => handleToggleShortlist(selectedProposal.id)}
+                        className={`px-5 py-3.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
+                          selectedProposal.status === 'shortlisted'
+                            ? 'bg-amber-400 hover:bg-amber-500 text-[#101014] font-black border border-amber-500'
+                            : 'bg-slate-100 hover:bg-amber-100 hover:text-amber-900 text-slate-800'
+                        }`}
+                        title={selectedProposal.status === 'shortlisted' ? 'Click to remove finalist status' : 'Shortlist and finalize this student'}
                       >
-                        Shortlist
+                        {selectedProposal.status === 'shortlisted' ? (
+                          <>
+                            <Check size={14} className="stroke-[3]" />
+                            <span>Shortlisted Finalist</span>
+                          </>
+                        ) : (
+                          <>
+                            <Star size={14} className="text-amber-500" />
+                            <span>Shortlist Student</span>
+                          </>
+                        )}
                       </button>
                     </>
                   )}

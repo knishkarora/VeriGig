@@ -672,13 +672,39 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   const shortlistApplicant = (proposalId: string) => {
+    let targetProp: Proposal | undefined;
     setProposals(prev => {
-      const updated = prev.map(p => p.id === proposalId ? { ...p, status: 'shortlisted' as const } : p);
+      const updated = prev.map(p => {
+        if (p.id === proposalId) {
+          const nextStatus = p.status === 'shortlisted' ? ('submitted' as const) : ('shortlisted' as const);
+          targetProp = { ...p, status: nextStatus };
+          return targetProp;
+        }
+        return p;
+      });
       try {
         localStorage.setItem('verigig_proposals', JSON.stringify(updated));
       } catch {}
       return updated;
     });
+
+    if (targetProp && targetProp.status === 'shortlisted') {
+      const gig = gigs.find(g => g.id === targetProp?.gigId);
+      addNotification(
+        'Candidate Shortlisted',
+        `You shortlisted ${targetProp.studentName} for "${gig?.title || 'Micro-gig'}".`,
+        'applicant',
+        `/app/employer/applicants`,
+        currentUser.id
+      );
+      addNotification(
+        'Proposal Shortlisted! 🌟',
+        `Great news! Your proposal for "${gig?.title || 'Micro-gig'}" has been shortlisted by ${currentUser.name || 'the client'}.`,
+        'applicant',
+        `/app/student/gig/${targetProp.gigId}`,
+        targetProp.studentId
+      );
+    }
   };
 
   const hireApplicant = (proposalId: string) => {

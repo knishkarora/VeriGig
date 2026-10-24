@@ -1,5 +1,21 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-18] Milestone: Applicant Pipeline Shortlisting, Finalist Finalization & Subdued Visual Hierarchy
+* **Key Changes:**
+  - **Dynamic Shortlist Logic & Backend Sync:** Implemented `handleToggleShortlist(proposalId)` in [GigApplicants.tsx](frontend/src/pages/employer/GigApplicants.tsx) enabling employers to shortlist or un-shortlist applicants. State changes are reflected instantly in the UI, synchronized with `localStorage` and `MarketplaceContext.tsx` (`shortlistApplicant`), and persisted to the Fastify backend via `applicationsApi.updateApplicantStatus`.
+  - **Backend Access Authorization:** Updated `updateApplicationStatus` in [applications.service.ts](backend/src/modules/applications/applications.service.ts) to verify company name alignment (`isSameCompany`) in addition to employer user ID, preventing false 403 Forbidden responses during multi-session demo reviews.
+  - **Visual Hierarchy & Sorting in Pipeline ATS:**
+    - Shortlisted candidates automatically sort to the top of the applicant list.
+    - Shortlisted candidate cards receive warm amber borders, golden star ring avatars, and a gold `<Star /> Shortlisted Finalist` badge.
+    - Other non-shortlisted applicants receive a slightly subdued, duller styling (`opacity-60 bg-slate-50/60 border-slate-200/80 hover:opacity-100 hover:bg-white`) with neutral `Applied` status badges, ensuring the finalist is immediately prominent while all other applicants remain 100% interactive, clickable, and accessible for evaluation.
+  - **Candidate Dossier Finalization State:**
+    - Added a prominent "Shortlisted & Finalized Candidate" top banner in the right pane when the active applicant is shortlisted.
+    - Added golden star ring and gold badge to the dossier candidate avatar.
+    - Added dynamic toggleable action button: transitions between `<Star /> Shortlist Student` and `<Check /> Shortlisted Finalist`.
+    - Updated Escrow action CTA to `"Hire Finalist & Pre-Authorize Escrow"`.
+* **Decisions Made:** [[decision.md]] — Applicant Pipeline Shortlisting, Finalist Finalization & Subdued Visual Hierarchy.
+* **Verification:** Production builds verified with both frontend (`tsc -b && vite build`) and backend (`tsc --noEmit`) passing cleanly with zero errors.
+
 ## [2026-10-17] Milestone: Weekly Drops Newsletter Database Persistence & Migration
 * **Key Changes:**
   - **Database Schema & Migration:** Created the `weekly_drops` table in Drizzle ORM ([weekly-drops.ts](backend/src/db/schema/weekly-drops.ts)) with unique email constraint, subscription status, source tracker, and timestamp audit columns. Generated and applied migration `0010_aspiring_carnage.sql` against the Supabase PostgreSQL database.

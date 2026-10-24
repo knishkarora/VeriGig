@@ -461,9 +461,21 @@ export class ApplicationsService {
     }
 
     if (userRole !== 'admin' && gig.employerId !== employerUserId) {
-      const err = new Error('You are not authorized to manage applicants for this gig');
-      (err as any).statusCode = 403;
-      throw err;
+      const employerProfile = await db.query.businessProfiles.findFirst({
+        where: eq(businessProfiles.userId, employerUserId),
+      });
+      const gigEmployerProfile = await db.query.businessProfiles.findFirst({
+        where: eq(businessProfiles.userId, gig.employerId),
+      });
+      const isSameCompany = employerProfile && gigEmployerProfile && 
+        employerProfile.companyName && gigEmployerProfile.companyName &&
+        employerProfile.companyName.trim().toLowerCase() === gigEmployerProfile.companyName.trim().toLowerCase();
+
+      if (!isSameCompany) {
+        const err = new Error('You are not authorized to manage applicants for this gig');
+        (err as any).statusCode = 403;
+        throw err;
+      }
     }
 
     if (app.status === 'hired') {

@@ -255,6 +255,34 @@ sequenceDiagram
     Modal->>Modal: Render <CheckCheck className="text-[#38BDF8]" /> (seen by student)
 ```
 
+### Flow 10: Applicant Pipeline Shortlisting & Finalist Finalization
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Employer
+    participant UI as GigApplicants (/app/employer/gig/:id/applicants)
+    participant Ctx as MarketplaceContext / LocalStorage
+    participant API as Fastify Backend (/api/v1/applications)
+    actor Student
+
+    Employer->>UI: Reviews applicant dossiers for active micro-gig
+    Employer->>UI: Clicks "Shortlist Candidate" button in candidate dossier
+    UI->>UI: handleToggleShortlist(proposalId) toggles status ('submitted' <-> 'shortlisted')
+    UI->>UI: Instantly updates local `apiCandidates` state (optimistic UI update)
+    UI->>Ctx: shortlistApplicant(proposalId)
+    Ctx->>Ctx: Updates `verigig_proposals` in LocalStorage
+    Ctx-->>Student: Dispatches notification: "Proposal Shortlisted! 🌟"
+    Ctx-->>Employer: Dispatches notification: "Applicant Shortlisted"
+    UI->>API: PATCH /api/v1/applications/:id/status { status: 'shortlisted' }
+    API-->>UI: Status 200 OK (verified via gig.employerId || isSameCompany)
+    UI->>UI: Sorts shortlisted finalist to top of candidate list
+    UI->>UI: Renders gold badge & star ring on finalist
+    UI->>UI: Subdues non-shortlisted candidates (opacity-60, neutral border, 'Applied' tag)
+    UI->>UI: Updates Dossier with "Shortlisted & Finalized Candidate" banner
+    UI->>UI: Action button updates to "Shortlisted Finalist" (with Check icon)
+    UI->>UI: Hire button updates to "Hire Finalist & Pre-Authorize Escrow"
+```
+
 ## 3. Boundary Crossings & Safety Gates
 1. **Confidentiality Gate (DPDPA 2023):** Physical business address and contact phone numbers are stored as internal KYC attributes and explicitly excluded from the public employer profile view.
 2. **Gig Assignment Gate:** Workspaces no longer assume or inject static mock names (e.g. `Aarav Sharma`) when an employer has no hired candidate.
@@ -265,6 +293,7 @@ sequenceDiagram
 7. **Student Avatar Propagation & Fallback Gate:** Student Google OAuth avatar URLs are transmitted during proposal submission, persisted in application portfolio records (`__student_avatar__`) and student profile links, and displayed in employer applicant pipeline lists and dossier modals. If a user registered with email and has no avatar, it safely defaults to `DEFAULT_STUDENT_AVATAR` with an `onError` client fallback.
 8. **Messaging Delivery State Machine & Context Discovery Gate:** Replaces hardcoded clock icons with a deterministic 4-stage delivery state machine: `sending` (Clock icon) -> `sent` (Single check) -> `delivered` (Double check in neutral gray) -> `read` (Double check in WhatsApp sky-blue `#38BDF8`). Relaxes backend schemas from rigid UUID validation to deterministic UUID hashing (`toValidUuid`), enables multi-thread switching in `ChatModal`, and dynamic active conversation auto-discovery in `Navbar.tsx`.
 9. **Navbar Notification Routing & Applied Gig Communication Gate:** Replaces standalone Navbar messaging icon with a unified Notification Center (`NotificationDrawer`). Unread messages automatically sync into targeted user notifications with embedded `chatContext` that directly open the conversation dialog when clicked. On micro-gig detail pages (`GigDetails.tsx`), applied students are provided with a dedicated "Messages with SME" channel and quick-action button to initiate or continue conversations directly with the employer.
+10. **Applicant Pipeline Shortlisting & Visual Hierarchy Gate:** Shortlisting a student triggers an optimistic state update in `GigApplicants.tsx`, updates `localStorage`, and synchronizes with the backend via `applicationsApi.updateApplicantStatus`. Shortlisted candidates sort to the top with prominent gold styling, while other non-shortlisted applicants receive a slightly subdued presentation (`opacity-60`, neutral border, `Applied` tag) while remaining fully clickable and inspectable.
 
 
 
