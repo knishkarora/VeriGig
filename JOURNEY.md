@@ -474,3 +474,25 @@
   - Frontend TypeScript checked (`tsc --noEmit`) with 0 errors.
   - Frontend production build (`vite build`) succeeded with 0 errors.
 
+---
+
+## Phase 15: Navbar Message Streamlining via Notification System and Applied Micro-Gig Direct Communication
+- **Timestamp:** 2026-10-24
+- **Status:** Complete & Production Verified
+- **Problem Statement:**
+  1. The standalone message button in the navbar created confusion because students logging in could not find where messages were received.
+  2. Applied students viewing their applied micro-gigs only saw "Proposal Submitted" with no way to start or view conversations with the hiring business.
+- **Architectural & Technical Solution:**
+  - **Removed Message Icon from Navbar:** Streamlined header navigation to solely use the Notification Bell for alerts, messages, and platform activity.
+  - **Targeted Message Notifications with Direct Chat Handshake:**
+    - Expanded `NotificationItem` to support `type: 'message'` and embedded `chatContext`.
+    - In `MarketplaceContext.tsx`, isolated notifications per user (`recipientUserId === currentUser.id`) and synced unread conversation messages into interactive notifications.
+    - In `NotificationDrawer.tsx`, added "Open Conversation" action button and clickable message cards that launch `ChatModal` directly into the relevant employer thread.
+  - **Applied Micro-Gig SME Communication Channel:**
+    - In `GigDetails.tsx`, added a "Messages with SME" button next to "Proposal Submitted".
+    - Added a direct communication channel card in the project body detailing the conversation with the employer and a one-click "Open Conversation" button.
+- **Verification:**
+  - `tsc -b frontend/tsconfig.json` completed with 0 errors.
+  - `vite build` completed in 5.73s with 0 errors.
+
+

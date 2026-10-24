@@ -146,6 +146,14 @@ export interface NotificationItem {
   message: string;
   time: string;
   read: boolean;
-  type: 'milestone' | 'applicant' | 'verification' | 'payment' | 'system';
+  type: 'milestone' | 'applicant' | 'verification' | 'payment' | 'system' | 'message';
   link?: string;
+  recipientUserId?: string;
+  chatContext?: {
+    contextType: 'gig' | 'application' | 'contract';
+    contextId: string;
+    recipientId: string;
+    recipientName: string;
+    recipientRole?: string;
+  };
 }

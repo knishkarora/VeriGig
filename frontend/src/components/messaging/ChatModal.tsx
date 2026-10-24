@@ -14,6 +14,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { messagingApi } from '../../api/endpoints';
+import { useMarketplace } from '../../context/MarketplaceContext';
 
 export interface ChatMessage {
   id: string;
@@ -66,6 +67,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
   recipientRole: initialRecipientRole,
   currentUserId,
 }) => {
+  const { currentUser, addNotification } = useMarketplace();
+
   // Active conversation state
   const [activeContextType, setActiveContextType] = useState<'gig' | 'application' | 'contract'>(initialContextType);
   const [activeContextId, setActiveContextId] = useState<string>(initialContextId || 'general');
@@ -512,6 +515,22 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         }
         localStorage.setItem('verigig_conversations', JSON.stringify(threads));
         setAvailableThreads(threads);
+
+        // Dispatch instant notification for recipient
+        addNotification(
+          `New message from ${currentUser.name || 'Contact'}`,
+          text,
+          'message',
+          undefined,
+          activeRecipientId,
+          {
+            contextType: activeContextType,
+            contextId: activeContextId,
+            recipientId: currentUserId,
+            recipientName: currentUser.name || (activeRecipientRole === 'student' ? 'Employer' : 'Candidate'),
+            recipientRole: activeRecipientRole === 'student' ? 'employer' : 'student',
+          }
+        );
       } catch (e) {
         console.warn('Failed to update conversation index:', e);
       }

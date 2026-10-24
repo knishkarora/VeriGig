@@ -1,14 +1,16 @@
 import React from 'react';
-import { X, Check, Bell, ArrowRight, ShieldAlert, Sparkles, Wallet } from 'lucide-react';
+import { X, Check, Bell, ArrowRight, ShieldAlert, Sparkles, Wallet, MessageSquare } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { Link } from 'react-router-dom';
+import { NotificationItem } from '../../types';
 
 interface NotificationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenChat?: (chatContext: NonNullable<NotificationItem['chatContext']>) => void;
 }
 
-export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, onClose }) => {
+export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, onClose, onOpenChat }) => {
   const { notifications, markNotificationRead, markAllNotificationsRead } = useMarketplace();
 
   if (!isOpen) return null;
@@ -31,7 +33,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900">Activity Alerts</h3>
-                <p className="text-xs text-slate-500">Real-time webhook notifications</p>
+                <p className="text-xs text-slate-500">Real-time alerts & messages</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -61,6 +63,8 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
               notifications.map((notif) => {
                 const getIcon = () => {
                   switch (notif.type) {
+                    case 'message':
+                      return <MessageSquare size={16} className="text-[#101014]" />;
                     case 'payment':
                       return <Wallet size={16} className="text-emerald-600" />;
                     case 'milestone':
@@ -75,7 +79,16 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                 return (
                   <div 
                     key={notif.id}
+                    onClick={() => {
+                      if (notif.chatContext && onOpenChat) {
+                        markNotificationRead(notif.id);
+                        onClose();
+                        onOpenChat(notif.chatContext);
+                      }
+                    }}
                     className={`pt-3 first:pt-0 p-3 rounded-2xl transition-all ${
+                      notif.chatContext ? 'cursor-pointer hover:border-purple-300 hover:shadow-sm' : ''
+                    } ${
                       notif.read ? 'bg-transparent' : 'bg-purple-50/70 border border-purple-200/60'
                     }`}
                   >
@@ -93,11 +106,26 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                         <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
                           {notif.message}
                         </p>
-                        <div className="flex items-center gap-3 mt-2.5">
-                          {notif.link && (
+                        <div className="flex items-center gap-2.5 mt-2.5">
+                          {notif.chatContext && onOpenChat ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markNotificationRead(notif.id);
+                                onClose();
+                                onOpenChat(notif.chatContext!);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#101014] hover:bg-slate-800 text-[#D4F851] text-[11px] font-bold shadow-sm transition-all"
+                            >
+                              <MessageSquare size={12} />
+                              <span>Open Conversation</span>
+                            </button>
+                          ) : notif.link ? (
                             <Link 
                               to={notif.link} 
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 markNotificationRead(notif.id);
                                 onClose();
                               }}
@@ -105,10 +133,14 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
                             >
                               View details <ArrowRight size={11} />
                             </Link>
-                          )}
+                          ) : null}
                           {!notif.read && (
                             <button
-                              onClick={() => markNotificationRead(notif.id)}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markNotificationRead(notif.id);
+                              }}
                               className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-800"
                             >
                               <Check size={11} /> Mark read
@@ -125,7 +157,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
 
           {/* Footer note */}
           <div className="p-3 border-t border-purple-100 bg-purple-50/30 text-center text-[11px] text-slate-500">
-            Escrow state changes trigger simulated instant webhook web-events.
+            Escrow state changes and employer direct messages trigger real-time alerts.
           </div>
         </div>
       </div>

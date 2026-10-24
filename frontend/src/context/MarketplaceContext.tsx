@@ -38,7 +38,14 @@ interface MarketplaceContextType {
   unreadNotifCount: number;
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
-  addNotification: (title: string, message: string, type: NotificationItem['type'], link?: string) => void;
+  addNotification: (
+    title: string, 
+    message: string, 
+    type: NotificationItem['type'], 
+    link?: string,
+    recipientUserId?: string,
+    chatContext?: NotificationItem['chatContext']
+  ) => void;
   postGig: (gig: Partial<MicroGig> & { title: string; category: MicroGig['category']; totalBudget: number; milestones: Milestone[] }) => string;
   addOrUpdateGig: (gig: MicroGig) => void;
   submitProposal: (gigId: string, coverNote: string, bidAmount: number, deliveryTimeDays: number, portfolioLinks: { label: string; url: string }[], existingId?: string) => Proposal;
@@ -98,11 +105,22 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     return initialProposals;
   };
 
+  const loadPersistedNotifications = (): NotificationItem[] => {
+    try {
+      const saved = localStorage.getItem('verigig_notifications');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return initialNotifications;
+  };
+
   const [gigs, setGigs] = useState<MicroGig[]>(initialGigs);
   const [proposals, setProposals] = useState<Proposal[]>(loadPersistedProposals);
   const [verifications, setVerifications] = useState<VerificationRequest[]>(initialVerifications);
   const [disputes, setDisputes] = useState<Dispute[]>(initialDisputes);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(loadPersistedNotifications);
   const [isAuthInitializing, setIsAuthInitializing] = useState(Boolean(supabase));
   const [authError, setAuthError] = useState<string | null>(null);
   const handledSupabaseTokens = useRef(new Set<string>());
@@ -421,26 +439,144 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
-  const addNotification = (title: string, message: string, type: NotificationItem['type'], link?: string) => {
+  const addNotification = (
+    title: string, 
+    message: string, 
+    type: NotificationItem['type'], 
+    link?: string,
+    recipientUserId?: string,
+    chatContext?: NotificationItem['chatContext']
+  ) => {
     const newNotif: NotificationItem = {
-      id: `notif-${Date.now()}`,
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       title,
       message,
       time: 'Just now',
       read: false,
       type,
       link,
+      recipientUserId,
+      chatContext,
     };
-    setNotifications(prev => [newNotif, ...prev]);
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev];
+      try {
+        localStorage.setItem('verigig_notifications', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const markNotificationRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
+      try {
+        localStorage.setItem('verigig_notifications', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const markAllNotificationsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, read: true }));
+      try {
+        localStorage.setItem('verigig_notifications', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
+
+  // Synchronize unread messages from active conversations into user notifications
+  useEffect(() => {
+    const syncUnreadMessageNotifications = () => {
+      if (!currentUser.id || currentUser.role === 'guest') return;
+
+      try {
+        const storedConvs = localStorage.getItem('verigig_conversations');
+        if (!storedConvs) return;
+        const convs = JSON.parse(storedConvs);
+        if (!Array.isArray(convs)) return;
+
+        const myConvs = convs.filter((c: any) => 
+          c.participants?.includes(currentUser.id) || 
+          c.recipientId === currentUser.id || 
+          c.studentId === currentUser.id || 
+          c.employerId === currentUser.id
+        );
+
+        for (const c of myConvs) {
+          const storedMsgs = localStorage.getItem(`verigig_chat_messages_${c.id}`);
+          if (!storedMsgs) continue;
+          const msgs = JSON.parse(storedMsgs);
+          if (!Array.isArray(msgs)) continue;
+
+          // Find unread messages from counterparty sent to current user
+          const unreadMsgs = msgs.filter((m: any) => m.senderId !== currentUser.id && !m.readAt);
+          if (unreadMsgs.length > 0) {
+            const latest = unreadMsgs[unreadMsgs.length - 1];
+            const senderName = latest.senderName || c.employerName || c.recipientName || 'Employer';
+
+            setNotifications(prev => {
+              const alreadyHas = prev.some(n => 
+                n.type === 'message' && 
+                n.chatContext?.contextId === c.contextId && 
+                n.recipientUserId === currentUser.id && 
+                !n.read
+              );
+              if (alreadyHas) return prev;
+
+              const msgNotif: NotificationItem = {
+                id: `notif-msg-${c.id}-${Date.now()}`,
+                title: `New message from ${senderName}`,
+                message: latest.messageText,
+                time: 'Just now',
+                read: false,
+                type: 'message',
+                recipientUserId: currentUser.id,
+                chatContext: {
+                  contextType: c.contextType || 'application',
+                  contextId: c.contextId,
+                  recipientId: latest.senderId || c.employerId || c.recipientId,
+                  recipientName: senderName,
+                  recipientRole: c.studentId === currentUser.id ? 'employer' : 'student',
+                }
+              };
+
+              const updated = [msgNotif, ...prev];
+              try {
+                localStorage.setItem('verigig_notifications', JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Error syncing unread message notifications:', err);
+      }
+    };
+
+    syncUnreadMessageNotifications();
+
+    const handleNotifAdded = () => {
+      const persisted = loadPersistedNotifications();
+      setNotifications(persisted);
+    };
+
+    const handleMessageSent = () => {
+      syncUnreadMessageNotifications();
+    };
+
+    window.addEventListener('verigig_notification_added', handleNotifAdded);
+    window.addEventListener('verigig_message_sent', handleMessageSent);
+    window.addEventListener('storage', handleNotifAdded);
+
+    return () => {
+      window.removeEventListener('verigig_notification_added', handleNotifAdded);
+      window.removeEventListener('verigig_message_sent', handleMessageSent);
+      window.removeEventListener('storage', handleNotifAdded);
+    };
+  }, [currentUser.id, currentUser.role]);
 
   const addOrUpdateGig = (gig: MicroGig) => {
     setGigs(prev => {
@@ -785,7 +921,8 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     addNotification('Dispute Case Settled', `Dispute ${id} was resolved by Admin.`, 'system', '/app/admin/disputes');
   };
 
-  const unreadNotifCount = notifications.filter(n => !n.read).length;
+  const userNotifications = notifications.filter(n => !n.recipientUserId || n.recipientUserId === currentUser.id);
+  const unreadNotifCount = userNotifications.filter(n => !n.read).length;
 
   return (
     <MarketplaceContext.Provider value={{
@@ -800,7 +937,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       proposals,
       verifications,
       disputes,
-      notifications,
+      notifications: userNotifications,
       unreadNotifCount,
       markNotificationRead,
       markAllNotificationsRead,

@@ -366,4 +366,26 @@
   - In offline demo modes without active WebSocket clusters, delivery transitions use optimistic local event dispatching and heartbeat polling (3.5s interval).
 * **Immutability Status:** Settled & Immutable.
 
+## [2026-10-24] Decision: Navbar Message Simplification via Notification Center and Applied Gig Chat Integration
+
+* **Context & Scope:**
+  1. Students logging in were unable to intuitively discover where incoming employer messages appeared because the Navbar featured both an Activity Bell and a redundant Messaging icon.
+  2. Applied students reviewing their submitted proposals on micro-gig detail pages (`GigDetails.tsx`) only saw a static "Proposal Submitted" badge without any pathway to message or discuss deliverables directly with the hiring SME.
+* **Choice Made:**
+  1. **Navbar Message Icon Removal & Unified Activity Center:**
+     - Removed the standalone messaging icon button from `Navbar.tsx` entirely, establishing the Notification Bell as the sole activity and alert center on desktop and mobile headers.
+     - Enhanced `NotificationItem` to support `type: 'message'` and an embedded `chatContext` payload (`contextType`, `contextId`, `recipientId`, `recipientName`, `recipientRole`).
+     - In `MarketplaceContext.tsx`, isolated notifications per user (`recipientUserId === currentUser.id`) and implemented real-time synchronization between active conversation messages and unread notifications.
+     - In `NotificationDrawer.tsx`, added custom message alert cards with an "Open Conversation" action button that dismisses the drawer and immediately opens `ChatModal` focused on that specific conversation thread.
+  2. **Applied Micro-Gig SME Communication Section:**
+     - In `GigDetails.tsx`, enhanced the status area for candidates who already submitted a proposal with a direct "Messages with SME" action button.
+     - Added a prominent direct communication banner card within the main page column detailing the active channel with the employer, proposal bid amount, and a one-click "Open Conversation" button launching the contextual chat dialog.
+* **Rationale (Why over What):**
+  - Unifying incoming messages into the notification stream eliminates confusing multi-entry point friction.
+  - Contextual communication links directly on applied gig pages ensure students can easily contact employers regarding project requirements at any time without hunting through separate navigation menus.
+* **Tradeoffs Accepted:**
+  - Direct message icon in top bar is replaced by notification alerts; outgoing initiated messages start contextually from applied gigs or workspace milestones.
+* **Immutability Status:** Settled & Immutable.
+
+
 

@@ -11,10 +11,12 @@ import {
   ArrowUpRight,
   Loader2,
   Building2,
-  Sparkles
+  Sparkles,
+  MessageSquare
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { TrustBadge } from '../../components/shared/TrustBadge';
+import { ChatModal } from '../../components/messaging/ChatModal';
 import { applicationsApi, gigsApi } from '../../api/endpoints';
 import { MicroGig } from '../../types';
 
@@ -31,8 +33,9 @@ export const GigDetails: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(!localGig);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Proposal Drawer state
+  // Proposal Drawer & Chat state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [coverNote, setCoverNote] = useState('');
   const [bidAmount, setBidAmount] = useState<number>(localGig?.totalBudget || 5000);
   const [deliveryDays, setDeliveryDays] = useState<number>(7);
@@ -299,9 +302,18 @@ export const GigDetails: React.FC = () => {
           
           <div className="mt-4">
             {existingProposal ? (
-              <span className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-300 text-xs font-black">
-                <CheckCircle2 size={15} /> Proposal Submitted
-              </span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
+                <span className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-300 text-xs font-black shadow-sm">
+                  <CheckCircle2 size={15} /> Proposal Submitted
+                </span>
+                <button
+                  onClick={() => setIsChatOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm group"
+                >
+                  <MessageSquare size={13} className="text-[#D4F851]" />
+                  <span>Messages with SME</span>
+                </button>
+              </div>
             ) : gig.status === 'in_progress' ? (
               <Link 
                 to={`/app/student/workspace/${gig.id}`}
@@ -331,6 +343,50 @@ export const GigDetails: React.FC = () => {
         {/* Left Column: Scope & Deliverables */}
         <div className="lg:col-span-7 space-y-6">
           
+          {/* Direct Communication Channel for Applied Candidates */}
+          {existingProposal && (
+            <div className="p-6 sm:p-7 rounded-[2rem] bg-gradient-to-br from-[#0F172A] to-[#1E293B] text-white border border-white/10 shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-[#D4F851]/10 border border-[#D4F851]/30 flex items-center justify-center text-[#D4F851] shrink-0">
+                    <MessageSquare size={22} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-white">Direct Messages with {employerCompany}</h3>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30">
+                        Active Channel
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/60 mt-0.5">
+                      Communicate directly with the SME client regarding questions, deliverables, or proposal details.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsChatOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#D4F851] hover:bg-[#C5F82A] text-[#101014] text-xs font-black shadow-md transition-all shrink-0"
+                >
+                  <MessageSquare size={14} />
+                  <span>Open Conversation</span>
+                  <ArrowUpRight size={14} />
+                </button>
+              </div>
+
+              <div className="pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs text-white/60">
+                <div className="flex items-center gap-3">
+                  <span>Your Bid: <strong className="text-white font-mono">₹{existingProposal.bidAmount.toLocaleString()}</strong></span>
+                  <span>•</span>
+                  <span>Delivery: <strong className="text-white">{existingProposal.deliveryTimeDays} days</strong></span>
+                  <span>•</span>
+                  <span>Status: <strong className="text-emerald-400 capitalize font-bold">{existingProposal.status}</strong></span>
+                </div>
+                <span className="text-[11px] text-white/40 font-mono">Proposal #{existingProposal.id.slice(0, 8)}</span>
+              </div>
+            </div>
+          )}
+
           <div className="p-8 rounded-[2rem] bg-white border border-[#EDE8FD] shadow-sm space-y-4">
             <h2 className="text-lg font-black text-[#101014]">Project Scope & SME Requirements</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
@@ -614,6 +670,20 @@ export const GigDetails: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Direct In-App Chat Modal with Employer */}
+      {isChatOpen && (
+        <ChatModal
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          contextType="application"
+          contextId={existingProposal ? existingProposal.id : gig.id}
+          recipientId={gig.employerId}
+          recipientName={employerCompany}
+          recipientRole="employer"
+          currentUserId={currentUser.id}
+        />
       )}
 
     </div>

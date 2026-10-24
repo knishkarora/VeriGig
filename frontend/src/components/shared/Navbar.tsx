@@ -22,6 +22,13 @@ export const Navbar: React.FC = () => {
   const userInitials = currentUser.name.split(' ').filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'U';
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedChatContext, setSelectedChatContext] = useState<{
+    contextType: 'gig' | 'application' | 'contract';
+    contextId: string;
+    recipientId: string;
+    recipientName: string;
+    recipientRole?: string;
+  } | null>(null);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -292,6 +299,7 @@ export const Navbar: React.FC = () => {
                 onClick={() => setIsNotifOpen(true)}
                 className="relative p-2 rounded-full text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors border border-slate-200"
                 aria-label="Notifications"
+                title="Activity Alerts & Messages"
               >
                 <Bell size={16} />
                 {unreadNotifCount > 0 && (
@@ -299,19 +307,6 @@ export const Navbar: React.FC = () => {
                     {unreadNotifCount}
                   </span>
                 )}
-              </button>
-            )}
-
-            {/* In-App Messaging Button */}
-            {currentRole !== 'guest' && (
-              <button
-                onClick={() => setIsChatOpen(true)}
-                className="relative p-2 rounded-full text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors border border-slate-200"
-                aria-label="Messages"
-                title="In-App Messaging"
-              >
-                <MessageSquare size={16} />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#D4F851] ring-2 ring-white"></span>
               </button>
             )}
 
@@ -429,14 +424,29 @@ export const Navbar: React.FC = () => {
 
       {/* Notification Drawer */}
       {currentRole !== 'guest' && (
-        <NotificationDrawer isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+        <NotificationDrawer 
+          isOpen={isNotifOpen} 
+          onClose={() => setIsNotifOpen(false)}
+          onOpenChat={(chatCtx) => {
+            setSelectedChatContext(chatCtx);
+            setIsChatOpen(true);
+          }}
+        />
       )}
 
-      {/* In-App Contextual Chat Modal */}
+      {/* In-App Contextual Chat Modal opened via Notifications or Direct Actions */}
       {isChatOpen && (
         <ChatModal
           isOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
+          onClose={() => {
+            setIsChatOpen(false);
+            setSelectedChatContext(null);
+          }}
+          contextType={selectedChatContext?.contextType}
+          contextId={selectedChatContext?.contextId}
+          recipientId={selectedChatContext?.recipientId}
+          recipientName={selectedChatContext?.recipientName}
+          recipientRole={selectedChatContext?.recipientRole}
           currentUserId={currentUser.id}
         />
       )}

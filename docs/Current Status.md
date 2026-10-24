@@ -139,5 +139,12 @@
   - [x] Relaxed schema validation in [messaging.schema.ts](../backend/src/modules/messaging/messaging.schema.ts) from rigid `.uuid()` to `z.string().min(1)`.
   - [x] Synchronized messages across browser tabs and roles via `localStorage` and `verigig_message_sent` / `verigig_message_read` custom event bus.
   - [x] Added multi-thread conversation switcher and dynamic thread auto-discovery in [Navbar.tsx](../frontend/src/components/shared/Navbar.tsx).
+- [x] Navbar Message Streamlining via Notification System and Applied Micro-Gig Direct Communication:
+  - [x] Removed message icon from [Navbar.tsx](../frontend/src/components/shared/Navbar.tsx), channeling all alerts and messages through the Activity Bell.
+  - [x] Extended `NotificationItem` in [index.ts](../frontend/src/types/index.ts) with `type: 'message'`, `recipientUserId`, and `chatContext`.
+  - [x] Isolated notifications by user and synced unread conversation messages in [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx).
+  - [x] Added "Open Conversation" action button and clickable message cards in [NotificationDrawer.tsx](../frontend/src/components/shared/NotificationDrawer.tsx).
+  - [x] Added "Messages with SME" quick-action button and dedicated SME communication channel card in [GigDetails.tsx](../frontend/src/pages/student/GigDetails.tsx) for applied candidates.
+
 
 
