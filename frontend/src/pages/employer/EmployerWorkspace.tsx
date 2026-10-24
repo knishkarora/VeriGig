@@ -291,7 +291,9 @@ export const EmployerWorkspace: React.FC = () => {
           </div>
 
           <div className="space-y-6">
-            {(gig.milestones || []).map((ms, index) => {
+            {[...(gig.milestones || [])]
+              .sort((a, b) => (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0))
+              .map((ms, index) => {
               const msStatus = ms.status || 'locked';
               const isUnderReview = msStatus === 'under_review';
               const isCompleted = msStatus === 'completed';

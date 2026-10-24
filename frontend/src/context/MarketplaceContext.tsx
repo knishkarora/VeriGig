@@ -157,17 +157,21 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
             applicantsCount: typeof g.applicantsCount === 'number' ? g.applicantsCount : 0,
             createdAt: g.createdAt || 'Today',
             milestones: (g.milestones && g.milestones.length > 0)
-              ? g.milestones.map((m: any, idx: number) => ({
-                  id: m.id || `ms-${g.id}-${idx + 1}`,
-                  title: m.title || `Milestone ${idx + 1}`,
-                  description: m.description || m.deliverableCriteria || 'Deliverable criteria',
-                  amount: m.amount || Math.round(g.totalBudget / g.milestones.length),
-                  percentage: Math.round(((m.amount || 0) / (g.totalBudget || 1)) * 100),
-                  status: m.status || (idx === 0 && (g.status === 'in_progress' || g.status === 'funded') ? 'active' : 'locked'),
-                  deadline: m.durationDays ? `${m.durationDays} days` : '7 days',
-                }))
+              ? (g.milestones as any[])
+                  .slice()
+                  .sort((a: any, b: any) => (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0))
+                  .map((m: any, idx: number) => ({
+                    id: m.id || `ms-${g.id}-${idx + 1}`,
+                    sequenceOrder: m.sequenceOrder ?? idx + 1,
+                    title: m.title || `Milestone ${idx + 1}`,
+                    description: m.description || m.deliverableCriteria || 'Deliverable criteria',
+                    amount: m.amount || Math.round(g.totalBudget / g.milestones.length),
+                    percentage: Math.round(((m.amount || 0) / (g.totalBudget || 1)) * 100),
+                    status: m.status || (idx === 0 && (g.status === 'in_progress' || g.status === 'funded') ? 'active' : 'locked'),
+                    deadline: m.durationDays ? `${m.durationDays} days` : '7 days',
+                  }))
               : [
-                  { id: `ms-${g.id}-1`, title: 'Milestone 1: Deliverables', description: 'Complete work criteria', amount: g.totalBudget, percentage: 100, status: (g.status === 'in_progress' || g.status === 'funded') ? 'active' : 'locked', deadline: '7 days' }
+                  { id: `ms-${g.id}-1`, sequenceOrder: 1, title: 'Milestone 1: Deliverables', description: 'Complete work criteria', amount: g.totalBudget, percentage: 100, status: (g.status === 'in_progress' || g.status === 'funded') ? 'active' : 'locked', deadline: '7 days' }
                 ]
           }));
         }
@@ -198,14 +202,19 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
               preferredColleges: ['PCTE Group of Institutes'],
               status: c.status === 'in_progress' ? ('in_progress' as const) : c.status === 'completed' ? ('completed' as const) : ('in_progress' as const),
               createdAt: 'Recently',
-              milestones: (c.milestones || []).map((m: any) => ({
-                id: m.id,
-                title: m.title,
-                description: m.criteria || 'Deliverable scope criteria',
-                amount: m.amount,
-                percentage: Math.round((m.amount / (c.totalAmount || 1)) * 100),
-                status: m.status === 'approved' ? 'completed' : m.status === 'under_review' ? 'under_review' : m.status === 'active' ? 'active' : 'locked',
-              }))
+              milestones: ((c.milestones || []) as any[])
+                .slice()
+                .sort((a: any, b: any) => (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0))
+                .map((m: any, idx: number) => ({
+                  id: m.id,
+                  sequenceOrder: m.sequenceOrder ?? idx + 1,
+                  title: m.title,
+                  description: m.criteria || 'Deliverable scope criteria',
+                  amount: m.amount,
+                  percentage: Math.round((m.amount / (c.totalAmount || 1)) * 100),
+                  status: m.status === 'approved' || m.status === 'paid' ? 'completed' : m.status === 'under_review' ? 'under_review' : m.status === 'active' ? 'active' : 'locked',
+                  deadline: m.dueDate ? 'Due soon' : '7 days',
+                }))
             }));
           }
         } catch {

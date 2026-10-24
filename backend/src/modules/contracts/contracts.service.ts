@@ -413,6 +413,7 @@ export class ContractsService {
 
         const milestones = await db.query.contractMilestones.findMany({
           where: eq(contractMilestones.contractId, c.id),
+          orderBy: [contractMilestones.sequenceOrder],
         });
 
         const completedMilestones = milestones.filter(m => m.status === 'approved' || m.status === 'paid').length;

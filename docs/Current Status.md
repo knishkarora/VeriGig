@@ -159,6 +159,11 @@
   - [x] Targeted Notification Partitioning: Scoped notifications by `recipientUserId`, routing employers to `/app/employer/workspace/:id` and hired students to `/app/student/workspace/:id`.
   - [x] Black Screen Crash Rectification: In [EmployerWorkspace.tsx](../frontend/src/pages/employer/EmployerWorkspace.tsx), protected all `ms.status.replace` operations with safe fallback defaults `(ms.status || 'locked').replace('_', ' ')`, preventing uncaught TypeErrors from crashing the React tree to a black screen.
   - [x] Cross-Role Workspace Redirection: Added bidirectional role guards in `EmployerWorkspace.tsx` (redirects students to `/app/student/workspace/:id`) and `StudentWorkspace.tsx` (redirects employers to `/app/employer/workspace/:id`), preventing role mismatch confusion and inappropriate empty state prompts.
+- [x] Milestone Pipeline De-Coupling & Sequential Ordering Rectification:
+  - [x] Ascending Sequence Order Enforcement: In [contracts.service.ts](../backend/src/modules/contracts/contracts.service.ts), added `orderBy: [contractMilestones.sequenceOrder]` to `listUserContracts`. In [MarketplaceContext.tsx](../frontend/src/context/MarketplaceContext.tsx), sorted milestones ascending by `sequenceOrder`.
+  - [x] De-Coupled Lifecycle Stages from Milestone Badges: In [StudentWorkspace.tsx](../frontend/src/pages/student/StudentWorkspace.tsx), refactored `getStatusBadge` to clean statuses (`In Progress`, `Under SME Review`, `Revision Requested`, `Approved & Paid`, and `Locked`) instead of confusing `Stage X:` labels.
+  - [x] Prerequisite Copy Rectification: Corrected unlock copy to `Unlocks after Milestone {index} is approved`, eliminating "Unlocks after Milestone 0".
+  - [x] Workspace & Dashboard Visual Order Alignment: In [StudentDashboard.tsx](../frontend/src/pages/student/StudentDashboard.tsx) and [EmployerWorkspace.tsx](../frontend/src/pages/employer/EmployerWorkspace.tsx), guaranteed Milestone 1 (Low-Fidelity Wireframes, ₹3,000) always renders first in progress, and Milestone 2 (High-Fidelity Prototype, ₹4,500) renders second as locked.
 
 
 

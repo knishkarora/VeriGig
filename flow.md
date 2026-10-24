@@ -318,6 +318,28 @@ sequenceDiagram
     StuWS->>StuWS: Displays active workspace with Milestone 1 In Progress & deliverable submit modal
 ```
 
+### Flow 12: Sequential Milestone Ordering & Decoupled Stage Lifecycle Mapping
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student
+    participant UI as StudentWorkspace (/app/student/workspace/:id)
+    participant Ctx as MarketplaceContext
+    participant API as Fastify Backend (/api/v1/contracts)
+    participant DB as PostgreSQL (contracts, contract_milestones)
+
+    Student->>UI: Navigates to Active Workspace
+    UI->>Ctx: Queries active gig and milestones
+    Ctx->>API: GET /api/v1/contracts
+    API->>DB: SELECT * FROM contract_milestones WHERE contract_id = :id ORDER BY sequence_order ASC
+    DB-->>API: Returns Milestone 1 (Low-Fidelity, seq 1, active), Milestone 2 (High-Fidelity, seq 2, locked)
+    API-->>Ctx: Returns ordered milestones
+    Ctx->>UI: Delivers sorted milestones
+    UI->>UI: Overall 4-Stage Banner: Stage 1 Scope & Legal (Done), Stage 2 In Progress (Active)
+    UI->>UI: Milestone 1: "Low-Fidelity Wireframes" -> Renders badge <Clock /> "In Progress" & "Submit Deliverable"
+    UI->>UI: Milestone 2: "High-Fidelity Prototype" -> Renders badge <Lock /> "Locked" & "Unlocks after Milestone 1 is approved"
+```
+
 ## 3. Boundary Crossings & Safety Gates
 1. **Confidentiality Gate (DPDPA 2023):** Physical business address and contact phone numbers are stored as internal KYC attributes and explicitly excluded from the public employer profile view.
 2. **Gig Assignment Gate:** Workspaces no longer assume or inject static mock names (e.g. `Aarav Sharma`) when an employer has no hired candidate.

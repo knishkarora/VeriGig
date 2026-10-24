@@ -1,5 +1,40 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-25] Decision: Milestone Pipeline De-Coupling & Sequential Ordering Rectification
+
+* **Context & Scope:**
+  In the Student Workspace ([`StudentWorkspace.tsx`](frontend/src/pages/student/StudentWorkspace.tsx)), two conflicting issues created severe user confusion:
+  1. The 4-stage project lifecycle tracker on top correctly defined:
+     - Stage 1: Scope & Legal (NDA & Terms Confirmed)
+     - Stage 2: In Progress (Deliverables Development)
+     - Stage 3: Under Review (SME Inspection & Test)
+     - Stage 4: Approved & Paid (Escrow Released to Wallet)
+  2. However, the helper function `getStatusBadge` hardcoded the word "Stage X:" into individual milestone badges:
+     - `'locked'` was rendered as `"Stage 1: Locked"`
+     - `'active'` was rendered as `"Stage 2: In Progress"`
+  3. Compounding this, `listUserContracts` in `contracts.service.ts` queried `contract_milestones` without an `ORDER BY sequence_order` clause. PostgreSQL returned the milestone rows in arbitrary order, placing Milestone 2 (High-Fidelity Prototype, locked) at index 0 and Milestone 1 (Low-Fidelity Wireframes, active) at index 1.
+  4. This caused Milestone 1 to be labeled `"Stage 1: Locked"` with copy `"Unlocks after Milestone 0"`, while Milestone 2 was labeled `"Stage 2: In Progress"` with the active `"Submit Deliverable"` button. The user was told to submit Milestone 2 while Milestone 1 was locked!
+
+* **Choice Made:**
+  1. **Strict Ascending Sequence Sorting Across the Stack:**
+     - Added `orderBy: [contractMilestones.sequenceOrder]` to `listUserContracts` in `contracts.service.ts`.
+     - In `MarketplaceContext.tsx`, sorted milestones strictly by `sequenceOrder` before storing in context.
+     - In `StudentWorkspace.tsx`, `EmployerWorkspace.tsx`, and `StudentDashboard.tsx`, sorted milestones with `sortedMilestones` so Milestone 1 (Low-Fidelity Wireframes, ₹3,000) is guaranteed to render first, and Milestone 2 (High-Fidelity Prototype, ₹4,500) renders second.
+  2. **De-Coupling Lifecycle Stages from Milestone Badges:**
+     - Refactored `getStatusBadge` to display clean, semantic milestone statuses:
+       - `completed`: `<CheckCircle2 /> Approved & Paid`
+       - `under_review`: `<Clock /> Under SME Review`
+       - `in_revision`: `<AlertCircle /> Revision Requested`
+       - `active`: `<Clock /> In Progress`
+       - `locked`: `<Lock /> Locked`
+     - The top 4-stage banner retains the overall project contract lifecycle (`Scope & Legal` -> `In Progress` -> `Under Review` -> `Approved & Paid`), while individual milestone cards clearly indicate their deliverable status without misleading "Stage X:" numbers.
+  3. **Corrected Unlock Prerequisite Copy:**
+     - Replaced `Unlocks after Milestone {index}` with `{index > 0 ? 'Unlocks after Milestone ' + index + ' is approved' : 'Locked until activated'}`.
+
+* **Rationale (Why over What):**
+  - **Mental Model Integrity:** A contract has lifecycle phases (contract signed -> in progress -> under review -> paid), while deliverables within that contract have milestones (Milestone 1, Milestone 2). Conflating the two caused the UI to mislabel Milestone 1 as "Stage 2".
+* **Immutability Status:** Settled & Immutable.
+
 ## [2026-10-25] Decision: End-to-End Candidate Hiring, Contract Auto-Activation, Targeted Notifications & Workspace Hardening
 
 * **Context & Scope:**

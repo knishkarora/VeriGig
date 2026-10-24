@@ -1,4 +1,4 @@
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, ne } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { 
   applications, 
@@ -539,18 +539,16 @@ export class ApplicationsService {
           .returning();
 
         if (gigMilestoneList.length > 0) {
-          await Promise.all(
-            gigMilestoneList.map(async (gm, idx) => {
-              await db.insert(contractMilestones).values({
-                contractId: newContract.id,
-                sequenceOrder: gm.sequenceOrder,
-                title: gm.title,
-                criteria: gm.deliverableCriteria || gm.description,
-                amount: gm.amount,
-                status: idx === 0 ? 'active' : 'locked',
-              });
-            })
-          );
+          for (const [idx, gm] of gigMilestoneList.entries()) {
+            await db.insert(contractMilestones).values({
+              contractId: newContract.id,
+              sequenceOrder: gm.sequenceOrder || idx + 1,
+              title: gm.title,
+              criteria: gm.deliverableCriteria || gm.description,
+              amount: gm.amount,
+              status: idx === 0 ? 'active' : 'locked',
+            });
+          }
         } else {
           await db.insert(contractMilestones).values({
             contractId: newContract.id,
@@ -572,6 +570,19 @@ export class ApplicationsService {
             updatedAt: now,
           })
           .where(eq(contracts.id, existingContract.id));
+
+        await db
+          .update(contractMilestones)
+          .set({
+            status: 'locked',
+            updatedAt: now,
+          })
+          .where(
+            and(
+              eq(contractMilestones.contractId, existingContract.id),
+              ne(contractMilestones.sequenceOrder, 1)
+            )
+          );
 
         await db
           .update(contractMilestones)

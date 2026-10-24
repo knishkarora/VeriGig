@@ -43,6 +43,7 @@ export interface DeliverableSubmission {
 
 export interface Milestone {
   id: string;
+  sequenceOrder?: number;
   title: string;
   description: string;
   amount: number;

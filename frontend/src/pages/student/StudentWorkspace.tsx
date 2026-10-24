@@ -95,13 +95,13 @@ export const StudentWorkspace: React.FC = () => {
       case 'completed':
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300">
-            <CheckCircle2 size={12} /> Stage 4: Approved & Paid
+            <CheckCircle2 size={12} /> Approved & Paid
           </span>
         );
       case 'under_review':
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
-            <Clock size={12} /> Stage 3: Under SME Review
+            <Clock size={12} /> Under SME Review
           </span>
         );
       case 'in_revision':
@@ -113,13 +113,13 @@ export const StudentWorkspace: React.FC = () => {
       case 'active':
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full bg-purple-100 text-purple-900 border border-purple-300">
-            <Clock size={12} /> Stage 2: In Progress
+            <Clock size={12} /> In Progress
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-500">
-            <Lock size={11} /> Stage 1: Locked
+            <Lock size={11} /> Locked
           </span>
         );
     }
@@ -236,9 +236,24 @@ export const StudentWorkspace: React.FC = () => {
   }
 
   // Case 2: Student has an active project (or selected an archived project)
-  const completedMilestones = gig.milestones.filter(m => m.status === 'completed');
-  const activeMilestone = gig.milestones.find(m => m.status === 'active' || m.status === 'under_review' || m.status === 'in_revision') || gig.milestones[0];
-  const completionPercentage = Math.round((completedMilestones.length / gig.milestones.length) * 100);
+  const sortedMilestones = [...(gig.milestones || [])].sort((a, b) => {
+    const seqA = a.sequenceOrder ?? 0;
+    const seqB = b.sequenceOrder ?? 0;
+    return seqA - seqB;
+  });
+  const completedMilestones = sortedMilestones.filter(m => m.status === 'completed');
+  const activeMilestone = sortedMilestones.find(m => m.status === 'active' || m.status === 'under_review' || m.status === 'in_revision') || sortedMilestones[0] || {
+    id: 'ms-default',
+    title: 'Project Deliverables',
+    status: 'active' as const,
+    amount: gig.totalBudget,
+    percentage: 100,
+    deadline: '7 days',
+    description: 'Complete deliverables'
+  };
+  const completionPercentage = sortedMilestones.length > 0 
+    ? Math.round((completedMilestones.length / sortedMilestones.length) * 100)
+    : 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-left">
@@ -408,9 +423,9 @@ export const StudentWorkspace: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
           {[
             { stageNum: 1, name: 'Scope & Legal', desc: 'NDA & Terms Confirmed', done: true, current: false },
-            { stageNum: 2, name: 'In Progress', desc: 'Deliverables Development', done: completedMilestones.length > 0, current: activeMilestone.status === 'active' },
-            { stageNum: 3, name: 'Under Review', desc: 'SME Inspection & Test', done: completedMilestones.length > 0, current: activeMilestone.status === 'under_review' },
-            { stageNum: 4, name: 'Approved & Paid', desc: 'Escrow Released to Wallet', done: gig.milestones.every(m => m.status === 'completed'), current: false },
+            { stageNum: 2, name: 'In Progress', desc: 'Deliverables Development', done: completedMilestones.length === sortedMilestones.length && sortedMilestones.length > 0, current: activeMilestone.status === 'active' || activeMilestone.status === 'in_revision' },
+            { stageNum: 3, name: 'Under Review', desc: 'SME Inspection & Test', done: false, current: activeMilestone.status === 'under_review' },
+            { stageNum: 4, name: 'Approved & Paid', desc: 'Escrow Released to Wallet', done: sortedMilestones.length > 0 && sortedMilestones.every(m => m.status === 'completed'), current: false },
           ].map((stg) => (
             <div 
               key={stg.stageNum} 
@@ -449,12 +464,12 @@ export const StudentWorkspace: React.FC = () => {
             <span>Project Milestones & Deliverables</span>
           </h2>
           <span className="text-xs text-purple-900 bg-purple-50 border border-purple-200/80 px-3 py-1 rounded-full font-bold tabular-nums">
-            {gig.milestones.length} Milestones Structured
+            {sortedMilestones.length} Milestones Structured
           </span>
         </div>
 
         <div className="space-y-4">
-          {gig.milestones.map((ms, index) => (
+          {sortedMilestones.map((ms, index) => (
             <div 
               key={ms.id}
               className={`p-7 rounded-[2rem] border transition-all ${
@@ -481,7 +496,7 @@ export const StudentWorkspace: React.FC = () => {
 
                 <div className="flex items-center gap-4 pl-9 md:pl-0">
                   <div className="text-right">
-                    <span className="text-base font-black text-[#121214] font-mono tabular-nums">₹{ms.amount.toLocaleString()}</span>
+                    <span className="text-base font-black text-[#121214] font-mono tabular-nums">₹{(ms.amount || 0).toLocaleString()}</span>
                     <span className="block text-[10px] text-slate-400 font-medium">Due: {ms.deadline}</span>
                   </div>
 
@@ -505,7 +520,9 @@ export const StudentWorkspace: React.FC = () => {
                       <CheckCircle2 size={16} /> Paid to Wallet
                     </div>
                   ) : (
-                    <span className="text-xs text-slate-400 font-medium italic">Unlocks after Milestone {index}</span>
+                    <span className="text-xs text-slate-400 font-medium italic">
+                      {index > 0 ? `Unlocks after Milestone ${index} is approved` : 'Locked until activated'}
+                    </span>
                   )}
                 </div>
               </div>

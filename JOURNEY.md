@@ -1,5 +1,16 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-25] Milestone: Milestone Pipeline De-Coupling & Sequential Ordering Rectification
+* **Key Changes:**
+  - **Milestone Sequence Order Guarantee:** In [contracts.service.ts](backend/src/modules/contracts/contracts.service.ts), added `orderBy: [contractMilestones.sequenceOrder]` to `listUserContracts`, eliminating arbitrary row ordering from PostgreSQL queries. In [applications.service.ts](backend/src/modules/applications/applications.service.ts), changed concurrent milestone creation to sequential `for...of` loops and enforced that only Milestone 1 is set to `status: 'active'` while subsequent milestones are initialized to `'locked'`.
+  - **Client Context Milestone Sorting:** In [MarketplaceContext.tsx](frontend/src/context/MarketplaceContext.tsx), added `sequenceOrder` normalization and strict ascending sorting `sort((a, b) => (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0))` across both `backendGigs` and `contractGigs`.
+  - **De-Coupling 4-Stage Project Lifecycle from Milestone Badges:** In [StudentWorkspace.tsx](frontend/src/pages/student/StudentWorkspace.tsx), refactored `getStatusBadge` to display clean, semantic milestone statuses (`In Progress`, `Under SME Review`, `Revision Requested`, `Approved & Paid`, and `Locked`) rather than confusing hardcoded `Stage X:` prefixes. The 4-stage pipeline banner on top correctly tracks the holistic contract progression (`Scope & Legal` -> `In Progress` -> `Under Review` -> `Approved & Paid`), while the milestone cards represent discrete deliverables.
+  - **Correction of "Unlocks After" Helper Copy:** Fixed unlock copy in [StudentWorkspace.tsx](frontend/src/pages/student/StudentWorkspace.tsx) from `Unlocks after Milestone {index}` (which produced "Unlocks after Milestone 0") to `Unlocks after Milestone {index} is approved`.
+  - **Workspace & Dashboard Visual Alignment:** Updated [StudentDashboard.tsx](frontend/src/pages/student/StudentDashboard.tsx) and [EmployerWorkspace.tsx](frontend/src/pages/employer/EmployerWorkspace.tsx) to sort milestones sequentially, ensuring Milestone 1 (Low-Fidelity Wireframes, ₹3,000) always renders first in progress, and Milestone 2 (High-Fidelity Prototype, ₹4,500) renders second as locked.
+* **Decisions Made:** [[decision.md]] — Milestone Pipeline De-Coupling & Sequential Ordering Rectification.
+* **Flows Mapped:** [[flow.md]] — Flow 12: Sequential Milestone Ordering & Decoupled Stage Lifecycle Mapping.
+* **Verification:** Production builds verified with both backend (`tsc`) and frontend (`tsc -b && vite build`) passing with zero errors.
+
 ## [2026-10-25] Milestone: End-to-End Candidate Hiring & Contract Auto-Activation, Targeted Notification Routing & Workspace Hardening
 * **Key Changes:**
   - **Backend Contract Auto-Creation & State Synchronization:** Updated `updateApplicationStatus` in [applications.service.ts](backend/src/modules/applications/applications.service.ts) to automatically update the application to `hired`, set gig status to `in_progress`, set `gig.hiredStudentId`, and create or activate the binding record in `contracts` and `contract_milestones` with Milestone 1 marked `active`.

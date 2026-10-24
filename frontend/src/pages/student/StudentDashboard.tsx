@@ -232,7 +232,8 @@ export const StudentDashboard: React.FC = () => {
             </div>
           ) : (
             activeGigs.map((gig) => {
-              const activeMs = (gig.milestones || []).find(m => m.status === 'active' || m.status === 'under_review') || gig.milestones?.[0] || {
+              const sorted = [...(gig.milestones || [])].sort((a, b) => (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0));
+              const activeMs = sorted.find(m => m.status === 'active' || m.status === 'under_review') || sorted[0] || {
                 id: 'ms-default',
                 title: 'Project Deliverables',
                 description: 'Complete deliverables as outlined in project criteria',
