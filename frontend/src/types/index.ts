@@ -87,6 +87,9 @@ export interface MicroGig {
   createdAt: string;
   hiredStudentId?: string;
   hiredStudentName?: string;
+  scopeAccepted?: boolean;
+  confidentialityAccepted?: boolean;
+  contractId?: string;
 }
 
 export interface Proposal {

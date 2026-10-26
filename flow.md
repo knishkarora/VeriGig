@@ -340,6 +340,85 @@ sequenceDiagram
     UI->>UI: Milestone 2: "High-Fidelity Prototype" -> Renders badge <Lock /> "Locked" & "Unlocks after Milestone 1 is approved"
 ```
 
+### Flow 13: Uniform Platform Skill Catalog & Employer Gig Posting
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Employer as SME Employer
+    participant Wizard as PostGigWizard (Step 3: Student Criteria)
+    participant Catalog as PLATFORM_SKILLS (data/skills.ts)
+    participant API as Fastify Backend (/api/v1/gigs)
+    participant DB as PostgreSQL (gigs)
+
+    Employer->>Wizard: Enters Step 3: Student Criteria & College Preferences
+    Wizard->>Catalog: Loads canonical list of platform skills
+    Employer->>Wizard: Types in skill search (e.g., "React", "Docker", "Figma")
+    Wizard->>Wizard: Filters PLATFORM_SKILLS in real-time, displays matching dropdown
+    Employer->>Wizard: Selects skill or presses Enter on exact match
+    Wizard->>Wizard: Adds uniform canonical tag, blocks arbitrary mismatched strings
+    Employer->>Wizard: Completes wizard and clicks "Publish Micro-Gig"
+    Wizard->>API: POST /api/v1/gigs with uniform requiredSkills
+    API->>DB: Stores standardized skill arrays for deterministic candidate matching
+```
+
+### Flow 14: Non-Assumed Scope & Bilateral NDA Ratification Flow
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student as Student Contractor
+    participant WS as StudentWorkspace (/app/student/workspace/:id)
+    participant Modal as ScopeAcceptanceModal
+    participant Ctx as MarketplaceContext
+    participant API as Fastify Backend (/api/v1/contracts/:id/accept-scope)
+    participant DB as PostgreSQL (contracts)
+
+    Student->>WS: Navigates to active project workspace
+    WS->>WS: Checks gig.scopeAccepted / contract.confidentialityAccepted
+    alt NDA is not yet ratified
+        WS->>WS: Stage 1 renders "Action Required: Sign NDA" (current: true, done: false)
+        WS->>WS: Displays warning banner: "Scope & NDA Ratification Pending"
+        Student->>WS: Clicks "Review & Sign NDA" or Stage 1 card
+        WS->>Modal: Opens ScopeAcceptanceModal with binding clauses
+        Student->>Modal: Checks confidentiality and IP terms, clicks "Confirm & Bind Scope"
+        Modal->>API: POST /contracts/:id/accept-scope
+        API->>DB: UPDATE contracts SET confidentiality_accepted = true, ip_clause_accepted = true
+        Modal->>Ctx: Calls acceptGigScope(gigId, contractId)
+        Ctx->>WS: Updates gig.scopeAccepted = true & sets localStorage flag
+        WS->>WS: Stage 1 dynamically transitions to "NDA & Terms Confirmed" (done: true)
+        WS->>WS: Stage 2 "In Progress" becomes active
+    else NDA was already accepted
+        WS->>WS: Stage 1 renders "NDA & Terms Confirmed" (done: true)
+        WS->>WS: Stage 2 "In Progress" renders active milestone
+    end
+```
+
+### Flow 15: Smooth Google SSO & Verified Profile Synchronization
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Student / Employer
+    participant AuthUI as AuthPage (/auth)
+    participant Supa as Supabase Auth (Google OAuth PKCE)
+    participant Google as Google Identity Provider
+    participant Ctx as MarketplaceContext
+    participant API as Fastify Backend (/api/v1/auth/google)
+
+    User->>AuthUI: Clicks "Continue with Google"
+    AuthUI->>Supa: signInWithGoogle(role)
+    Supa->>User: Sets sessionStorage verigig_oauth_in_progress = 'true'
+    Supa->>Google: Redirects to Google account selection
+    Google-->>AuthUI: Redirects back to /auth?code=...
+    AuthUI->>AuthUI: Mounts with isReturningFromOAuth = true
+    AuthUI->>AuthUI: Renders dedicated smooth profile loading screen (NO login form flicker)
+    AuthUI->>Ctx: syncSession exchanges PKCE code for session
+    Ctx->>API: POST /api/v1/auth/google with access token
+    API->>API: Verifies Google token, provisions/loads profile & issues JWT
+    API-->>Ctx: Returns verified user record, profile, and auth token
+    Ctx->>Ctx: Sets currentUser, currentRole, and persists session
+    AuthUI->>AuthUI: Smooth progress step indicates "Opening Workspace"
+    AuthUI->>AuthUI: Navigates smoothly to role dashboard (/app/student/dashboard)
+```
+
 ## 3. Boundary Crossings & Safety Gates
 1. **Confidentiality Gate (DPDPA 2023):** Physical business address and contact phone numbers are stored as internal KYC attributes and explicitly excluded from the public employer profile view.
 2. **Gig Assignment Gate:** Workspaces no longer assume or inject static mock names (e.g. `Aarav Sharma`) when an employer has no hired candidate.
@@ -351,7 +430,11 @@ sequenceDiagram
 8. **Messaging Delivery State Machine & Context Discovery Gate:** Replaces hardcoded clock icons with a deterministic 4-stage delivery state machine: `sending` (Clock icon) -> `sent` (Single check) -> `delivered` (Double check in neutral gray) -> `read` (Double check in WhatsApp sky-blue `#38BDF8`). Relaxes backend schemas from rigid UUID validation to deterministic UUID hashing (`toValidUuid`), enables multi-thread switching in `ChatModal`, and dynamic active conversation auto-discovery in `Navbar.tsx`.
 9. **Navbar Notification Routing & Applied Gig Communication Gate:** Replaces standalone Navbar messaging icon with a unified Notification Center (`NotificationDrawer`). Unread messages automatically sync into targeted user notifications with embedded `chatContext` that directly open the conversation dialog when clicked. On micro-gig detail pages (`GigDetails.tsx`), applied students are provided with a dedicated "Messages with SME" channel and quick-action button to initiate or continue conversations directly with the employer.
 10. **Applicant Pipeline Shortlisting & Visual Hierarchy Gate:** Shortlisting a student triggers an optimistic state update in `GigApplicants.tsx`, updates `localStorage`, and synchronizes with the backend via `applicationsApi.updateApplicantStatus`. Shortlisted candidates sort to the top with prominent gold styling, while other non-shortlisted applicants receive a slightly subdued presentation (`opacity-60`, neutral border, `Applied` tag) while remaining fully clickable and inspectable.
-11. **Contract Auto-Activation & Role Isolation Gate:** When an employer hires an applicant, the Fastify backend automatically transitions the application to `hired`, the gig to `in_progress`, links `hiredStudentId`, and creates/activates the binding contract with Milestone 1 set to `active`. Notifications are strictly partitioned by `recipientUserId`, preventing students from receiving employer URLs. Both workspace components enforce bidirectional role redirection (`EmployerWorkspace` redirects students to `/app/student/workspace`; `StudentWorkspace` redirects employers to `/app/employer/workspace`). All milestone rendering functions defend against undefined status values via default fallbacks (`ms.status || 'locked'`), preventing uncaught TypeErrors and black screens.
+11. **Contract Auto-Activation & Role Isolation Gate:** When an employer hires an applicant, the Fastify backend automatically transitions the application to `hired`, the gig to `in_progress`, links `hiredStudentId`, and creates the binding contract with Milestone 1 set to `active`. Notifications are strictly partitioned by `recipientUserId`, preventing students from receiving employer URLs. Both workspace components enforce bidirectional role redirection (`EmployerWorkspace` redirects students to `/app/student/workspace`; `StudentWorkspace` redirects employers to `/app/employer/workspace`). All milestone rendering functions defend against undefined status values via default fallbacks (`ms.status || 'locked'`), preventing uncaught TypeErrors and black screens.
+12. **Uniform Platform Skills Gate:** Gigs posted by employers in `PostGigWizard` now consume the exact canonical `PLATFORM_SKILLS` catalog utilized by student profiles, preventing arbitrary string divergence and guaranteeing deterministic skill matching between SME criteria and verified student talent.
+13. **Non-Assumed NDA & Legal Scope Ratification Gate:** When a contract is established, `confidentialityAccepted` and `ipClauseAccepted` strictly default to `false`. In `StudentWorkspace`, Stage 1 ("Scope & Legal") reflects an uncompleted state until the student explicitly confirms acceptance via `ScopeAcceptanceModal`, updating both backend PostgreSQL records and client state.
+14. **Flicker-Free Google OAuth Profile Synchronization Gate:** Google OAuth callback handling in `AuthPage` and `MarketplaceContext` persists the resolving state via `sessionStorage` and component-level locks, eliminating premature fallbacks to the standard login form and replacing the jarring jump with a smooth, informative 3-step profile loading indicator.
+
 
 
 

@@ -187,7 +187,7 @@ export class ContractsService {
       throw err;
     }
 
-    if (contract.status !== 'scope_pending') {
+    if (contract.status !== 'scope_pending' && !(!contract.confidentialityAccepted && contract.status === 'in_progress')) {
       const err = new Error(`Contract scope cannot be accepted in status: ${contract.status}`);
       (err as any).statusCode = 400;
       throw err;

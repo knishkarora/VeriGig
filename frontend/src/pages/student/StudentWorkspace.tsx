@@ -30,7 +30,7 @@ import { ChatModal } from '../../components/messaging/ChatModal';
 
 export const StudentWorkspace: React.FC = () => {
   const { gigId } = useParams<{ gigId?: string }>();
-  const { gigs, currentUser, submitDeliverable } = useMarketplace();
+  const { gigs, currentUser, submitDeliverable, acceptGigScope } = useMarketplace();
 
   // Role Protection: Redirect employers to Employer Escrow Workspace
   if (currentUser.role === 'employer') {
@@ -61,6 +61,14 @@ export const StudentWorkspace: React.FC = () => {
 
   const isArchivedView = Boolean(viewingPastGigId || (gig && (gig.status === 'completed' || ((gig.milestones || []).length > 0 && gig.milestones.every(m => m.status === 'completed')))));
 
+  // Real NDA acceptance state: NEVER assumed by default unless confirmed by student
+  const isNdaAccepted = Boolean(
+    isArchivedView ||
+    gig?.scopeAccepted || 
+    (gig as any)?.confidentialityAccepted || 
+    (gig?.id ? localStorage.getItem(`verigig_nda_accepted_${gig.id}`) === 'true' : false)
+  );
+
   // Modal states
   const [activeModalMilestone, setActiveModalMilestone] = useState<Milestone | null>(null);
   const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
@@ -76,6 +84,11 @@ export const StudentWorkspace: React.FC = () => {
   const handleSubmitModal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!gig || !activeModalMilestone) return;
+
+    if (!isNdaAccepted) {
+      setIsScopeModalOpen(true);
+      return;
+    }
 
     submitDeliverable(gig.id, activeModalMilestone.id, {
       liveUrl,
@@ -352,10 +365,14 @@ export const StudentWorkspace: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsScopeModalOpen(true)}
-              className="px-4 py-2 rounded-full bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className={`px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 transition-colors ${
+                isNdaAccepted
+                  ? 'bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200'
+                  : 'bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 ring-2 ring-amber-200 animate-pulse'
+              }`}
             >
-              <FileText size={13} className="text-purple-700" />
-              <span>Scope & Legal Terms (NDA)</span>
+              <FileText size={13} className={isNdaAccepted ? 'text-purple-700' : 'text-amber-800'} />
+              <span>{isNdaAccepted ? 'Scope & Legal Terms (NDA Confirmed)' : 'Review & Sign NDA (Action Required)'}</span>
             </button>
             <button
               type="button"
@@ -395,6 +412,33 @@ export const StudentWorkspace: React.FC = () => {
         </div>
       </div>
 
+      {/* Action Banner for Unsigned Scope & NDA */}
+      {!isNdaAccepted && !isArchivedView && (
+        <div className="p-5 rounded-[2rem] bg-amber-50 border border-amber-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-100 border border-amber-300 text-amber-800 flex items-center justify-center shrink-0">
+              <ShieldAlert size={22} />
+            </div>
+            <div>
+              <p className="text-xs font-black text-amber-950 uppercase tracking-wider">
+                Stage 1 Action Required: Scope & NDA Ratification Pending
+              </p>
+              <p className="text-xs text-amber-800 font-medium mt-0.5">
+                You have not signed the bilateral non-disclosure and intellectual property terms yet. Review and sign to confirm Stage 1.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsScopeModalOpen(true)}
+            className="px-5 py-2.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white text-xs font-black shrink-0 transition-all shadow-md flex items-center gap-2"
+          >
+            <FileText size={14} className="text-[#D4F851]" />
+            <span>Review & Accept NDA</span>
+          </button>
+        </div>
+      )}
+
       {/* Enhanced 4-Stage Pipeline Progress Tracker */}
       <div className="p-7 rounded-[2.5rem] bg-white border border-purple-100 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -403,11 +447,11 @@ export const StudentWorkspace: React.FC = () => {
               Stage-by-Stage Milestone Pipeline
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Current Active Phase: <strong className="text-slate-900">{activeMilestone.title}</strong>
+              Current Active Phase: <strong className="text-slate-900">{!isNdaAccepted ? 'Stage 1: Scope & Legal Ratification' : activeMilestone.title}</strong>
             </p>
           </div>
           <div className="text-xs font-black text-purple-700 font-mono">
-            {completionPercentage}% Total Completed
+            {!isNdaAccepted ? 0 : completionPercentage}% Total Completed
           </div>
         </div>
 
@@ -415,23 +459,52 @@ export const StudentWorkspace: React.FC = () => {
         <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
           <div 
             className="bg-[#101014] h-full transition-all duration-500 rounded-full" 
-            style={{ width: `${Math.max(completionPercentage, 10)}%` }}
+            style={{ width: `${!isNdaAccepted ? 5 : Math.max(completionPercentage, 10)}%` }}
           />
         </div>
 
         {/* 4 Stages Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
           {[
-            { stageNum: 1, name: 'Scope & Legal', desc: 'NDA & Terms Confirmed', done: true, current: false },
-            { stageNum: 2, name: 'In Progress', desc: 'Deliverables Development', done: completedMilestones.length === sortedMilestones.length && sortedMilestones.length > 0, current: activeMilestone.status === 'active' || activeMilestone.status === 'in_revision' },
-            { stageNum: 3, name: 'Under Review', desc: 'SME Inspection & Test', done: false, current: activeMilestone.status === 'under_review' },
-            { stageNum: 4, name: 'Approved & Paid', desc: 'Escrow Released to Wallet', done: sortedMilestones.length > 0 && sortedMilestones.every(m => m.status === 'completed'), current: false },
+            { 
+              stageNum: 1, 
+              name: 'Scope & Legal', 
+              desc: isNdaAccepted ? 'NDA & Terms Confirmed' : 'Pending Student Signature', 
+              done: isNdaAccepted, 
+              current: !isNdaAccepted,
+              clickable: !isNdaAccepted
+            },
+            { 
+              stageNum: 2, 
+              name: 'In Progress', 
+              desc: 'Deliverables Development', 
+              done: completedMilestones.length === sortedMilestones.length && sortedMilestones.length > 0, 
+              current: isNdaAccepted && (activeMilestone.status === 'active' || activeMilestone.status === 'in_revision'),
+              clickable: false
+            },
+            { 
+              stageNum: 3, 
+              name: 'Under Review', 
+              desc: 'SME Inspection & Test', 
+              done: false, 
+              current: isNdaAccepted && activeMilestone.status === 'under_review',
+              clickable: false
+            },
+            { 
+              stageNum: 4, 
+              name: 'Approved & Paid', 
+              desc: 'Escrow Released to Wallet', 
+              done: sortedMilestones.length > 0 && sortedMilestones.every(m => m.status === 'completed'), 
+              current: false,
+              clickable: false
+            },
           ].map((stg) => (
             <div 
               key={stg.stageNum} 
-              className={`p-4 rounded-2xl border transition-all ${
+              onClick={stg.clickable ? () => setIsScopeModalOpen(true) : undefined}
+              className={`p-4 rounded-2xl border transition-all ${stg.clickable ? 'cursor-pointer hover:border-amber-400' : ''} ${
                 stg.current
-                  ? 'bg-purple-50/80 border-purple-300 ring-2 ring-purple-100'
+                  ? (stg.stageNum === 1 && !isNdaAccepted ? 'bg-amber-50/90 border-amber-300 ring-2 ring-amber-100' : 'bg-purple-50/80 border-purple-300 ring-2 ring-purple-100')
                   : stg.done
                   ? 'bg-emerald-50/60 border-emerald-200'
                   : 'bg-slate-50/50 border-slate-200'
@@ -439,7 +512,11 @@ export const StudentWorkspace: React.FC = () => {
             >
               <div className="flex items-center justify-between mb-1">
                 <span className={`w-6 h-6 rounded-full font-black text-[11px] flex items-center justify-center shadow-sm ${
-                  stg.done ? 'bg-emerald-600 text-white' : stg.current ? 'bg-purple-700 text-white' : 'bg-white text-slate-700'
+                  stg.done 
+                    ? 'bg-emerald-600 text-white' 
+                    : stg.current 
+                    ? (stg.stageNum === 1 && !isNdaAccepted ? 'bg-amber-600 text-white' : 'bg-purple-700 text-white') 
+                    : 'bg-white text-slate-700'
                 }`}>
                   {stg.done ? <Check size={13} /> : stg.stageNum}
                 </span>
@@ -449,6 +526,11 @@ export const StudentWorkspace: React.FC = () => {
               </div>
               <div className="text-xs font-bold text-[#101014] mt-2">{stg.name}</div>
               <div className="text-[11px] text-slate-500">{stg.desc}</div>
+              {stg.clickable && (
+                <div className="mt-1.5 text-[10px] font-black text-amber-800 underline">
+                  Click to sign NDA &rarr;
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -712,12 +794,14 @@ export const StudentWorkspace: React.FC = () => {
       <ScopeAcceptanceModal
         isOpen={isScopeModalOpen}
         onClose={() => setIsScopeModalOpen(false)}
-        contractId={`contract-${gig.id}`}
+        contractId={gig.contractId || `contract-${gig.id}`}
         gigTitle={gig.title}
         employerName={gig.employerCompany}
         totalAmount={gig.totalBudget}
         milestones={(gig.milestones || []).map(m => ({ id: m.id, title: m.title, criteria: m.description, amount: m.amount }))}
-        onAccepted={() => {}}
+        onAccepted={() => {
+          acceptGigScope(gig.id, gig.contractId);
+        }}
       />
 
       {/* Milestone Dispute Escalation Drawer */}

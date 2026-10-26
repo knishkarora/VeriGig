@@ -531,8 +531,8 @@ export class ApplicationsService {
             employerId: employerUserId,
             totalAmount,
             termsVersion: '1.0',
-            confidentialityAccepted: true,
-            ipClauseAccepted: true,
+            confidentialityAccepted: false,
+            ipClauseAccepted: false,
             maxRevisionsPerMilestone: gig.maxRevisions || 2,
             status: 'in_progress',
           })
@@ -565,8 +565,8 @@ export class ApplicationsService {
           .set({
             status: 'in_progress',
             studentId: app.studentId,
-            confidentialityAccepted: true,
-            ipClauseAccepted: true,
+            confidentialityAccepted: false,
+            ipClauseAccepted: false,
             updatedAt: now,
           })
           .where(eq(contracts.id, existingContract.id));

@@ -25,10 +25,13 @@ export async function signInWithGoogle(role: 'student' | 'employer' = 'student')
     );
   }
 
-  // Persist role BEFORE the redirect so it survives the OAuth round-trip.
-  // ?role= in the redirectTo URL is stripped by Supabase when it sends back ?code=,
-  // so localStorage is the only reliable carrier across the browser redirect.
+  // Persist role and OAuth progress flag BEFORE the redirect
   localStorage.setItem(OAUTH_PENDING_ROLE_KEY, role);
+  try {
+    sessionStorage.setItem('verigig_oauth_in_progress', 'true');
+  } catch {
+    // ignore
+  }
 
   // redirectTo must be a plain URL that is whitelisted in Supabase URL Configuration.
   const redirectUrl = `${window.location.origin}/auth`;

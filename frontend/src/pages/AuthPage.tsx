@@ -22,7 +22,7 @@ import { toMarketplaceUser } from '../auth/user';
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { currentRole, loginUser, isAuthInitializing, authError } = useMarketplace();
+  const { currentRole, loginUser, isAuthInitializing, isOAuthProcessing, authError } = useMarketplace();
   
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [registerRole, setRegisterRole] = useState<'student' | 'employer'>('student');
@@ -32,6 +32,13 @@ export const AuthPage: React.FC = () => {
   const [loginPassword, setLoginPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Sync auth errors from context
+  useEffect(() => {
+    if (authError) {
+      setErrorMessage(authError);
+    }
+  }, [authError]);
 
   // Register form fields
   const [regName, setRegName] = useState('');
@@ -43,13 +50,30 @@ export const AuthPage: React.FC = () => {
   // Google OAuth guidance modal
   const [showGoogleGuide, setShowGoogleGuide] = useState(false);
 
-  // Check if browser is currently returning from Google OAuth redirect
-  const isReturningFromOAuth = 
-    typeof window !== 'undefined' && (
+  // Check if browser is currently returning from Google OAuth redirect or actively resolving it
+  const [isReturningFromOAuth] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return Boolean(
       window.location.search.includes('code=') || 
       window.location.search.includes('provider=google') || 
-      window.location.hash.includes('access_token=')
+      window.location.hash.includes('access_token=') ||
+      sessionStorage.getItem('verigig_oauth_in_progress') === 'true'
     );
+  });
+
+  // Track progressive loading step for smooth profile transition feedback
+  const [profileLoadingStep, setProfileLoadingStep] = useState<number>(1);
+
+  useEffect(() => {
+    if (isReturningFromOAuth || isOAuthProcessing) {
+      const t1 = setTimeout(() => setProfileLoadingStep(2), 1100);
+      const t2 = setTimeout(() => setProfileLoadingStep(3), 2400);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [isReturningFromOAuth, isOAuthProcessing]);
 
   // When user is authenticated (either from Google OAuth or manual login), immediately forward to role dashboard
   useEffect(() => {
@@ -171,19 +195,85 @@ export const AuthPage: React.FC = () => {
     }
   };
 
-  if (isReturningFromOAuth && isAuthInitializing) {
+  const isResolvingOAuth = 
+    ((isReturningFromOAuth && (isAuthInitializing || isOAuthProcessing)) || isOAuthProcessing) && 
+    !errorMessage && 
+    !authError;
+  const isRedirectingDashboard = currentRole !== 'guest' && currentRole !== undefined;
+
+  if (isResolvingOAuth || isRedirectingDashboard) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md p-8 sm:p-10 rounded-[2.5rem] bg-white border border-purple-100 shadow-xl text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-purple-100 text-purple-700 mx-auto flex items-center justify-center">
-            <ShieldCheck size={32} />
+        <div className="w-full max-w-md p-8 sm:p-10 rounded-[2.5rem] bg-white border border-purple-100 shadow-2xl text-center space-y-6 animate-fadeIn">
+          {/* Logo & Animated Brand Aura */}
+          <div className="relative w-20 h-20 mx-auto">
+            <div className="absolute inset-0 rounded-full bg-purple-200/60 animate-ping opacity-75" />
+            <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-[#121214] via-purple-900 to-indigo-800 text-[#D4F851] flex items-center justify-center shadow-lg border-2 border-white">
+              <ShieldCheck size={36} className="text-[#D4F851]" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white shadow-md border border-slate-200 flex items-center justify-center">
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+              </svg>
+            </div>
           </div>
-          <h2 className="text-xl font-black text-[#121214]">Authenticating with Google</h2>
-          <p className="text-xs text-slate-500 font-medium">
-            Verifying your identity and setting up your workspace...
-          </p>
-          <div className="pt-2 flex justify-center">
-            <Loader2 className="w-7 h-7 text-purple-600 animate-spin" />
+
+          <div className="space-y-1.5">
+            <h2 className="text-xl font-black text-[#121214]">
+              {isRedirectingDashboard ? 'Launching Your Workspace' : 'Loading Your Verified Profile'}
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              {isRedirectingDashboard 
+                ? 'Welcome back! Directing you to your personalized workspace...' 
+                : 'Google identity verified. Fetching academic credentials and gig data...'}
+            </p>
+          </div>
+
+          {/* Sequential Step Progress Feedback */}
+          <div className="space-y-2.5 text-left p-4 rounded-2xl bg-purple-50/70 border border-purple-100">
+            <div className="flex items-center gap-2.5 text-xs font-bold text-slate-700">
+              <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <CheckCircle2 size={13} />
+              </span>
+              <span className="text-slate-800">Google SSO Identity Authenticated</span>
+            </div>
+
+            <div className={`flex items-center gap-2.5 text-xs font-bold transition-opacity duration-300 ${profileLoadingStep >= 2 ? 'opacity-100 text-slate-800' : 'opacity-40 text-slate-400'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${profileLoadingStep >= 2 ? (profileLoadingStep > 2 || isRedirectingDashboard ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-200 text-purple-900') : 'bg-slate-200 text-slate-400'}`}>
+                {profileLoadingStep > 2 || isRedirectingDashboard ? (
+                  <CheckCircle2 size={13} />
+                ) : profileLoadingStep === 2 ? (
+                  <Loader2 size={12} className="animate-spin text-purple-700" />
+                ) : (
+                  <span className="text-[10px]">2</span>
+                )}
+              </span>
+              <span>Loading Institutional Credentials & Skills</span>
+            </div>
+
+            <div className={`flex items-center gap-2.5 text-xs font-bold transition-opacity duration-300 ${profileLoadingStep >= 3 || isRedirectingDashboard ? 'opacity-100 text-slate-800' : 'opacity-40 text-slate-400'}`}>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${profileLoadingStep >= 3 || isRedirectingDashboard ? 'bg-purple-200 text-purple-900' : 'bg-slate-200 text-slate-400'}`}>
+                {isRedirectingDashboard ? (
+                  <CheckCircle2 size={13} className="text-emerald-700" />
+                ) : (
+                  <Loader2 size={12} className="animate-spin text-purple-700" />
+                )}
+              </span>
+              <span>Initializing Dashboard & Milestones</span>
+            </div>
+          </div>
+
+          {/* Smooth animated progress line */}
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+            <div 
+              className="bg-gradient-to-r from-purple-600 via-indigo-600 to-[#D4F851] h-full transition-all duration-700 rounded-full"
+              style={{
+                width: isRedirectingDashboard ? '100%' : profileLoadingStep === 1 ? '35%' : profileLoadingStep === 2 ? '70%' : '92%'
+              }}
+            />
           </div>
         </div>
       </div>

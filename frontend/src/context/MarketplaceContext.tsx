@@ -29,6 +29,7 @@ interface MarketplaceContextType {
   logout: () => void;
   loginUser: (userData: User) => void;
   isAuthInitializing: boolean;
+  isOAuthProcessing: boolean;
   authError: string | null;
   gigs: MicroGig[];
   proposals: Proposal[];
@@ -51,6 +52,7 @@ interface MarketplaceContextType {
   submitProposal: (gigId: string, coverNote: string, bidAmount: number, deliveryTimeDays: number, portfolioLinks: { label: string; url: string }[], existingId?: string) => Proposal;
   hireApplicant: (proposalId: string) => Promise<void> | void;
   shortlistApplicant: (proposalId: string) => void;
+  acceptGigScope: (gigId: string, contractId?: string) => Promise<void>;
   submitDeliverable: (gigId: string, milestoneId: string, data: { liveUrl: string; repoUrl?: string; notes: string }) => void;
   approveMilestone: (gigId: string, milestoneId: string, feedback?: string) => void;
   requestRevision: (gigId: string, milestoneId: string, feedback: string) => void;
@@ -122,6 +124,15 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [disputes, setDisputes] = useState<Dispute[]>(initialDisputes);
   const [notifications, setNotifications] = useState<NotificationItem[]>(loadPersistedNotifications);
   const [isAuthInitializing, setIsAuthInitializing] = useState(Boolean(supabase));
+  const [isOAuthProcessing, setIsOAuthProcessing] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return Boolean(
+      window.location.search.includes('code=') ||
+      window.location.search.includes('provider=google') ||
+      window.location.hash.includes('access_token=') ||
+      sessionStorage.getItem('verigig_oauth_in_progress') === 'true'
+    );
+  });
   const [authError, setAuthError] = useState<string | null>(null);
   const handledSupabaseTokens = useRef(new Set<string>());
 
@@ -183,6 +194,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
           if (cRes && Array.isArray(cRes.contracts)) {
             contractGigs = cRes.contracts.map((c: any) => ({
               id: c.gigId || c.id,
+              contractId: c.id,
               title: c.gigTitle,
               employerId: c.employerId,
               employerName: c.employerCompany || 'Client',
@@ -200,6 +212,8 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
               expectedDeliverables: ['Deliverable scope per contract agreement'],
               requiredSkills: ['Full Stack', 'Design'],
               preferredColleges: ['PCTE Group of Institutes'],
+              scopeAccepted: Boolean(c.confidentialityAccepted),
+              confidentialityAccepted: Boolean(c.confidentialityAccepted),
               status: c.status === 'in_progress' ? ('in_progress' as const) : c.status === 'completed' ? ('completed' as const) : ('in_progress' as const),
               createdAt: 'Recently',
               milestones: ((c.milestones || []) as any[])
@@ -341,6 +355,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       if (handledSupabaseTokens.current.has(session.access_token)) return;
       handledSupabaseTokens.current.add(session.access_token);
       setIsAuthInitializing(true);
+      setIsOAuthProcessing(true);
       setAuthError(null);
 
       const pendingRole = localStorage.getItem(OAUTH_PENDING_ROLE_KEY) as UserRole | null;
@@ -362,15 +377,27 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
           localStorage.setItem('verigig_auth_token', result.token);
         }
         localStorage.removeItem(OAUTH_PENDING_ROLE_KEY);
+        try {
+          sessionStorage.removeItem('verigig_oauth_in_progress');
+        } catch {}
         localStorage.setItem('verigig_session_role', liveUser.role);
         localStorage.setItem('verigig_session_user', JSON.stringify(liveUser));
         setAuthError(null);
       } catch {
         if (isMounted) {
+          try {
+            sessionStorage.removeItem('verigig_oauth_in_progress');
+          } catch {}
+          setIsOAuthProcessing(false);
           setAuthError('Google verified your identity, but VeriGig could not finish creating your account. Please try again or contact support.');
         }
       } finally {
-        if (isMounted) setIsAuthInitializing(false);
+        if (isMounted) {
+          setIsAuthInitializing(false);
+          setTimeout(() => {
+            if (isMounted) setIsOAuthProcessing(false);
+          }, 800);
+        }
       }
 
       // Clean URL params (e.g. ?code=...) without reloading
@@ -380,8 +407,19 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
 
     const syncSession = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const isOAuthCandidate = 
+        searchParams.has('code') || 
+        searchParams.has('provider') || 
+        window.location.hash.includes('access_token=') ||
+        sessionStorage.getItem('verigig_oauth_in_progress') === 'true';
+
+      if (isOAuthCandidate) {
+        setIsOAuthProcessing(true);
+        setIsAuthInitializing(true);
+      }
+
       try {
-        const searchParams = new URLSearchParams(window.location.search);
         // If returning with PKCE code, exchange for session directly
         if (searchParams.has('code')) {
           const { data, error } = await client.auth.exchangeCodeForSession(window.location.href);
@@ -394,12 +432,26 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
         const { data: { session } } = await client.auth.getSession();
         if (session?.user) {
           await handleUserSession(session);
+        } else if (!isOAuthCandidate) {
+          if (isMounted) {
+            setIsAuthInitializing(false);
+            setIsOAuthProcessing(false);
+          }
         }
       } catch (err) {
         console.warn('Supabase global session sync error:', err);
-        if (isMounted) setAuthError('We could not complete the Google sign-in. Please try again.');
+        if (isMounted) {
+          setAuthError('We could not complete the Google sign-in. Please try again.');
+          setIsAuthInitializing(false);
+          setIsOAuthProcessing(false);
+          try {
+            sessionStorage.removeItem('verigig_oauth_in_progress');
+          } catch {}
+        }
       } finally {
-        if (isMounted) setIsAuthInitializing(false);
+        if (isMounted && !isOAuthCandidate) {
+          setIsAuthInitializing(false);
+        }
       }
     };
 
@@ -793,6 +845,43 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     );
   };
 
+  const acceptGigScope = async (gigId: string, contractId?: string) => {
+    try {
+      if (contractId && !contractId.startsWith('contract-')) {
+        await contractsApi.acceptScope(contractId, {
+          confidentialityAccepted: true,
+          ipClauseAccepted: true,
+        });
+      }
+    } catch (err) {
+      console.warn('API scope acceptance fallback:', err);
+    }
+
+    setGigs(prev => prev.map(g => {
+      if (g.id === gigId) {
+        return {
+          ...g,
+          scopeAccepted: true,
+          confidentialityAccepted: true,
+        };
+      }
+      return g;
+    }));
+
+    try {
+      localStorage.setItem(`verigig_nda_accepted_${gigId}`, 'true');
+    } catch {
+      // ignore
+    }
+
+    addNotification(
+      'Scope & NDA Confirmed 🛡️',
+      'You have officially ratified the bilateral non-disclosure and intellectual property assignment agreement.',
+      'milestone',
+      `/app/student/workspace/${gigId}`
+    );
+  };
+
   const submitDeliverable = (gigId: string, milestoneId: string, data: { liveUrl: string; repoUrl?: string; notes: string }) => {
     setGigs(prev => prev.map(g => {
       if (g.id === gigId) {
@@ -1007,6 +1096,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       logout,
       loginUser,
       isAuthInitializing,
+      isOAuthProcessing,
       authError,
       gigs,
       proposals,
@@ -1022,6 +1112,7 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       submitProposal,
       hireApplicant,
       shortlistApplicant,
+      acceptGigScope,
       submitDeliverable,
       approveMilestone,
       requestRevision,

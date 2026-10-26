@@ -485,5 +485,39 @@
   - Direct message icon in top bar is replaced by notification alerts; outgoing initiated messages start contextually from applied gigs or workspace milestones.
 * **Immutability Status:** Settled & Immutable.
 
+## [2026-10-26] Decision: Uniform Skills Catalog, Explicit NDA Ratification, and Flicker-Free Google OAuth Profile Loading
+
+* **Context & Scope:**
+  Three critical user experience and data consistency issues required architectural rectification:
+  1. **Skill Divergence in Post Gig Wizard:** In Step 3 ("Student Criteria & College Preferences") of `PostGigWizard.tsx`, employers could enter arbitrary free-text strings for skills (e.g., "reactjs", "frontend", "web design"), creating vocabulary mismatches against the canonical catalog chosen in student profiles (`PLATFORM_SKILLS` in `data/skills.ts`) and degrading deterministic candidate matching.
+  2. **Premature Legal Assumptions in Student Workspace:** In `StudentWorkspace.tsx`, Stage 1 of the "Stage-by-Stage Milestone Pipeline" was hardcoded to `done: true` ("NDA & Terms Confirmed"), incorrectly assuming the student had already signed the non-disclosure agreement and terms before they had performed the bilateral scope ratification in `ScopeAcceptanceModal`.
+  3. **Google OAuth Login Form Flash & Sudden Redirect:** When authenticating via Google Single Sign-On, the application displayed a brief "Authenticating with Google" indicator for 1-2 seconds, then prematurely rendered the standard email/password login form for 3-4 seconds while the backend verified the Supabase access token and provisioned the user profile, before suddenly jumping to the dashboard without visual continuity.
+
+* **Choice Made:**
+  1. **Canonical Platform Skills Catalog in Post Gig Wizard:**
+     - Integrated `PLATFORM_SKILLS` from `data/skills.ts` into `PostGigWizard.tsx` using a searchable dropdown, real-time filtering, quick-select suggestions for common tech/design stacks, and validation preventing non-canonical strings.
+     - Guaranteed that skills attached to gigs by employers perfectly match the exact skill tags selectable by students on their profiles.
+  2. **Explicit NDA & Scope Ratification State Machine:**
+     - Removed hardcoded `done: true` in `StudentWorkspace.tsx` Stage 1. Stage 1 now deterministically reflects `isNdaAccepted` (evaluating `gig.scopeAccepted`, `confidentialityAccepted`, and local ratification storage).
+     - When unaccepted, Stage 1 displays `Pending Student Signature` (marked active with an interactive prompt to sign), the top action button highlights `Review & Sign NDA (Action Required)`, and a prominent ratification banner warns the contractor to sign before submitting deliverables.
+     - In `backend/src/modules/applications/applications.service.ts`, contracts created on candidate hire now default `confidentialityAccepted: false` and `ipClauseAccepted: false`.
+     - In `contracts.service.ts`, `acceptScope` permits ratification for active contracts where `!contract.confidentialityAccepted`.
+     - In `MarketplaceContext.tsx`, implemented `acceptGigScope` to persist acceptance to backend APIs, update context state, and record ratification in local storage.
+  3. **Flicker-Free Google OAuth Synchronization & Informative Profile Loader:**
+     - Introduced persistent `isOAuthProcessing` state in `MarketplaceContext.tsx` and tracked OAuth lifecycle across browser redirect round-trips via `sessionStorage.getItem('verigig_oauth_in_progress')`.
+     - Prevented `syncSession` from prematurely clearing `isAuthInitializing` while asynchronous PKCE code exchange and backend session sync are in flight.
+     - In `AuthPage.tsx`, replaced premature fallbacks to the login form with a dedicated, smooth 3-stage profile loading experience with progress feedback ("Google SSO Authenticated" -> "Loading Institutional Credentials & Skills" -> "Initializing Dashboard & Milestones"), seamlessly transitioning directly into the dashboard.
+
+* **Rationale (Why over What):**
+  - Canonical skill tags eliminate human error and ensure database queries for skill matching produce deterministic, uniform results.
+  - Legal agreements must never be assumed signed by default; students must explicitly ratify the NDA and IP assignment clauses to ensure contract enforceability.
+  - Transparent progressive loading communicates clearly to users that profile synchronization is actively underway, eliminating perceived latency and jarring UI jumps.
+
+* **Tradeoffs Accepted:**
+  - Employers must select from the platform skill catalog rather than inventing custom arbitrary tags. The catalog contains 160+ verified skills across development, design, cloud, content, and marketing.
+
+* **Immutability Status:** Settled & Immutable.
+
+
 
 

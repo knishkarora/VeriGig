@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -9,12 +9,15 @@ import {
   Sparkles, 
   ShieldCheck, 
   ArrowUpRight,
-  ShieldAlert
+  ShieldAlert,
+  Search,
+  AlertCircle
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { GigCategory, GigDuration, LocationScope, Milestone } from '../../types';
 import { gigsApi } from '../../api/endpoints';
 import { PARTNER_COLLEGES } from '../../data/colleges';
+import { PLATFORM_SKILLS } from '../../data/skills';
 
 export const PostGigWizard: React.FC = () => {
   const navigate = useNavigate();
@@ -84,9 +87,60 @@ export const PostGigWizard: React.FC = () => {
     }
   ]);
 
-  // Step 3: Candidate Criteria
-  const [requiredSkills, setRequiredSkills] = useState<string[]>(['React.js', 'Tailwind CSS', 'Figma']);
-  const [skillInput, setSkillInput] = useState('');
+  // Step 3: Candidate Criteria & Curated Platform Skills
+  const [requiredSkills, setRequiredSkills] = useState<string[]>(['React.js', 'Tailwind CSS', 'Figma (Auto-Layout & Variants)']);
+  const [skillSearch, setSkillSearch] = useState('');
+  const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
+  const [skillError, setSkillError] = useState<string | null>(null);
+  const skillDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (skillDropdownRef.current && !skillDropdownRef.current.contains(event.target as Node)) {
+        setIsSkillDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredSkills = useMemo(() => {
+    const q = skillSearch.trim().toLowerCase();
+    return PLATFORM_SKILLS.filter(
+      (s) => !requiredSkills.includes(s) && (q === '' || s.toLowerCase().includes(q))
+    ).slice(0, 15);
+  }, [skillSearch, requiredSkills]);
+
+  const handleSelectSkill = (skill: string) => {
+    if (!requiredSkills.includes(skill)) {
+      setRequiredSkills(prev => [...prev, skill]);
+      setSkillSearch('');
+      setIsSkillDropdownOpen(false);
+      setSkillError(null);
+    }
+  };
+
+  const handleSkillInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const match = PLATFORM_SKILLS.find(
+        (s) => s.toLowerCase() === skillSearch.trim().toLowerCase()
+      );
+      if (match) {
+        handleSelectSkill(match);
+      } else if (filteredSkills.length > 0) {
+        handleSelectSkill(filteredSkills[0]);
+      } else {
+        setSkillError('Please choose a recognized skill from our canonical platform catalog.');
+      }
+    }
+  };
+
+  const handleRemoveSkill = (skill: string) => {
+    setRequiredSkills(requiredSkills.filter(s => s !== skill));
+  };
+
   const [preferredColleges, setPreferredColleges] = useState<string[]>([
     'PCTE Group of Institutes',
     'GNDEC Ludhiana'
@@ -118,20 +172,6 @@ export const PostGigWizard: React.FC = () => {
 
   const handleMilestoneChange = (id: string, field: keyof Milestone, val: any) => {
     setMilestones(milestones.map(m => m.id === id ? { ...m, [field]: val } : m));
-  };
-
-  const handleAddSkill = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && skillInput.trim()) {
-      e.preventDefault();
-      if (!requiredSkills.includes(skillInput.trim())) {
-        setRequiredSkills([...requiredSkills, skillInput.trim()]);
-      }
-      setSkillInput('');
-    }
-  };
-
-  const handleRemoveSkill = (skill: string) => {
-    setRequiredSkills(requiredSkills.filter(s => s !== skill));
   };
 
   const handleToggleCollege = (college: string) => {
@@ -418,30 +458,136 @@ export const PostGigWizard: React.FC = () => {
 
         {/* STEP 3: Candidate Criteria */}
         {currentStep === 3 && (
-          <div className="space-y-5">
-            <h2 className="text-lg font-black text-[#121214]">Step 3: Student Criteria & College Preferences</h2>
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-lg font-black text-[#121214]">Step 3: Student Criteria & College Preferences</h2>
+              <p className="text-xs text-slate-500 font-medium">Select required skills from our verified catalog to ensure uniform matching with student profiles.</p>
+            </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                Required Skill Tags (Press Enter to add)
-              </label>
-              <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 mb-2">
-                {requiredSkills.map((skill) => (
-                  <span key={skill} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#121214] border border-slate-200 text-xs font-bold shadow-sm">
-                    <span>{skill}</span>
-                    <button type="button" onClick={() => handleRemoveSkill(skill)} className="text-slate-400 hover:text-black">
+            {/* Curated Platform Skills Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800">
+                  Required Skill Stack ({requiredSkills.length} selected)
+                </label>
+                <span className="text-[11px] text-purple-700 font-extrabold uppercase tracking-wider">
+                  Canonical Catalog Match
+                </span>
+              </div>
+
+              {/* Search input with verified catalog dropdown */}
+              <div className="relative" ref={skillDropdownRef}>
+                <div className="flex items-center bg-white border border-slate-300 rounded-2xl px-3.5 py-2.5 text-xs text-slate-900 focus-within:border-purple-600 focus-within:ring-2 focus-within:ring-purple-100 transition-all shadow-sm">
+                  <Search size={15} className="text-slate-400 mr-2 shrink-0" />
+                  <input
+                    type="text"
+                    value={skillSearch}
+                    onChange={(e) => {
+                      setSkillSearch(e.target.value);
+                      setIsSkillDropdownOpen(true);
+                      setSkillError(null);
+                    }}
+                    onFocus={() => setIsSkillDropdownOpen(true)}
+                    onKeyDown={handleSkillInputKeyDown}
+                    placeholder="Search verified platform skills (e.g. React.js, Tailwind CSS, Python, Figma, Docker)..."
+                    className="bg-transparent text-xs text-slate-900 placeholder-slate-400 focus:outline-none flex-1"
+                  />
+                  {skillSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setSkillSearch('')}
+                      className="text-slate-400 hover:text-black p-0.5"
+                    >
                       ×
                     </button>
-                  </span>
-                ))}
-                <input
-                  type="text"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  onKeyDown={handleAddSkill}
-                  placeholder="Add skill (e.g. Next.js)..."
-                  className="bg-transparent text-xs text-slate-900 focus:outline-none px-2 flex-1 min-w-[120px]"
-                />
+                  )}
+                </div>
+
+                {skillError && (
+                  <div className="text-[11px] text-rose-600 mt-1 flex items-center gap-1 font-semibold">
+                    <AlertCircle size={12} />
+                    <span>{skillError}</span>
+                  </div>
+                )}
+
+                {/* Dropdown Options from PLATFORM_SKILLS */}
+                {isSkillDropdownOpen && filteredSkills.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 max-h-52 overflow-y-auto bg-white border border-purple-200 rounded-2xl shadow-xl p-1.5 z-50">
+                    <div className="text-[10px] uppercase font-black text-slate-400 px-3 py-1 tracking-wider">
+                      Platform Skill Catalog ({filteredSkills.length} matches)
+                    </div>
+                    {filteredSkills.map((sk) => (
+                      <button
+                        key={sk}
+                        type="button"
+                        onClick={() => handleSelectSkill(sk)}
+                        className="w-full text-left px-3.5 py-2 text-xs text-slate-800 hover:bg-purple-50 hover:text-purple-900 rounded-xl font-bold transition-colors flex items-center justify-between"
+                      >
+                        <span>{sk}</span>
+                        <Plus size={13} className="text-purple-600" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Skills Badges */}
+              <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 min-h-[50px] items-center">
+                {requiredSkills.length === 0 ? (
+                  <span className="text-xs text-slate-400 italic">No skills selected yet. Choose from below or search the catalog above.</span>
+                ) : (
+                  requiredSkills.map((skill) => (
+                    <span 
+                      key={skill} 
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-[#121214] border border-purple-200 text-xs font-black shadow-sm"
+                    >
+                      <span>{skill}</span>
+                      <button 
+                        type="button" 
+                        onClick={() => handleRemoveSkill(skill)} 
+                        className="w-4 h-4 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-600 font-bold transition-colors"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
+
+              {/* Quick Select Common Platform Skills */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Quick Select Suggested Platform Skills:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'React.js',
+                    'Next.js',
+                    'TypeScript',
+                    'Tailwind CSS',
+                    'Node.js',
+                    'Python',
+                    'Figma (Auto-Layout & Variants)',
+                    'Mobile App UI Design',
+                    'Flutter & Dart',
+                    'PostgreSQL',
+                    'Docker & Containers',
+                    'RESTful API Design'
+                  ]
+                    .filter(s => !requiredSkills.includes(s))
+                    .slice(0, 8)
+                    .map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => handleSelectSkill(s)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-50/80 hover:bg-purple-100 text-purple-900 border border-purple-200 text-[11px] font-bold transition-all"
+                      >
+                        <Plus size={11} className="text-purple-600" />
+                        <span>{s}</span>
+                      </button>
+                    ))}
+                </div>
               </div>
             </div>
 
