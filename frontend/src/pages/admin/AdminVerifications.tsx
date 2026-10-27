@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   Check, 
   X, 
@@ -43,6 +45,7 @@ export const AdminVerifications: React.FC = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [previewDocUrl, setPreviewDocUrl] = useState<string | null>(null);
+  useBodyScrollLock(Boolean(showRejectModal || previewDocUrl));
 
   // Fetch queues differently based on the active tab
   const fetchQueueData = useCallback(async () => {
@@ -638,11 +641,14 @@ export const AdminVerifications: React.FC = () => {
       </div>
 
       {/* Rejection Reason Modal */}
-      {showRejectModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowRejectModal(false)} />
-          
-          <div className="relative w-full max-w-md bg-white border border-purple-100 rounded-[2.5rem] p-8 shadow-2xl space-y-4 text-left">
+      {showRejectModal && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowRejectModal(false);
+          }}
+        >
+          <div className="relative w-full max-w-md max-h-[92dvh] bg-white border border-purple-100 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl space-y-4 text-left overflow-y-auto overscroll-contain animate-scaleUp">
             <h3 className="text-lg font-black text-[#121214]">Specify Rejection Reason</h3>
             <p className="text-xs text-slate-500 font-medium">
               This notice will be sent to the {selectedRequest?.userType === 'student' ? 'student' : 'enterprise'} with guidance to submit valid documentation.
@@ -697,47 +703,52 @@ export const AdminVerifications: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Document Proof Lightbox / Zoom Modal */}
-      {previewDocUrl && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 sm:p-8">
-          <div className="fixed inset-0 bg-black/85 backdrop-blur-md" onClick={() => setPreviewDocUrl(null)} />
-          
-          <div className="relative max-w-4xl w-full bg-[#121214] border border-white/20 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between text-white border-b border-white/10 pb-3">
+      {previewDocUrl && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-slate-950/70 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setPreviewDocUrl(null);
+          }}
+        >
+          <div className="relative max-w-4xl w-full max-h-[92dvh] bg-white border border-[#EDE8FD] rounded-[2rem] p-5 sm:p-7 shadow-2xl space-y-4 text-left flex flex-col overflow-hidden animate-scaleUp">
+            <div className="flex items-center justify-between text-[#101014] border-b border-purple-100 pb-3 shrink-0">
               <div className="flex items-center gap-2">
-                <FileText size={18} className="text-[#D4F851]" />
+                <FileText size={18} className="text-purple-700" />
                 <span className="text-xs font-black">Official Verification Document Dossier</span>
               </div>
               <button
                 onClick={() => setPreviewDocUrl(null)}
-                className="p-1 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="rounded-2xl overflow-hidden bg-black/50 max-h-[75vh] flex items-center justify-center">
+            <div className="rounded-2xl overflow-hidden bg-slate-50 border border-slate-200 flex-1 min-h-0 flex items-center justify-center p-2">
               <img 
                 src={previewDocUrl} 
                 alt="Enlarged Document Preview"
-                className="max-h-[70vh] w-auto object-contain rounded-xl"
+                className="max-h-[65vh] w-auto object-contain rounded-xl shadow-xs"
               />
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
+            <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1 shrink-0">
               <span>Cryptographic Proof ID: {selectedRequest?.id}</span>
               <button
                 onClick={() => setPreviewDocUrl(null)}
-                className="px-4 py-1.5 rounded-full bg-[#D4F851] text-[#121214] font-black text-xs"
+                className="px-4 py-1.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white font-bold text-xs shadow-xs"
               >
                 Close Preview
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

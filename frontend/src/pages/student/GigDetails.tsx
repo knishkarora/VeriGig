@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   Clock, 
   CheckCircle2, 
@@ -35,6 +37,7 @@ export const GigDetails: React.FC = () => {
 
   // Proposal Drawer & Chat state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  useBodyScrollLock(isDrawerOpen);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [coverNote, setCoverNote] = useState('');
   const [bidAmount, setBidAmount] = useState<number>(localGig?.totalBudget || 5000);
@@ -536,12 +539,12 @@ export const GigDetails: React.FC = () => {
       </div>
 
       {/* Interactive Submit Proposal Drawer */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsDrawerOpen(false)} />
+      {isDrawerOpen && createPortal(
+        <div className="fixed inset-0 z-[100] overflow-hidden">
+          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity" onClick={() => setIsDrawerOpen(false)} />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-lg bg-white border-l border-purple-100 shadow-2xl p-8 flex flex-col justify-between overflow-y-auto text-left">
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 animate-slideLeft">
+            <div className="w-screen max-w-lg bg-white border-l border-purple-100 shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-y-auto overscroll-contain text-left h-full">
               
               <div className="space-y-6">
                 <div className="flex items-center justify-between pb-4 border-b border-purple-100">
@@ -669,7 +672,8 @@ export const GigDetails: React.FC = () => {
 
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Direct In-App Chat Modal with Employer */}

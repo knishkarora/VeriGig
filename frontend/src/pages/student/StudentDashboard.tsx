@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   Wallet, 
   Sparkles, 
@@ -23,6 +25,7 @@ export const StudentDashboard: React.FC = () => {
   const { currentUser, gigs, proposals } = useMarketplace();
   const [isTrustModalOpen, setIsTrustModalOpen] = useState(false);
   const [isEscrowModalOpen, setIsEscrowModalOpen] = useState(false);
+  useBodyScrollLock(isTrustModalOpen || isEscrowModalOpen);
 
   const activeGigs = gigs.filter(g => g.hiredStudentId === currentUser.id);
   const myProposals = proposals.filter(p => p.studentId === currentUser.id);
@@ -427,10 +430,14 @@ export const StudentDashboard: React.FC = () => {
       </div>
 
       {/* Escrow & Secured Pay Explainer Modal */}
-      {isEscrowModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsEscrowModalOpen(false)} />
-          <div className="relative w-full max-w-lg bg-white border border-[#EDE8FD] rounded-[2.5rem] p-7 sm:p-8 shadow-2xl space-y-5 text-left">
+      {isEscrowModalOpen && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsEscrowModalOpen(false);
+          }}
+        >
+          <div className="relative w-full max-w-lg max-h-[92dvh] bg-white border border-[#EDE8FD] rounded-[2.5rem] p-6 sm:p-8 shadow-2xl space-y-5 text-left overflow-y-auto overscroll-contain animate-scaleUp">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
@@ -484,14 +491,19 @@ export const StudentDashboard: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Trust Score Improvement Modal */}
-      {isTrustModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsTrustModalOpen(false)} />
-          <div className="relative w-full max-w-lg bg-white border border-[#EDE8FD] rounded-[2.5rem] p-7 sm:p-8 shadow-2xl space-y-5 text-left">
+      {isTrustModalOpen && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsTrustModalOpen(false);
+          }}
+        >
+          <div className="relative w-full max-w-lg max-h-[92dvh] bg-white border border-[#EDE8FD] rounded-[2.5rem] p-6 sm:p-8 shadow-2xl space-y-5 text-left overflow-y-auto overscroll-contain animate-scaleUp">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
@@ -559,7 +571,8 @@ export const StudentDashboard: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

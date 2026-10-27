@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   X, 
   Send, 
@@ -395,6 +397,9 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     };
   }, [conversationId, currentUserId, markMessagesAsRead]);
 
+  // Prevent background scrolling when chat modal is open
+  useBodyScrollLock(isOpen);
+
   // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -550,7 +555,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     // 1. Pending sending: Clock icon
     if (m.status === 'sending') {
       return (
-        <span className="inline-flex items-center ml-1.5 text-white/40" title="Message not sent yet from your side">
+        <span className="inline-flex items-center ml-1.5 text-slate-400" title="Message not sent yet from your side">
           <Clock className="w-3 h-3 animate-spin" />
         </span>
       );
@@ -559,27 +564,27 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     const isRead = Boolean(m.readAt || m.status === 'read');
     const isDelivered = Boolean(m.status === 'delivered' || isRead);
 
-    // 2. Seen / Read by student: Colored sky-blue double tick
+    // 2. Seen / Read by counterpart: sky-blue double tick
     if (isRead) {
       return (
-        <span className="inline-flex items-center ml-1.5 text-[#38BDF8]" title="Seen by student">
+        <span className="inline-flex items-center ml-1.5 text-sky-400" title="Seen">
           <CheckCheck className="w-3.5 h-3.5" />
         </span>
       );
     }
 
-    // 3. Received / Delivered to student: Neutral double tick
+    // 3. Received / Delivered: Neutral double tick
     if (isDelivered) {
       return (
-        <span className="inline-flex items-center ml-1.5 text-white/50" title="Delivered to student">
+        <span className="inline-flex items-center ml-1.5 text-slate-400" title="Delivered">
           <CheckCheck className="w-3.5 h-3.5" />
         </span>
       );
     }
 
-    // 4. Sent from user's side: Single tick
+    // 4. Sent: Single tick
     return (
-      <span className="inline-flex items-center ml-1.5 text-white/50" title="Sent from your side">
+      <span className="inline-flex items-center ml-1.5 text-slate-400" title="Sent">
         <Check className="w-3.5 h-3.5" />
       </span>
     );
@@ -594,41 +599,46 @@ export const ChatModal: React.FC<ChatModalProps> = ({
     setShowThreadList(false);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#0B101B] border border-white/10 w-full max-w-2xl rounded-3xl shadow-2xl flex flex-col h-[640px] overflow-hidden">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="bg-white border border-[#EDE8FD] w-full max-w-2xl rounded-[2rem] shadow-2xl flex flex-col h-[min(640px,calc(100dvh-2.5rem))] max-h-[92dvh] overflow-hidden text-left">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#0F172A]/80">
+        <div className="px-6 py-4 border-b border-purple-100 flex items-center justify-between bg-purple-50/50 shrink-0">
           <div className="flex items-center space-x-3">
             {showThreadList ? (
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setShowThreadList(false)}
-                  className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-colors"
+                  className="p-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors border border-slate-200"
                   title="Back to conversation"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <h3 className="font-bold text-white text-base">Conversations ({availableThreads.length})</h3>
+                <h3 className="font-bold text-[#101014] text-base">Conversations ({availableThreads.length})</h3>
               </div>
             ) : (
               <>
-                <div className="w-10 h-10 rounded-2xl bg-[#D4F851]/10 border border-[#D4F851]/30 flex items-center justify-center text-[#D4F851] font-bold text-sm">
+                <div className="w-10 h-10 rounded-2xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-800 font-bold text-sm">
                   {activeRecipientName.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <div className="flex items-center space-x-2">
-                    <h3 className="font-bold text-white text-base">{activeRecipientName}</h3>
+                    <h3 className="font-bold text-[#101014] text-base">{activeRecipientName}</h3>
                     {activeRecipientRole && (
-                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-white/80">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
                         {activeRecipientRole}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-white/50 flex items-center space-x-1.5 mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                    <span>Context: <span className="capitalize text-white/70 font-medium">{activeContextType}</span> #{activeContextId.slice(0, 8)}</span>
+                  <p className="text-xs text-slate-500 flex items-center space-x-1.5 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                    <span>Context: <span className="capitalize text-slate-700 font-medium">{activeContextType}</span> #{activeContextId.slice(0, 8)}</span>
                   </p>
                 </div>
               </>
@@ -639,22 +649,22 @@ export const ChatModal: React.FC<ChatModalProps> = ({
             {availableThreads.length > 1 && !showThreadList && (
               <button
                 onClick={() => setShowThreadList(true)}
-                className="flex items-center space-x-1.5 text-xs text-white/70 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/10 transition-colors"
+                className="flex items-center space-x-1.5 text-xs text-slate-600 bg-white hover:bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 transition-colors shadow-2xs"
                 title="View all conversations"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-[#D4F851]" />
+                <MessageSquare className="w-3.5 h-3.5 text-purple-700" />
                 <span>Chats ({availableThreads.length})</span>
               </button>
             )}
 
-            <span className="hidden sm:flex items-center space-x-1 text-[11px] text-white/40 bg-white/5 px-2.5 py-1.5 rounded-xl border border-white/5">
-              <Lock className="w-3 h-3 text-[#D4F851]" />
+            <span className="hidden sm:flex items-center space-x-1 text-[11px] text-slate-500 bg-white px-2.5 py-1 rounded-full border border-slate-200">
+              <Lock className="w-3 h-3 text-purple-700" />
               <span>Escrow-Protected</span>
             </span>
 
             <button
               onClick={onClose}
-              className="p-2 text-white/50 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
+              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors"
               aria-label="Close chat modal"
             >
               <X className="w-5 h-5" />
@@ -663,18 +673,18 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         </div>
 
         {/* VeriGig Policy Shield Banner */}
-        <div className="px-5 py-2.5 bg-[#D4F851]/5 border-b border-[#D4F851]/10 flex items-center space-x-2 text-xs text-[#D4F851]/90">
-          <ShieldAlert className="w-4 h-4 shrink-0 text-[#D4F851]" />
+        <div className="px-5 py-2.5 bg-purple-50/70 border-b border-purple-100 flex items-center space-x-2 text-xs text-purple-900 shrink-0">
+          <ShieldAlert className="w-4 h-4 shrink-0 text-purple-700" />
           <span>Real-time safety active: Off-platform contact & payment solicitations are flagged for arbitration integrity.</span>
         </div>
 
         {/* Body: Thread List or Active Message Thread */}
         {showThreadList ? (
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-2">
             {availableThreads.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-white/40">
-                <Info className="w-8 h-8 mb-2 text-white/20" />
-                <p className="text-sm font-medium text-white/60">No active conversations</p>
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                <Info className="w-8 h-8 mb-2 text-slate-300" />
+                <p className="text-sm font-medium text-slate-600">No active conversations</p>
                 <p className="text-xs mt-1">When an employer or student messages you regarding a proposal or gig, it will appear here.</p>
               </div>
             ) : (
@@ -686,35 +696,35 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                     onClick={() => selectThread(th)}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                       isActive
-                        ? 'bg-white/10 border-[#D4F851]/40 shadow-sm'
-                        : 'bg-[#101827] border-white/5 hover:border-white/20 hover:bg-white/5'
+                        ? 'bg-purple-50/70 border-purple-200 shadow-2xs'
+                        : 'bg-white border-slate-200 hover:border-purple-200 hover:bg-slate-50/60'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#D4F851]/10 border border-[#D4F851]/30 flex items-center justify-center text-[#D4F851] font-bold text-sm">
+                      <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-200 flex items-center justify-center text-purple-800 font-bold text-sm">
                         {th.recipientName.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
                         <div className="flex items-center space-x-2">
-                          <h4 className="text-sm font-bold text-white">{th.recipientName}</h4>
+                          <h4 className="text-sm font-bold text-[#101014]">{th.recipientName}</h4>
                           {th.recipientRole && (
-                            <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-md bg-white/10 text-white/70">
+                            <span className="text-[10px] font-semibold uppercase px-1.5 py-0.2 rounded-md bg-slate-100 text-slate-600">
                               {th.recipientRole}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-white/40 truncate max-w-xs mt-0.5">
+                        <p className="text-xs text-slate-500 truncate max-w-xs mt-0.5">
                           {th.lastMessageText || `Context: ${th.contextType} #${th.contextId.slice(0, 6)}`}
                         </p>
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[10px] text-white/30 block">
+                      <span className="text-[10px] text-slate-400 block">
                         {th.lastMessageAt ? new Date(th.lastMessageAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Recent'}
                       </span>
                       {isActive && (
-                        <span className="text-[10px] text-[#D4F851] font-bold bg-[#D4F851]/10 px-2 py-0.5 rounded-full inline-block mt-1">
+                        <span className="text-[10px] text-purple-900 font-bold bg-purple-100 px-2 py-0.5 rounded-full inline-block mt-1">
                           Active
                         </span>
                       )}
@@ -726,16 +736,16 @@ export const ChatModal: React.FC<ChatModalProps> = ({
           </div>
         ) : (
           /* Message Thread */
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-5 space-y-4 bg-slate-50/40">
             {isLoading ? (
-              <div className="h-full flex items-center justify-center text-sm text-white/40">
-                <div className="animate-spin w-5 h-5 border-2 border-[#D4F851] border-t-transparent rounded-full mr-2"></div>
+              <div className="h-full flex items-center justify-center text-sm text-slate-400">
+                <div className="animate-spin w-5 h-5 border-2 border-purple-700 border-t-transparent rounded-full mr-2"></div>
                 Loading conversation history...
               </div>
             ) : messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-white/40">
-                <Info className="w-8 h-8 mb-2 text-white/20" />
-                <p className="text-sm font-medium text-white/60">No messages yet</p>
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                <Info className="w-8 h-8 mb-2 text-slate-300" />
+                <p className="text-sm font-medium text-slate-600">No messages yet</p>
                 <p className="text-xs mt-1">Start the conversation directly within the secure project workspace.</p>
               </div>
             ) : (
@@ -744,19 +754,19 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                 return (
                   <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                     <div className="flex items-baseline space-x-2 mb-1 px-1">
-                      <span className="text-[11px] font-semibold text-white/60">{m.senderName}</span>
-                      <span className="text-[10px] text-white/40 flex items-center">
+                      <span className="text-[11px] font-semibold text-slate-500">{m.senderName}</span>
+                      <span className="text-[10px] text-slate-400 flex items-center">
                         {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         {renderMessageStatus(m, isMe)}
                       </span>
                     </div>
 
                     <div
-                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed ${
                         isMe
-                          ? 'bg-[#1E293B] border border-white/10 text-white rounded-br-sm'
-                          : 'bg-[#101827] border border-white/10 text-white/90 rounded-bl-sm'
-                      } ${m.hasSafetyWarning ? 'border-amber-500/50 bg-amber-500/10' : ''}`}
+                          ? 'bg-[#101014] text-white rounded-br-xs shadow-xs'
+                          : 'bg-white border border-slate-200 text-slate-800 rounded-bl-xs shadow-2xs'
+                      } ${m.hasSafetyWarning ? 'border-amber-300 bg-amber-50/90 text-amber-900' : ''}`}
                     >
                       <p className="whitespace-pre-wrap">{m.messageText}</p>
                       
@@ -765,7 +775,11 @@ export const ChatModal: React.FC<ChatModalProps> = ({
                           href={m.attachmentUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-2 inline-flex items-center space-x-1.5 text-xs text-[#D4F851] hover:underline bg-white/5 px-2.5 py-1 rounded-lg border border-white/10"
+                          className={`mt-2 inline-flex items-center space-x-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg border ${
+                            isMe 
+                              ? 'text-[#D4F851] bg-white/10 border-white/20 hover:bg-white/20' 
+                              : 'text-purple-700 bg-purple-50 border-purple-200 hover:bg-purple-100'
+                          }`}
                         >
                           <Paperclip className="w-3 h-3" />
                           <span>View Attachment</span>
@@ -774,8 +788,8 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
                       {/* Inline Safety Warning Tag */}
                       {m.hasSafetyWarning && (
-                        <div className="mt-2.5 pt-2 border-t border-amber-500/30 text-[11px] text-amber-300 flex items-start space-x-1.5">
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                        <div className="mt-2.5 pt-2 border-t border-amber-200 text-[11px] text-amber-800 flex items-start space-x-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
                           <div>
                             {m.safetyWarnings?.length > 0 ? (
                               m.safetyWarnings.map((w, idx) => <p key={idx}>{w}</p>)
@@ -796,29 +810,29 @@ export const ChatModal: React.FC<ChatModalProps> = ({
 
         {/* Real-time typing advisory warning */}
         {inlineWarning && !showThreadList && (
-          <div className="px-4 py-2 bg-amber-500/15 border-t border-amber-500/30 text-amber-300 text-xs flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="px-4 py-2 bg-amber-50 border-t border-amber-200 text-amber-800 text-xs flex items-center space-x-2 shrink-0">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
             <p className="flex-1">{inlineWarning}</p>
           </div>
         )}
 
         {/* Input Bar */}
         {!showThreadList && (
-          <form onSubmit={handleSendMessage} className="p-4 bg-[#0F172A]/90 border-t border-white/10">
+          <form onSubmit={handleSendMessage} className="p-3.5 sm:p-4 bg-white border-t border-slate-200 shrink-0">
             <div className="flex items-center space-x-2">
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={`Message ${activeRecipientName}...`}
-                className="flex-1 bg-[#1E293B] border border-white/10 rounded-2xl px-4 py-2.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#D4F851] transition-colors"
+                className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#101014] transition-colors"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || isSending}
-                className="bg-[#D4F851] text-[#121214] font-bold px-4 py-2.5 rounded-2xl hover:bg-[#C5F82A] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center space-x-1 text-sm shadow-md"
+                className="bg-[#101014] hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-4 py-2.5 rounded-full transition-all flex items-center space-x-1.5 text-xs sm:text-sm shadow-xs"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5 text-[#D4F851]" />
                 <span className="hidden sm:inline">Send</span>
               </button>
             </div>
@@ -826,6 +840,7 @@ export const ChatModal: React.FC<ChatModalProps> = ({
         )}
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

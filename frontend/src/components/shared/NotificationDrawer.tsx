@@ -1,4 +1,6 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { X, Check, Bell, ArrowRight, ShieldAlert, Sparkles, Wallet, MessageSquare } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { Link } from 'react-router-dom';
@@ -11,6 +13,7 @@ interface NotificationDrawerProps {
 }
 
 export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, onClose, onOpenChat }) => {
+  useBodyScrollLock(isOpen);
   const { notifications, currentUser, markNotificationRead, markAllNotificationsRead } = useMarketplace();
 
   if (!isOpen) return null;
@@ -19,16 +22,16 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
     n => !n.recipientUserId || n.recipientUserId === currentUser.id
   );
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] overflow-hidden">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+        className="absolute inset-0 bg-slate-950/60 backdrop-blur-md transition-opacity" 
         onClick={onClose} 
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-white border-l border-purple-100 shadow-2xl flex flex-col">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10 animate-slideLeft">
+        <div className="w-screen max-w-md bg-white border-l border-purple-100 shadow-2xl flex flex-col h-full">
           {/* Header */}
           <div className="p-5 border-b border-purple-100 flex items-center justify-between bg-purple-50/50">
             <div className="flex items-center gap-2.5">
@@ -57,7 +60,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
           </div>
 
           {/* List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 divide-y divide-purple-50">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-3 divide-y divide-purple-50">
             {userNotifications.length === 0 ? (
               <div className="text-center py-16 text-slate-400">
                 <Bell size={32} className="mx-auto mb-2 opacity-40 text-purple-400" />
@@ -165,6 +168,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   X, 
   ShieldCheck, 
@@ -35,6 +37,8 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  useBodyScrollLock(isOpen);
+
   if (!isOpen) return null;
 
   const handleSimulatePayment = () => {
@@ -51,13 +55,18 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
     }, 1500);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       {/* Razorpay Standard Container (380px to 480px width) */}
-      <div className="bg-white text-slate-900 w-full max-w-[480px] rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+      <div className="bg-white text-slate-900 w-full max-w-[480px] max-h-[92dvh] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-slate-200 animate-scaleUp">
         
         {/* Razorpay Top Navy Blue Header */}
-        <div className="bg-[#0c2340] text-white p-5 flex items-start justify-between relative">
+        <div className="bg-[#0c2340] text-white p-5 flex items-start justify-between relative shrink-0">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-xs font-black tracking-wider uppercase text-blue-400">Razorpay</span>
@@ -87,7 +96,7 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
 
         {/* Razorpay Body */}
         {isSuccess ? (
-          <div className="p-8 text-center space-y-4">
+          <div className="p-8 text-center space-y-4 flex-1 overflow-y-auto overscroll-contain">
             <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center animate-bounce">
               <CheckCircle2 size={36} />
             </div>
@@ -100,9 +109,9 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row min-h-[320px]">
+          <div className="flex flex-col sm:flex-row min-h-[320px] flex-1 min-h-0 overflow-y-auto overscroll-contain">
             {/* Left Method Switcher Sidebar */}
-            <div className="w-full sm:w-44 bg-slate-50 border-r border-slate-200 p-2 space-y-1">
+            <div className="w-full sm:w-44 bg-slate-50 border-r border-slate-200 p-2 space-y-1 shrink-0">
               <div className="px-3 py-2 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                 Payment Options
               </div>
@@ -240,7 +249,7 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
         )}
 
         {/* Razorpay Footer Branding */}
-        <div className="bg-slate-50 border-t border-slate-200 px-4 py-2 flex items-center justify-between text-[10px] text-slate-500 font-semibold">
+        <div className="bg-slate-50 border-t border-slate-200 px-4 py-2 flex items-center justify-between text-[10px] text-slate-500 font-semibold shrink-0">
           <div className="flex items-center gap-1">
             <ShieldCheck size={14} className="text-emerald-600" />
             <span>PCI-DSS Certified 256-bit Encryption</span>
@@ -251,6 +260,7 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   Sparkles, 
   CheckCircle2, 
@@ -37,6 +39,7 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({ user
   });
 
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
+  useBodyScrollLock(showCelebrationModal);
 
   // Calculate score breakdown
   const checklist = useMemo<ChecklistItem[]>(() => {
@@ -230,9 +233,14 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({ user
       </div>
 
       {/* 100% Verification Celebration Modal */}
-      {showCelebrationModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl border border-emerald-200 text-center space-y-5 animate-scaleUp">
+      {showCelebrationModal && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleDismissCelebration();
+          }}
+        >
+          <div className="bg-white rounded-[2.5rem] p-8 max-w-md w-full max-h-[92dvh] overflow-y-auto overscroll-contain shadow-2xl border border-emerald-200 text-center space-y-5 animate-scaleUp">
             
             <div className="w-20 h-20 rounded-3xl bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-lg border-2 border-emerald-200">
               <Award size={40} className="text-emerald-600" />
@@ -268,7 +276,8 @@ export const ProfileCompletionBar: React.FC<ProfileCompletionBarProps> = ({ user
               Close & Continue
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

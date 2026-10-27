@@ -1,5 +1,37 @@
 # Project Journey Log (JOURNEY.md)
 
+## [2026-10-27] Milestone: Uniform Viewport Portal Backdrops, Dynamic Viewport Sizing for ChatModal & Body Scroll Lock Standardization
+
+* **Key Changes:**
+  - **Uniform Viewport Backdrop Blur via Root Portal Mounting:** Fixed the ununiform backdrop blur bug where a strip above modals and the sticky navbar header remained sharp while the rest was blurred. Attached all modals and slideout drawers directly to `document.body` via React `createPortal` with `z-[100]` and `fixed inset-0 bg-slate-950/60 backdrop-blur-md`. This ensures 100% of the viewport from `top: 0` is covered in a deep, uniform blur regardless of parent route or header stacking contexts.
+  - **Dynamic Viewport Fitting for `ChatModal` & Dialogs:** Replaced the hardcoded `h-[640px]` on [ChatModal.tsx](frontend/src/components/messaging/ChatModal.tsx) with `h-[min(640px,calc(100dvh-2.5rem))] max-h-[92dvh] w-full max-w-2xl flex flex-col`. Message thread and conversation lists now use `flex-1 min-h-0 overflow-y-auto overscroll-contain` with fixed input headers and footers (`shrink-0`), guaranteeing the chat modal fits inside all viewport heights without ever bleeding or clipping off-screen.
+  - **Body Scroll Locking & Prevention of Scroll Chaining:** Created [useBodyScrollLock.ts](frontend/src/hooks/useBodyScrollLock.ts) and integrated it across all platform modals and drawers ([ChatModal.tsx](frontend/src/components/messaging/ChatModal.tsx), [EditProfileDrawer.tsx](frontend/src/components/student/EditProfileDrawer.tsx), [EditEmployerProfileDrawer.tsx](frontend/src/components/employer/EditEmployerProfileDrawer.tsx), [NotificationDrawer.tsx](frontend/src/components/shared/NotificationDrawer.tsx), [PaymentEscrowModal.tsx](frontend/src/components/payments/PaymentEscrowModal.tsx), [RazorpayCheckoutModal.tsx](frontend/src/components/payments/RazorpayCheckoutModal.tsx), [ContractReceiptModal.tsx](frontend/src/components/payments/ContractReceiptModal.tsx), [ScopeAcceptanceModal.tsx](frontend/src/components/contracts/ScopeAcceptanceModal.tsx), [ReviewModal.tsx](frontend/src/components/reviews/ReviewModal.tsx), [RaiseDisputeDrawer.tsx](frontend/src/components/disputes/RaiseDisputeDrawer.tsx), [InterviewSchedulerModal.tsx](frontend/src/components/interviews/InterviewSchedulerModal.tsx), [ProfileCompletionBar.tsx](frontend/src/components/student/ProfileCompletionBar.tsx), [StudentWorkspace.tsx](frontend/src/pages/student/StudentWorkspace.tsx), [EmployerWorkspace.tsx](frontend/src/pages/employer/EmployerWorkspace.tsx), [GigDetails.tsx](frontend/src/pages/student/GigDetails.tsx), [StudentDashboard.tsx](frontend/src/pages/student/StudentDashboard.tsx), [AdminVerifications.tsx](frontend/src/pages/admin/AdminVerifications.tsx), and [AuthPage.tsx](frontend/src/pages/AuthPage.tsx)). Background website scrolling is locked while any modal is open, and `overscroll-contain` prevents scroll chaining to the document body.
+  - **Hardware-Accelerated Dialog Animations:** Added `@keyframes fadeIn`, `@keyframes scaleUp`, and `@keyframes slideLeft` in [index.css](frontend/src/index.css) with cubic-bezier easing and reduced-motion fallback.
+* **Decisions Made:** [[decision.md]] — Uniform Viewport Portal Backdrops, Responsive ChatModal Viewport Fitting, and Body Scroll Lock with Overscroll Containment.
+* **Verification:** Production build verified with `tsc -b && vite build` passing cleanly with zero errors.
+
+## [2026-10-27] Milestone: Editorial Neo-Tactile Design Alignment: Preserved Premium Dark Website Background with Crisp White Content Cards & Modern Dialogs
+
+* **Key Changes:**
+  - **Preserved Premium Dark Overall Canvas:** Maintained the signature dark website background (`bg-[#090D16] text-[#D1D5DB]` in [App.tsx](frontend/src/App.tsx) and [index.css](frontend/src/index.css)) that gives the platform its premium depth. Enforced strict visual contrast where standalone page text outside cards is light in shade (`text-white`, `text-slate-300`, `text-purple-300`).
+  - **Eliminated All-Dark / Dark-on-Dark Pages:** Transformed pages where both the background and internal cards were dark into crisp white/light card containers (`bg-white border border-[#EDE8FD] rounded-[2.5rem] shadow-sm`) with dark typography (`#101014`, `#334155`):
+    - [PublicEmployerProfile.tsx](frontend/src/pages/employer/PublicEmployerProfile.tsx): Rebuilt the public business profile & ID with white container cards, clear enterprise details, DPDPA 2023 notice, and white micro-gig cards with tabular budgets.
+    - [EmployerProfile.tsx](frontend/src/pages/employer/EmployerProfile.tsx): Rebuilt private employer profile to match `StudentProfile.tsx` and `EmployerDashboard.tsx`, encasing KYC records and public preview cues in white cards.
+    - [CompletionVerificationPage.tsx](frontend/src/pages/shared/CompletionVerificationPage.tsx): Rebuilt the completion credential as an official institutional white certificate card with guilloche framing and cryptographic verification seal.
+  - **Rebuilt All Modals & Dialogue Boxes as Crisp Light Popups:**
+    - Replaced gloomy dark modal boxes (`bg-[#0B101B]`, `bg-[#0F172A]`) with crisp white popups (`bg-white rounded-[2rem] border border-[#EDE8FD] shadow-2xl`) with soft focus backdrops (`bg-slate-900/40 backdrop-blur-sm`):
+    - [PaymentEscrowModal.tsx](frontend/src/components/payments/PaymentEscrowModal.tsx): White escrow modal with pilot fee waiver breakdown and sandbox guarantee callout.
+    - [ContractReceiptModal.tsx](frontend/src/components/payments/ContractReceiptModal.tsx): White settlement receipt modal with invoice breakdown and print support.
+    - [ScopeAcceptanceModal.tsx](frontend/src/components/contracts/ScopeAcceptanceModal.tsx): White contract ratification modal with milestone previews and agreement checkboxes.
+    - [InterviewSchedulerModal.tsx](frontend/src/components/interviews/InterviewSchedulerModal.tsx): White interview scheduling modal with IST calendar.
+    - [ChatModal.tsx](frontend/src/components/messaging/ChatModal.tsx): White messaging workspace with user bubble contrast (`#101014` sender, white/slate receiver) and safety alerts.
+    - [ReviewModal.tsx](frontend/src/components/reviews/ReviewModal.tsx): White evaluation modal with amber stars and verified skill endorsements.
+    - [RaiseDisputeDrawer.tsx](frontend/src/components/disputes/RaiseDisputeDrawer.tsx), [EditEmployerProfileDrawer.tsx](frontend/src/components/employer/EditEmployerProfileDrawer.tsx), & [EditProfileDrawer.tsx](frontend/src/components/student/EditProfileDrawer.tsx): Replaced dark drawers with clean white slideout drawers.
+    - [AdminVerifications.tsx](frontend/src/pages/admin/AdminVerifications.tsx): Clean white document lightbox modal.
+    - [ProfileCompletionBar.tsx](frontend/src/components/student/ProfileCompletionBar.tsx): Refined celebration modal backdrop.
+* **Decisions Made:** [[decision.md]] — Elimination of All-Dark Pages and Dialogue Boxes while Preserving Dark Premium Background.
+* **Verification:** Production build verified with `tsc -b && vite build` passing with zero errors.
+
 ## [2026-10-26] Milestone: Uniform Platform Skills Catalog, Explicit NDA Ratification & Flicker-Free Google SSO
 
 * **Key Changes:**

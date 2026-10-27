@@ -1,5 +1,52 @@
 # Architectural Decisions (decision.md)
 
+## [2026-10-27] Decision: Uniform Viewport Portal Backdrops, Responsive ChatModal Viewport Fitting, and Body Scroll Lock with Overscroll Containment
+
+* **Context & Scope:**
+  Users reported three critical friction points in frontend popups, modals, and slideout drawers:
+  1. **Backdrop Blur Gap / Ununiform Top Strip:** When opening any dialog (e.g. `EditProfileDrawer`, `ChatModal`), the sticky navbar (`sticky top-4 z-40`) or the 16px gap above it peeked through unblurred, creating an ununiform band at the top of the browser where the background screen remained sharp while the lower screen was blurry.
+  2. **`ChatModal` Screen Overflow:** The messaging modal had a hardcoded `h-[640px]`. On standard laptop screens (<= 720px height) and split windows, the dialog exceeded the viewport, clipping the input bar off-screen.
+  3. **Scroll Chaining & Background Scrolling:** Scrolling inside a dialog or reaching the end of its content caused the background webpage to scroll simultaneously ("scroll chaining"), creating a jarring user experience.
+
+* **Choice Made:**
+  1. **Direct `createPortal(..., document.body)` Architecture:**
+     - Portalled every modal, drawer, and lightbox in the application directly to `document.body` (including `ChatModal`, `EditProfileDrawer`, `EditEmployerProfileDrawer`, `NotificationDrawer`, `PaymentEscrowModal`, `RazorpayCheckoutModal`, `ContractReceiptModal`, `ScopeAcceptanceModal`, `ReviewModal`, `RaiseDisputeDrawer`, `InterviewSchedulerModal`, `ProfileCompletionBar` celebration modal, `AdminVerifications` document lightbox, and workspace submission/revision modals).
+     - Elevated overlays to `z-[100]` (`z-[110]` for nested Razorpay checkout), ensuring 100% of the viewport from (0,0) to screen edge is blanketed by `fixed inset-0 bg-slate-950/60 backdrop-blur-md` without any gaps above the sticky navbar.
+  2. **Responsive Height & Internal Layout Constraint for `ChatModal` & Popups:**
+     - Replaced hardcoded `h-[640px]` in `ChatModal` with `h-[min(640px,calc(100dvh-2.5rem))] max-h-[92dvh] w-full max-w-2xl flex flex-col`.
+     - Standardized all modal dialogs to `max-h-[92dvh] flex flex-col` with `shrink-0` on headers/footers and `flex-1 min-h-0 overflow-y-auto overscroll-contain` on internal message/content bodies.
+  3. **Centralized Body Scroll Lock Hook & `overscroll-contain`:**
+     - Created [useBodyScrollLock.ts](frontend/src/hooks/useBodyScrollLock.ts) to lock `document.body.style.overflow = 'hidden'` while any popup is active, accounting for scrollbar width to prevent layout shifts, and cleanly restoring scroll on close/unmount.
+     - Applied `overscroll-contain` (`overscroll-behavior: contain`) to all scrollable modal areas, completely eliminating scroll chaining.
+
+* **Rationale (Why over What):**
+  - Guaranteeing uniform backdrop coverage requires attaching modals at the DOM root rather than inside nested route containers subject to ancestor stacking contexts.
+  - Responsive dynamic viewport units (`100dvh`) prevent mobile browser address bar jumps and screen clipping.
+* **Immutability Status:** Settled & Immutable.
+
+## [2026-10-27] Decision: Elimination of All-Dark / Dark-on-Dark Pages and Modals while Preserving Premium Dark Background
+
+* **Context & Scope:**
+  The project features a premium, uniform dark website canvas (`bg-[#090D16] text-[#D1D5DB]`).
+  Under the platform's design philosophy, all content resting on this dark background is either:
+  1. Standalone text in a light shade (`text-white`, `text-slate-300`, `text-purple-300`) to provide sharp contrast against the dark background.
+  2. Or enclosed inside white/light cards (`bg-white rounded-[2.5rem] border border-[#EDE8FD]`) with dark, high-contrast typography inside (`#101014`, `#334155`).
+
+  However, several screens and interactive dialogs were designed with dark backgrounds AND dark cards inside (`bg-[#0B101B]`, `bg-[#0F172A]`, glowing blur halos, gloomy `bg-black/80` dialogs), making them completely dark-on-dark AI-slop pages.
+
+* **Choice Made:**
+  1. **Preserve Overall Dark Background:** Restored [App.tsx](frontend/src/App.tsx) and [index.css](frontend/src/index.css) to the signature dark canvas (`bg-[#090D16] text-[#D1D5DB]`).
+  2. **Convert Dark-on-Dark Pages to Crisp White Card Containers:**
+     - Rebuilt [PublicEmployerProfile.tsx](frontend/src/pages/employer/PublicEmployerProfile.tsx) and [EmployerProfile.tsx](frontend/src/pages/employer/EmployerProfile.tsx) with crisp white card containers (`bg-white rounded-[2.5rem] border border-[#EDE8FD]`), light headers outside cards, and white micro-gig cards.
+     - Rebuilt [CompletionVerificationPage.tsx](frontend/src/pages/shared/CompletionVerificationPage.tsx) with a prestigious white credential card container resting on the dark background.
+  3. **Convert All Popups and Dialogue Boxes to Clean White Card Modals:**
+     - Standardized modal backdrops to `bg-slate-900/40 backdrop-blur-sm`.
+     - Standardized modal and drawer containers to `bg-white border border-[#EDE8FD] rounded-[2rem] shadow-2xl` with dark text inside, completely eliminating the dark-on-dark AI-slop appearance.
+
+* **Rationale (Why over What):**
+  - Respects the user's design choice: a uniform dark background for premium depth across the site, paired with high-contrast white content cards and modern dialogs.
+* **Immutability Status:** Settled & Immutable.
+
 ## [2026-10-25] Decision: Milestone Pipeline De-Coupling & Sequential Ordering Rectification
 
 * **Context & Scope:**

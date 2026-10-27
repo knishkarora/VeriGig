@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   CheckCircle2, 
   ExternalLink, 
@@ -53,6 +55,7 @@ export const EmployerWorkspace: React.FC = () => {
 
   const [revisionModalMilestone, setRevisionModalMilestone] = useState<Milestone | null>(null);
   const [revisionFeedback, setRevisionFeedback] = useState('');
+  useBodyScrollLock(Boolean(revisionModalMilestone));
 
   const [isEscrowModalOpen, setIsEscrowModalOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
@@ -423,19 +426,22 @@ export const EmployerWorkspace: React.FC = () => {
       )}
 
       {/* Structured Revision Request Modal */}
-      {revisionModalMilestone && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setRevisionModalMilestone(null)} />
-          
-          <div className="relative w-full max-w-lg bg-white border border-purple-100 rounded-[2.5rem] p-8 shadow-2xl space-y-5 text-left">
-            <div className="flex items-center justify-between pb-3 border-b border-purple-100">
+      {revisionModalMilestone && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setRevisionModalMilestone(null);
+          }}
+        >
+          <div className="relative w-full max-w-lg max-h-[92dvh] bg-white border border-purple-100 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl flex flex-col overflow-hidden text-left animate-scaleUp">
+            <div className="flex items-center justify-between pb-3 border-b border-purple-100 shrink-0">
               <h3 className="text-base font-black text-[#121214]">Request Revision for {revisionModalMilestone.title}</h3>
               <button onClick={() => setRevisionModalMilestone(null)} className="text-slate-400 hover:text-black text-xs font-bold px-3 py-1 rounded-full bg-slate-100">
                 Cancel
               </button>
             </div>
 
-            <form onSubmit={handleRevisionSubmit} className="space-y-4">
+            <form onSubmit={handleRevisionSubmit} className="space-y-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pt-2">
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
                   Structured Feedback & Changes Needed
@@ -454,15 +460,18 @@ export const EmployerWorkspace: React.FC = () => {
                 The student will receive an instant notification with this feedback to update their deliverable.
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all"
-              >
-                Send Revision Request
-              </button>
+              <div className="pt-2 shrink-0">
+                <button
+                  type="submit"
+                  className="w-full py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all"
+                >
+                  Send Revision Request
+                </button>
+              </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Contract Settlement Receipt Modal */}

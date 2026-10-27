@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, Link, Navigate } from 'react-router-dom';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import { 
   CheckCircle2, 
   Clock, 
@@ -71,6 +73,7 @@ export const StudentWorkspace: React.FC = () => {
 
   // Modal states
   const [activeModalMilestone, setActiveModalMilestone] = useState<Milestone | null>(null);
+  useBodyScrollLock(Boolean(activeModalMilestone));
   const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
   const [isDisputeOpen, setIsDisputeOpen] = useState(false);
   const [disputeMilestone, setDisputeMilestone] = useState<Milestone | null>(null);
@@ -705,12 +708,15 @@ export const StudentWorkspace: React.FC = () => {
       </div>
 
       {/* Deliverable Submission Modal */}
-      {activeModalMilestone && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setActiveModalMilestone(null)} />
-          
-          <div className="relative w-full max-w-lg bg-white border border-purple-100 rounded-[2.5rem] p-8 shadow-2xl space-y-5 text-left">
-            <div className="flex items-center justify-between pb-3 border-b border-purple-100">
+      {activeModalMilestone && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setActiveModalMilestone(null);
+          }}
+        >
+          <div className="relative w-full max-w-lg max-h-[92dvh] bg-white border border-purple-100 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl flex flex-col overflow-hidden text-left animate-scaleUp">
+            <div className="flex items-center justify-between pb-3 border-b border-purple-100 shrink-0">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-purple-700">Deliverable Handoff</span>
                 <h3 className="text-base font-black text-[#121214]">{activeModalMilestone.title}</h3>
@@ -724,7 +730,7 @@ export const StudentWorkspace: React.FC = () => {
             </div>
 
             {successToast ? (
-              <div className="p-6 text-center space-y-2">
+              <div className="p-6 text-center space-y-2 flex-1 overflow-y-auto overscroll-contain">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
                   <Check size={24} />
                 </div>
@@ -732,7 +738,7 @@ export const StudentWorkspace: React.FC = () => {
                 <p className="text-xs text-slate-500">The SME has been notified to review and release funds.</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmitModal} className="space-y-4">
+              <form onSubmit={handleSubmitModal} className="space-y-4 flex-1 min-h-0 overflow-y-auto overscroll-contain pt-2">
                 <div>
                   <label className="block text-xs font-bold text-slate-800 mb-1">
                     Live Deliverable URL (Vercel, Figma, Google Drive)
@@ -774,7 +780,7 @@ export const StudentWorkspace: React.FC = () => {
                   />
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 shrink-0">
                   <button
                     type="submit"
                     className="w-full py-3.5 rounded-full bg-[#121214] hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all flex items-center justify-center gap-2"
@@ -787,7 +793,8 @@ export const StudentWorkspace: React.FC = () => {
             )}
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Two-Party Scope Acceptance Modal */}

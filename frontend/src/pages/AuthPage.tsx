@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { 
   GraduationCap, 
   Building2, 
@@ -49,6 +51,7 @@ export const AuthPage: React.FC = () => {
 
   // Google OAuth guidance modal
   const [showGoogleGuide, setShowGoogleGuide] = useState(false);
+  useBodyScrollLock(showGoogleGuide);
 
   // Check if browser is currently returning from Google OAuth redirect or actively resolving it
   const [isReturningFromOAuth] = useState<boolean>(() => {
@@ -611,10 +614,15 @@ export const AuthPage: React.FC = () => {
       </div>
 
       {/* Google OAuth Setup Guidance Modal */}
-      {showGoogleGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full text-slate-900 shadow-2xl border border-slate-200 space-y-4 text-left">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      {showGoogleGuide && createPortal(
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowGoogleGuide(false);
+          }}
+        >
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[92dvh] overflow-y-auto overscroll-contain text-slate-900 shadow-2xl border border-slate-200 space-y-4 text-left animate-scaleUp">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <HelpCircle size={20} className="text-purple-600" />
                 <h3 className="font-extrabold text-base">Supabase Google Auth Setup</h3>
@@ -663,12 +671,13 @@ export const AuthPage: React.FC = () => {
 
             <button
               onClick={() => setShowGoogleGuide(false)}
-              className="w-full py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all"
+              className="w-full py-2.5 rounded-full bg-[#101014] hover:bg-slate-800 text-white text-xs font-bold transition-all shrink-0"
             >
               Got it, continue
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
