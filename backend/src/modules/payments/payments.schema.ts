@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 export const createOrderSchema = z.object({
   contractId: z
-    .string({ required_error: 'Contract ID is required' })
+    .string({ error: 'Contract ID is required' })
     .uuid('Contract ID must be a valid UUID'),
   idempotencyKey: z
-    .string({ required_error: 'Idempotency key is required to prevent duplicate charges' })
+    .string({ error: 'Idempotency key is required to prevent duplicate charges' })
     .min(8, 'Idempotency key must be at least 8 characters')
     .max(255),
   currency: z.string().default('INR'),
@@ -20,12 +20,12 @@ export const webhookPayloadSchema = z.object({
     'payment.failed',
     'payout.processed',
     'refund.processed',
-  ], { required_error: 'Event type is required' }),
-  orderId: z.string({ required_error: 'Order ID is required' }),
+  ] as const, { error: 'Event type is required' }),
+  orderId: z.string({ error: 'Order ID is required' }),
   paymentId: z.string().optional(),
   amount: z.number().int().positive(),
   signature: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export type WebhookPayloadInput = z.infer<typeof webhookPayloadSchema>;

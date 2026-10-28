@@ -579,4 +579,32 @@
   - `tsc -b frontend/tsconfig.json` completed with 0 errors.
   - `vite build` completed in 5.73s with 0 errors.
 
+---
+
+## Phase 16: Zero-Vulnerability Security Hardening & Production Health Probe Routing
+- **Timestamp:** 2026-10-28
+- **Status:** Complete & Production Verified
+- **Problem Statement:**
+  1. Render deployment logs flagged 6 vulnerabilities in backend (2 moderate, 3 high, 1 critical in `fast-jwt`) and 3 vulnerabilities in frontend (1 moderate, 2 high in `vite`, `source-map-js`, `postcss-selector-parser`).
+  2. Backend startup logs showed `Route HEAD:/ not found` and `Route GET:/ not found` (404) during Render's automated root availability probes.
+- **Architectural & Technical Solution:**
+  - **Frontend Vulnerability Remediation:**
+    - Ran security audit fix targeting `vite`, `source-map-js`, and `postcss-selector-parser`.
+    - Resolved all 3 frontend vulnerabilities down to 0 without breaking dependencies.
+  - **Backend Vulnerability Remediation & Security Upgrade:**
+    - Overrode `esbuild` to safe `>=0.25.0` to eliminate dev server request reading vulnerability.
+    - Upgraded Fastify core from `^4.28.1` to `^5.12.7` to resolve high-severity HTTP/2 DoS and URL routing authentication bypass advisories (`find-my-way` <= 9.6.0).
+    - Upgraded Fastify plugin suite to match Fastify 5: `@fastify/cookie` (^11.1.5), `@fastify/cors` (^11.3.1), `@fastify/helmet` (^13.2.0), `@fastify/jwt` (^10.2.5), and `@fastify/multipart` (^10.1.6).
+    - Upgrading `@fastify/jwt` completely eliminated the critical severity `fast-jwt` advisory (GHSA-mvf2-f6gm-w987, GHSA-rp9m-7r4c-75qg, GHSA-hm7r-c7qw-ghp6).
+    - Upgraded `zod` to `^4.6.7` to resolve the high-severity uncontrolled resource consumption advisory (`GHSA-mrhx-c7xc-m3w5`).
+    - Migrated backend validation schemas across `applications`, `contracts`, `disputes`, `messaging`, `payments`, `reviews`, and `weekly-drops` to Zod 4 syntax (`error` param and `z.record(z.string(), z.any())`).
+  - **Render Root Probe Route Support:**
+    - Registered `app.get('/', ...)` in `backend/src/app.ts` providing an immediate 200 OK response for Render's default `HEAD /` and `GET /` live checks alongside `/health`.
+- **Verification:**
+  - `npm audit` in `backend` reported: **0 vulnerabilities**.
+  - `npm audit` in `frontend` reported: **0 vulnerabilities**.
+  - `npm run build` in `backend` (`tsc`) compiled with **0 errors**.
+  - `npm run build` in `frontend` (`tsc -b && vite build`) built cleanly with **0 errors**.
+
+
 

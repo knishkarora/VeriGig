@@ -97,6 +97,15 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   // Root & Healthcheck Endpoints
+  app.get('/', async () => {
+    return {
+      status: 'ok',
+      service: 'verigig-api',
+      message: 'VeriGig API Server is running',
+      health: '/health',
+    };
+  });
+
   app.get('/health', async () => {
     return {
       status: 'ok',

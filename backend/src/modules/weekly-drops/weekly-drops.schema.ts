@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const subscribeWeeklyDropSchema = z.object({
   email: z
-    .string({ required_error: 'Email address is required' })
+    .string({ error: 'Email address is required' })
     .trim()
     .toLowerCase()
     .email('Please provide a valid email address')
